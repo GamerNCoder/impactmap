@@ -18,6 +18,7 @@ function LoginForm() {
 
   const oauthError = getOAuthErrorMessage(searchParams.get('error'))
   const displayError = error || oauthError
+  const nextPath = searchParams.get('next') || '/dashboard'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,7 +33,7 @@ function LoginForm() {
 
       if (signInError) throw signInError
 
-      router.push('/dashboard')
+      router.push(nextPath.startsWith('/') ? nextPath : '/dashboard')
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
@@ -60,7 +61,7 @@ function LoginForm() {
             </div>
           )}
 
-          <OAuthButtons mode="signin" />
+          <OAuthButtons mode="signin" next={searchParams.get('next') || '/dashboard'} />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

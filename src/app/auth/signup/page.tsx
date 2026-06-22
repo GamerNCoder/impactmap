@@ -22,7 +22,7 @@ export default function SignupPage() {
     setError(null)
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -32,8 +32,13 @@ export default function SignupPage() {
 
       if (signUpError) throw signUpError
 
-      router.push('/dashboard')
-      router.refresh()
+      if (data?.session) {
+        router.push('/dashboard')
+        router.refresh()
+        return
+      }
+
+      setError('Account created. Check your email to confirm before signing in.')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
