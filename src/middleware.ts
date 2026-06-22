@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/profile', '/applications']
+  const protectedPaths = ['/dashboard', '/profile', '/applications', '/matches']
   const isProtectedPath = protectedPaths.some(path => 
     request.nextUrl.pathname.startsWith(path)
   )
@@ -46,5 +46,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/applications/:path*', '/auth/:path*'],
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/applications/:path*', '/matches/:path*', '/auth/:path*'],
 }

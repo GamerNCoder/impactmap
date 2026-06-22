@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import LogHoursForm from '@/components/LogHoursForm'
+import MatchedOpportunityCard from '@/components/MatchedOpportunityCard'
 import { formatDate, statusColor, statusLabel } from '@/lib/constants'
+import { getVolunteerMatches } from '@/lib/matching-data'
 
 export const metadata = {
   title: 'Dashboard | ImpactMap',
@@ -38,6 +40,9 @@ export default async function DashboardPage() {
   const totalHours = (hours || []).reduce((sum, entry) => sum + Number(entry.hours), 0)
   const acceptedApps = (applications || []).filter((a) => a.status === 'accepted' || a.status === 'completed')
 
+  const { ranked: topMatches } = await getVolunteerMatches(user.id, 3)
+  const bestMatches = topMatches.filter((r) => r.match.score >= 50)
+
   return (
     <div className="bg-gray-50 min-h-full">
       <div className="bg-white border-b border-gray-200">
@@ -64,6 +69,41 @@ export default async function DashboardPage() {
             <p className="text-3xl font-bold text-indigo-600 mt-1">{totalHours.toFixed(1)}</p>
           </div>
         </div>
+
+        {bestMatches.length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Recommended for you</h2>
+                <p className="text-sm text-gray-500 mt-1">Ranked by skills and location fit</p>
+              </div>
+              <Link href="/matches" className="text-indigo-600 text-sm font-medium hover:text-indigo-800">
+                See all matches →
+              </Link>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {bestMatches.map((item, index) => {
+                const org = item.opportunity.organizations as { name: string } | null
+                return (
+                  <MatchedOpportunityCard
+                    key={item.opportunity.id}
+                    rank={index + 1}
+                    id={item.opportunity.id}
+                    title={item.opportunity.title}
+                    category={item.opportunity.category}
+                    location={item.opportunity.location}
+                    remote={item.opportunity.remote}
+                    organizationName={org?.name}
+                    volunteersNeeded={item.opportunity.volunteers_needed}
+                    volunteersCount={item.opportunity.volunteers_count}
+                    deadline={item.opportunity.deadline}
+                    match={item.match}
+                  />
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           <section className="bg-white rounded-lg shadow-sm p-6">

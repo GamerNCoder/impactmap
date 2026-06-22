@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ApplicationForm from '@/components/ApplicationForm'
+import SkillMatchPanel from '@/components/SkillMatchPanel'
 import { formatDate } from '@/lib/constants'
+import { computeMatch } from '@/lib/matching'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -42,6 +44,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let existingApplication = null
+  let skillMatch = null
   if (user) {
     const { data } = await supabase
       .from('applications')
@@ -50,6 +53,44 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       .eq('user_id', user.id)
       .maybeSingle()
     existingApplication = data
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('skills, location, bio')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const { data: pastApps } = await supabase
+      .from('applications')
+      .select('opportunities(category)')
+      .eq('user_id', user.id)
+
+    const pastCategories = [
+      ...new Set(
+        (pastApps ?? [])
+          .map((a) => {
+            const opp = a.opportunities as unknown as { category: string } | null
+            return opp?.category
+          })
+          .filter(Boolean) as string[]
+      ),
+    ]
+
+    skillMatch = computeMatch(
+      {
+        skills: profile?.skills ?? null,
+        location: profile?.location ?? null,
+        bio: profile?.bio ?? null,
+      },
+      {
+        id: opportunity.id,
+        category: opportunity.category,
+        skills_required: opportunity.skills_required,
+        location: opportunity.location,
+        remote: opportunity.remote,
+      },
+      pastCategories
+    )
   }
 
   return (
@@ -122,6 +163,10 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
           </div>
 
           <div className="space-y-6">
+            {skillMatch && !existingApplication && (
+              <SkillMatchPanel match={skillMatch} />
+            )}
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
               <dl className="space-y-3 text-sm">
