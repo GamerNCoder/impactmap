@@ -63,16 +63,42 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploy to Vercel
 
-1. Push this repo to GitHub
-2. Import the project in [Vercel](https://vercel.com/new)
-3. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy
+### Option A: Vercel CLI (fastest)
 
-Update Supabase **Authentication → URL Configuration** with your Vercel domain:
-- Site URL: `https://your-app.vercel.app`
-- Redirect URLs: `https://your-app.vercel.app/auth/callback`
+```bash
+npx vercel login
+npx vercel --prod \
+  -e NEXT_PUBLIC_SUPABASE_URL=https://pgvasfubdwkgugoqqfjf.supabase.co \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### Option B: Import from GitHub
+
+1. Import [github.com/heyitsmeyourbudlol-lgtm/impactmap](https://github.com/heyitsmeyourbudlol-lgtm/impactmap) at [vercel.com/new](https://vercel.com/new)
+2. Add environment variables (see below)
+3. Deploy
+
+### Environment variables (Vercel)
+
+| Variable | Value |
+|----------|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://pgvasfubdwkgugoqqfjf.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | From Supabase → Project Settings → API |
+
+### Supabase auth URLs (after Vercel deploy)
+
+In Supabase → **Authentication → URL Configuration**:
+
+- **Site URL:** `https://your-app.vercel.app`
+- **Redirect URLs:** `https://your-app.vercel.app/auth/callback`, `http://localhost:3000/auth/callback`
+
+## Supabase project
+
+This repo is wired to Supabase project **impactmap** (`pgvasfubdwkgugoqqfjf`).
+
+- Schema applied via migration `impactmap_initial_schema`
+- Seed data: 4 organizations, 5 opportunities
+- Dashboard: [supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf](https://supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf)
 
 ## Project structure
 
