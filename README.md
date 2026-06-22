@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ImpactMap
 
-## Getting Started
+A production-ready volunteering portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Connect volunteers with nonprofits, apply to opportunities, and track volunteer hours.
 
-First, run the development server:
+## Features
+
+- **Browse opportunities** — search and filter by category, location, and remote availability
+- **Organization profiles** — explore verified nonprofits and their open roles
+- **Volunteer accounts** — email/password sign-up plus Google and GitHub OAuth
+- **Applications** — apply with cover letter, availability, and experience
+- **Dashboard** — track application status and log volunteer hours
+- **Profile management** — skills, bio, location, and contact info
+- **Row Level Security** — Supabase RLS policies protect user data
+
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
+| Backend | Supabase (PostgreSQL, Auth, RLS) |
+| Deployment | Vercel |
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/heyitsmeyourbudlol-lgtm/impactmap.git
+cd impactmap
+npm install
+```
+
+### 2. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. In the SQL Editor, run `supabase/schema.sql`
+3. Run `supabase/seed.sql` for sample organizations and opportunities
+4. Enable Email auth under **Authentication → Providers**
+5. (Optional) Enable Google/GitHub OAuth and set redirect URL to `http://localhost:3000/auth/callback`
+
+### 3. Environment variables
+
+Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Find these in Supabase → **Project Settings → API**.
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this repo to GitHub
+2. Import the project in [Vercel](https://vercel.com/new)
+3. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy
 
-## Learn More
+Update Supabase **Authentication → URL Configuration** with your Vercel domain:
+- Site URL: `https://your-app.vercel.app`
+- Redirect URLs: `https://your-app.vercel.app/auth/callback`
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/
+│   ├── auth/          # Login, signup, OAuth callback
+│   ├── dashboard/     # Applications & hours tracking
+│   ├── opportunities/ # Browse & detail pages
+│   ├── organizations/ # Organization listings
+│   └── profile/       # Volunteer profile editor
+├── components/        # Shared UI components
+├── lib/supabase/      # Browser & server Supabase clients
+└── types/             # Database TypeScript types
+supabase/
+├── schema.sql         # Database schema + RLS
+└── seed.sql           # Sample data
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
