@@ -53,6 +53,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Find these in Supabase → **Project Settings → API**.
 
+### Social sign-in (Google, Apple, GitHub, Microsoft)
+
+The login and signup pages support all four providers. Enable each one in Supabase with OAuth credentials from the provider:
+
+**Setup guide:** [`supabase/oauth-setup.md`](./supabase/oauth-setup.md)
+
 ### 4. Run locally
 
 ```bash
