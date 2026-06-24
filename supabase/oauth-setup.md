@@ -1,6 +1,6 @@
-# OAuth provider setup (Google, Apple, GitHub, Microsoft)
+# OAuth provider setup (Google, Apple, Microsoft)
 
-ImpactMap uses Supabase Auth. Each provider needs credentials in the Supabase dashboard before social sign-in works.
+ImpactMap uses Supabase Auth. **Social sign-in buttons only appear for providers listed in `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS`.** GitHub is not supported. If that env var is empty, the app defaults to Google, Apple, and Microsoft.
 
 **Project:** `pgvasfubdwkgugoqqfjf`  
 **Supabase callback URL (use in every provider):**
@@ -8,6 +8,23 @@ ImpactMap uses Supabase Auth. Each provider needs credentials in the Supabase da
 ```
 https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback
 ```
+
+## 0. Enable a provider in the app (required after Supabase setup)
+
+After configuring a provider in Supabase (steps below), add it to your env:
+
+```bash
+# Local: .env.local
+NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=google,apple,azure
+
+# Vercel: Project Settings → Environment Variables (all environments)
+NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=google,apple,azure
+```
+
+Valid values (comma-separated): `google`, `apple`, `azure`
+
+**Do not add a provider here until it is enabled with credentials in Supabase.**  
+Rebuild/redeploy after changing this variable.
 
 ## 1. Supabase URL configuration
 
@@ -29,12 +46,6 @@ Open [Authentication → Providers](https://supabase.com/dashboard/project/pgvas
 3. Authorized redirect URI: `https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback`
 4. Copy Client ID + Client Secret into Supabase **Google** provider → Enable
 
-### GitHub
-
-1. [GitHub Developer Settings](https://github.com/settings/developers) → OAuth Apps → New
-2. Authorization callback URL: `https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback`
-3. Copy Client ID + Client Secret into Supabase **GitHub** provider → Enable
-
 ### Apple
 
 1. [Apple Developer](https://developer.apple.com/account/resources/identifiers/list) → Services IDs
@@ -55,8 +66,10 @@ Supabase uses the **Azure** provider for Microsoft accounts.
 
 ## 3. Test
 
-1. Visit `/auth/login` or `/auth/signup`
-2. Click each provider button
-3. After redirect, you should land on `/dashboard` with a profile row created automatically
+1. Set `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS` to the provider(s) you configured
+2. Restart dev server or redeploy Vercel
+3. Visit `/auth/login`
+4. Only Google, Apple, and/or Microsoft should appear — never GitHub
+5. After redirect, you should land on `/dashboard` with a profile row created automatically
 
-If a provider shows "not enabled", its credentials are missing in the Supabase dashboard.
+If no OAuth buttons appear, check that at least one valid provider is listed in the env var.
