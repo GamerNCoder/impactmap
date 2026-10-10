@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import MatchBadge from '@/components/MatchBadge'
 import MatchReasons from '@/components/MatchReasons'
+import AiMatchInsight from '@/components/AiMatchInsight'
 import type { MatchResult } from '@/lib/matching'
 
 type MatchedOpportunityCardProps = {
@@ -23,7 +24,7 @@ export default function MatchedOpportunityCard({
   ...opportunity
 }: MatchedOpportunityCardProps) {
   return (
-    <article className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex flex-col overflow-hidden">
+    <article className="bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-xl motion-hover-lift flex flex-col overflow-hidden border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800">
       <div className="px-6 pt-6 pb-2 flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           {rank != null && (
@@ -44,6 +45,14 @@ export default function MatchedOpportunityCard({
           <MatchReasons
             reasons={match.reasons.slice(0, 3)}
             matchedSkills={match.matchedSkills}
+          />
+          <AiMatchInsight
+            title={opportunity.title}
+            category={opportunity.category}
+            score={match.score}
+            matchedSkills={match.matchedSkills}
+            missingSkills={match.missingSkills}
+            location={opportunity.location}
           />
         </div>
       </div>

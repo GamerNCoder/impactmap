@@ -2,6 +2,7 @@ export type VolunteerProfile = {
   skills: string[] | null
   location: string | null
   bio: string | null
+  verifiedSkills?: string[]
 }
 
 export type OpportunityForMatch = {
@@ -81,6 +82,7 @@ export function computeMatch(
   pastCategories: string[] = []
 ): MatchResult {
   const userSkills = profile.skills ?? []
+  const verified = new Set(profile.verifiedSkills ?? [])
   const skills = skillsScore(userSkills, opportunity.skills_required)
   const location = locationScore(profile.location, opportunity.location, opportunity.remote)
 
@@ -94,9 +96,20 @@ export function computeMatch(
     score = Math.min(100, score + 5)
   }
 
+  const verifiedMatchedCount = skills.matched.filter((s) => verified.has(s)).length
+  if (verifiedMatchedCount > 0) {
+    score = Math.min(100, score + verifiedMatchedCount * 3)
+  }
+
   const reasons: string[] = []
 
   if (skills.matched.length > 0) {
+    const verifiedMatched = skills.matched.filter((s) => verified.has(s))
+    if (verifiedMatched.length > 0) {
+      reasons.push(
+        `Competency-verified: ${verifiedMatched.join(', ')}`
+      )
+    }
     reasons.push(
       `${skills.matched.length}/${opportunity.skills_required?.length ?? skills.matched.length} required skills: ${skills.matched.join(', ')}`
     )
@@ -105,7 +118,7 @@ export function computeMatch(
   }
 
   if (opportunity.remote) {
-    reasons.push('Work remotely — no commute needed')
+    reasons.push('Online event — no commute needed')
   } else if (location >= 75) {
     reasons.push('Location aligns with your area')
   } else if (profile.location && !opportunity.remote) {

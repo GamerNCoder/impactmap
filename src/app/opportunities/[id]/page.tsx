@@ -1,10 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import ApplicationForm from '@/components/ApplicationForm'
+import JoinEventButton from '@/components/JoinEventButton'
+import EventCheckInQr from '@/components/EventCheckInQr'
+import TrackOnce from '@/components/TrackOnce'
+import { APP_EVENTS } from '@/lib/app-events'
 import SkillMatchPanel from '@/components/SkillMatchPanel'
+import CommitmentBadge from '@/components/CommitmentBadge'
 import { formatDate } from '@/lib/constants'
 import { computeMatch } from '@/lib/matching'
+import { getUserCommitmentScore } from '@/lib/commitment-data'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -45,7 +50,10 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
   let existingApplication = null
   let skillMatch = null
+  let isHost = false
   if (user) {
+    isHost = opportunity.posted_by === user.id
+
     const { data } = await supabase
       .from('applications')
       .select('status')
@@ -93,8 +101,21 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
     )
   }
 
+  const commitment = user ? await getUserCommitmentScore(user.id) : null
+
+  const isJoined = existingApplication?.status === 'accepted' || existingApplication?.status === 'pending'
+  const isFull =
+    opportunity.volunteers_needed != null &&
+    opportunity.volunteers_count >= opportunity.volunteers_needed
+
   return (
     <div className="bg-gray-50 min-h-full">
+      <TrackOnce
+        event={APP_EVENTS.OPPORTUNITY_VIEW}
+        organizationId={org?.id}
+        resourceType="opportunity"
+        resourceId={id}
+      />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Link href="/opportunities" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
           ← Back to opportunities
@@ -108,8 +129,8 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                   {opportunity.category}
                 </span>
                 {opportunity.remote && (
-                  <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
-                    Remote
+                  <span className="bg-violet-100 text-violet-800 text-sm font-medium px-3 py-1 rounded-full">
+                    Online
                   </span>
                 )}
                 <span className="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full capitalize">
@@ -167,13 +188,28 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
               <SkillMatchPanel match={skillMatch} />
             )}
 
+            {commitment && (
+              <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600">Your Commitment Score</span>
+                <CommitmentBadge commitment={commitment} size="sm" />
+              </div>
+            )}
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
               <dl className="space-y-3 text-sm">
-                <div>
-                  <dt className="text-gray-500">Location</dt>
-                  <dd className="font-medium text-gray-900">{opportunity.remote ? 'Remote' : opportunity.location || 'On-site'}</dd>
-                </div>
+                {opportunity.location?.trim() && (
+                  <div>
+                    <dt className="text-gray-500">Location</dt>
+                    <dd className="font-medium text-gray-900">{opportunity.location}</dd>
+                  </div>
+                )}
+                {opportunity.remote && (
+                  <div>
+                    <dt className="text-gray-500">Format</dt>
+                    <dd className="font-medium text-gray-900">Online event</dd>
+                  </div>
+                )}
                 {opportunity.time_commitment && (
                   <div>
                     <dt className="text-gray-500">Time commitment</dt>
@@ -204,27 +240,36 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Apply</h2>
-              {opportunity.status !== 'open' ? (
-                <p className="text-gray-600">This opportunity is no longer accepting applications.</p>
-              ) : existingApplication ? (
-                <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 px-4 py-3 rounded-lg">
-                  You applied — status: <strong className="capitalize">{existingApplication.status}</strong>
-                </div>
-              ) : user ? (
-                <ApplicationForm opportunityId={id} opportunityTitle={opportunity.title} />
-              ) : (
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Join this event</h2>
+              {!user ? (
                 <div className="text-center">
-                  <p className="text-gray-600 mb-4">Sign in to apply for this opportunity.</p>
+                  <p className="text-gray-600 mb-4">Sign in to join this event.</p>
                   <Link
-                    href="/auth/login"
+                    href={`/auth/login?next=/opportunities/${id}`}
                     className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700"
                   >
-                    Sign in
+                    Sign in to join
                   </Link>
                 </div>
+              ) : (
+                <>
+                  <JoinEventButton
+                    opportunityId={id}
+                    opportunityTitle={opportunity.title}
+                    organizationId={opportunity.organization_id}
+                    isJoined={isJoined}
+                    isFull={isFull}
+                    isOpen={opportunity.status === 'open'}
+                    isHost={isHost}
+                  />
+                  {existingApplication && existingApplication.status === 'rejected' && (
+                    <p className="mt-3 text-sm text-red-600">Your previous sign-up was not accepted.</p>
+                  )}
+                </>
               )}
             </div>
+
+            <EventCheckInQr opportunityId={id} title={opportunity.title} />
           </div>
         </div>
       </div>

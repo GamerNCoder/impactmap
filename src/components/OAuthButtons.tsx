@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   getAuthCallbackUrl,
+  getEnabledOAuthProviders,
   isOAuthProviderEnabled,
   type OAuthProviderId,
 } from '@/lib/auth'
@@ -58,46 +59,14 @@ export default function OAuthButtons({
   disabled = false,
   onBeforeOAuth,
 }: OAuthButtonsProps) {
-  const [enabledProviders, setEnabledProviders] = useState<
-    { id: OAuthProviderId; label: string }[]
-  >([])
-  const [providersLoading, setProvidersLoading] = useState(true)
+  const enabledProviders = getEnabledOAuthProviders()
 
   const [loadingProvider, setLoadingProvider] = useState<OAuthProviderId | null>(null)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      try {
-        const res = await fetch('/api/auth/providers')
-        if (!res.ok) throw new Error('Could not load sign-in options')
-        const data = (await res.json()) as {
-          providers?: { id: OAuthProviderId; label: string }[]
-        }
-        if (!cancelled) setEnabledProviders(data.providers ?? [])
-      } catch {
-        if (!cancelled) setEnabledProviders([])
-      } finally {
-        if (!cancelled) setProvidersLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  if (providersLoading) {
-    return null
-  }
-
   if (enabledProviders.length === 0) {
-    return (
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        Social sign-in is not set up yet. Use email and password below.
-      </p>
-    )
+    return null
   }
 
   const handleOAuth = async (provider: OAuthProviderId) => {
@@ -151,7 +120,7 @@ export default function OAuthButtons({
         message.toLowerCase().includes('unsupported provider')
       ) {
         setError(
-          'This sign-in method is not configured yet. Use email and password, or ask the site admin to enable this provider in Supabase (Authentication → Providers).'
+          'This sign-in method is not configured in Supabase yet. Use email and password, or enable the provider under Authentication → Providers in your Supabase project.'
         )
       } else {
         setError(message)
@@ -165,7 +134,7 @@ export default function OAuthButtons({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}

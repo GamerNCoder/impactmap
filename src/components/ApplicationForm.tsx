@@ -3,13 +3,16 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { trackClientEvent } from '@/lib/track-client'
+import { APP_EVENTS } from '@/lib/app-events'
 
 type ApplicationFormProps = {
   opportunityId: string
   opportunityTitle: string
+  organizationId?: string | null
 }
 
-export default function ApplicationForm({ opportunityId, opportunityTitle }: ApplicationFormProps) {
+export default function ApplicationForm({ opportunityId, opportunityTitle, organizationId }: ApplicationFormProps) {
   const [coverLetter, setCoverLetter] = useState('')
   const [availability, setAvailability] = useState('')
   const [experience, setExperience] = useState('')
@@ -40,6 +43,12 @@ export default function ApplicationForm({ opportunityId, opportunityTitle }: App
       })
 
       if (insertError) throw insertError
+
+      trackClientEvent(APP_EVENTS.APPLICATION_SUBMIT, {
+        organizationId: organizationId ?? undefined,
+        resourceType: 'opportunity',
+        resourceId: opportunityId,
+      })
 
       setSuccess(true)
       router.refresh()

@@ -108,8 +108,63 @@ CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (
 -- RLS Policies for organizations
 CREATE POLICY "Anyone can view organizations" ON organizations FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can create organizations" ON organizations FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-CREATE POLICY "Organization owners can update" ON organizations FOR UPDATE USING (true); -- Add organization owners later
-CREATE POLICY "Organization owners can delete" ON organizations FOR DELETE USING (true);
+
+CREATE OR REPLACE FUNCTION public.is_org_manager(org_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM organization_members om
+    WHERE om.organization_id = org_id
+      AND om.user_id = auth.uid()
+      AND om.role IN ('owner', 'coordinator')
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.guard_organization_verified_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.verified IS DISTINCT FROM OLD.verified AND NOT public.is_platform_admin() THEN
+    RAISE EXCEPTION 'Only platform admins can change organization verification status';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER guard_organization_verified_change
+  BEFORE UPDATE ON organizations
+  FOR EACH ROW
+  EXECUTE FUNCTION guard_organization_verified_change();
+
+CREATE POLICY "Platform admins can update organizations" ON organizations FOR UPDATE
+  TO authenticated
+  USING (public.is_platform_admin())
+  WITH CHECK (public.is_platform_admin());
+
+CREATE POLICY "Org managers can update organization details" ON organizations FOR UPDATE
+  TO authenticated
+  USING (public.is_org_manager(id))
+  WITH CHECK (public.is_org_manager(id));
+
+CREATE POLICY "Org owners can delete organizations" ON organizations FOR DELETE
+  TO authenticated
+  USING (
+    public.is_platform_admin()
+    OR EXISTS (
+      SELECT 1 FROM organization_members om
+      WHERE om.organization_id = organizations.id
+        AND om.user_id = auth.uid()
+        AND om.role = 'owner'
+    )
+  );
 
 -- RLS Policies for opportunities
 CREATE POLICY "Anyone can view opportunities" ON opportunities FOR SELECT USING (true);
@@ -169,3 +224,82 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Skill competency verification
+CREATE TABLE IF NOT EXISTS skill_competency_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  skill_key TEXT NOT NULL,
+  score_percent INTEGER NOT NULL CHECK (score_percent >= 0 AND score_percent <= 100),
+  passed BOOLEAN NOT NULL DEFAULT false,
+  passed_at TIMESTAMPTZ,
+  attempt_count INTEGER NOT NULL DEFAULT 1,
+  best_score INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, skill_key)
+);
+
+CREATE TABLE IF NOT EXISTS skill_competency_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  skill_key TEXT NOT NULL,
+  score_percent INTEGER NOT NULL,
+  passed BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS skill_competency_results_user_idx ON skill_competency_results(user_id);
+
+ALTER TABLE skill_competency_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE skill_competency_attempts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users read own competency results" ON skill_competency_results
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Public read passed competency results" ON skill_competency_results
+  FOR SELECT USING (passed = true);
+CREATE POLICY "Users insert own competency results" ON skill_competency_results
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users update own competency results" ON skill_competency_results
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users read own competency attempts" ON skill_competency_attempts
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users insert own competency attempts" ON skill_competency_attempts
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Silent product analytics (surfaced via analytics dashboards only)
+CREATE TABLE IF NOT EXISTS app_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  event_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  path TEXT,
+  resource_type TEXT,
+  resource_id UUID,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS app_events_user_created_idx ON app_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS app_events_org_created_idx ON app_events(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS app_events_name_created_idx ON app_events(event_name, created_at DESC);
+
+ALTER TABLE app_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users insert app events" ON app_events
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id IS NULL OR user_id = auth.uid());
+
+CREATE POLICY "Anon insert public passport views" ON app_events
+  FOR INSERT TO anon
+  WITH CHECK (event_name = 'public_passport.view');
+
+CREATE POLICY "Users read own app events" ON app_events
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR public.is_platform_admin());
+
+CREATE POLICY "Org managers read org app events" ON app_events
+  FOR SELECT TO authenticated
+  USING (organization_id IS NOT NULL AND public.is_org_manager(organization_id));

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -27,15 +28,46 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const protectedPaths = ['/dashboard', '/profile', '/applications', '/matches']
-  const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  )
+  const pathname = request.nextUrl.pathname
+  const protectedPaths = [
+    '/dashboard',
+    '/profile',
+    '/applications',
+    '/matches',
+    '/passport',
+    '/onboarding',
+    '/community',
+    '/groups',
+    '/messages',
+    '/transfers',
+    '/skills',
+    '/admin',
+  ]
+  const isOrgManagePath = /^\/organizations\/[^/]+\/manage/.test(pathname)
+  const isProtectedPath =
+    protectedPaths.some((path) => pathname.startsWith(path)) || isOrgManagePath
 
   if (isProtectedPath && !user) {
     const loginUrl = new URL('/auth/login', request.url)
-    loginUrl.searchParams.set('next', request.nextUrl.pathname)
+    loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
+  }
+
+  if (user && isProtectedPath) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('terms_accepted_at, terms_version')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const termsOk =
+      profile?.terms_accepted_at && profile.terms_version === CURRENT_TERMS_VERSION
+
+    if (!termsOk) {
+      const termsUrl = new URL('/auth/accept-terms', request.url)
+      termsUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(termsUrl)
+    }
   }
 
   return supabaseResponse
@@ -47,6 +79,15 @@ export const config = {
     '/profile/:path*',
     '/applications/:path*',
     '/matches/:path*',
+    '/passport/:path*',
+    '/onboarding/:path*',
+    '/community/:path*',
+    '/groups/:path*',
+    '/messages/:path*',
+    '/transfers/:path*',
+    '/skills/:path*',
+    '/organizations/:id/manage/:path*',
+    '/admin/:path*',
     '/auth/callback',
   ],
 }

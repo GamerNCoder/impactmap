@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+}
+
+.dark {
+  --background: #030712;
+  --foreground: #f3f4f6;
+  --card: #111827;
+  --border: #1f2937;
+  --muted: #9ca3af;
 }
 
 @theme inline {
@@ -16,4 +29,255 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Broad dark-mode coverage for existing utility classes */
+.dark .bg-white {
+  background-color: var(--card);
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--background);
+}
+
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: var(--border);
+}
+
+.dark .border-gray-100 {
+  border-color: #1f2937;
+}
+
+.dark .text-gray-900 {
+  color: #f3f4f6;
+}
+
+.dark .text-gray-800 {
+  color: #e5e7eb;
+}
+
+.dark .text-gray-700 {
+  color: #d1d5db;
+}
+
+.dark .text-gray-600 {
+  color: #9ca3af;
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af;
+}
+
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1f2937;
+}
+
+.dark input:not([type='checkbox']):not([type='radio']),
+.dark textarea,
+.dark select {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280;
+}
+
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+}
+
+.dark .prose-gray {
+  color: #d1d5db;
+}
+
+/* ─── Motion system (respects prefers-reduced-motion) ─── */
+
+@keyframes motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes motion-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes motion-modal-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-modal-panel {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes motion-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.motion-fade-in {
+  animation: motion-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-fade-in-up {
+  animation: motion-fade-in-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-fade-in-scale {
+  animation: motion-fade-in-scale 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-slide-in-right {
+  animation: motion-slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-step-enter {
+  animation: motion-fade-in-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-modal-backdrop {
+  animation: motion-modal-backdrop 0.25s ease-out both;
+}
+
+.motion-modal-panel {
+  animation: motion-modal-panel 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-delay-1 { animation-delay: 60ms; }
+.motion-delay-2 { animation-delay: 120ms; }
+.motion-delay-3 { animation-delay: 180ms; }
+.motion-delay-4 { animation-delay: 240ms; }
+.motion-delay-5 { animation-delay: 300ms; }
+.motion-delay-6 { animation-delay: 360ms; }
+
+.motion-hover-lift {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease;
+}
+
+.motion-hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+.motion-pressable {
+  transition:
+    transform 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.motion-pressable:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.motion-pressable:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.motion-chip {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.motion-chip[aria-pressed='true'] {
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px -4px rgb(16 185 129 / 0.45);
+}
+
+.motion-chip:active {
+  transform: scale(0.96);
+}
+
+.motion-bar {
+  transform-origin: bottom;
+  animation: motion-bar-grow 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-shake {
+  animation: motion-shake 0.4s ease-in-out;
+}
+
+.motion-nav-dropdown {
+  animation: motion-fade-in-scale 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top left;
+}
+
+.motion-focus-ring:focus-visible {
+  outline: 2px solid rgb(16 185 129);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-fade-in,
+  .motion-fade-in-up,
+  .motion-fade-in-scale,
+  .motion-slide-in-right,
+  .motion-step-enter,
+  .motion-modal-backdrop,
+  .motion-modal-panel,
+  .motion-bar,
+  .motion-shake {
+    animation: none !important;
+  }
+
+  .motion-hover-lift:hover,
+  .motion-pressable:hover:not(:disabled),
+  .motion-pressable:active:not(:disabled),
+  .motion-chip[aria-pressed='true'],
+  .motion-chip:active {
+    transform: none;
+  }
 }

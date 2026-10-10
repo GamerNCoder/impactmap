@@ -3,7 +3,13 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { trackClientEvent } from '@/lib/track-client'
+import { APP_EVENTS } from '@/lib/app-events'
 import type { Database } from '@/types/database'
+import LocationField from '@/components/LocationField'
+import SkillPicker from '@/components/SkillPicker'
+import { filterValidSkills, MIN_SKILLS_REQUIRED } from '@/lib/skills'
+import { looksLikeCoordinates } from '@/lib/geocode'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -17,10 +23,13 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
   const [bio, setBio] = useState(profile?.bio || '')
   const [location, setLocation] = useState(profile?.location || '')
   const [phone, setPhone] = useState(profile?.phone || '')
-  const [skills, setSkills] = useState(profile?.skills?.join(', ') || '')
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(
+    filterValidSkills(profile?.skills)
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const router = useRouter()
   const supabase = createClient()
 
@@ -30,6 +39,22 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
     setError(null)
     setSuccess(false)
 
+    const errors: Record<string, string> = {}
+    if (!fullName.trim()) errors.fullName = 'Please enter your name.'
+    if (!location.trim()) errors.location = 'Please enter your location or use Locate.'
+    else if (looksLikeCoordinates(location)) {
+      errors.location = 'Enter a city and state (e.g. Austin, Texas), not GPS coordinates.'
+    }
+    if (selectedSkills.length < MIN_SKILLS_REQUIRED) {
+      errors.skills = `Please select at least ${MIN_SKILLS_REQUIRED} skill.`
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setLoading(false)
+      return
+    }
+    setFieldErrors({})
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -37,23 +62,19 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
         return
       }
 
-      const skillsArray = skills
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-
       const { error: updateError } = await supabase.from('profiles').upsert({
         id: user.id,
         email: userEmail,
-        full_name: fullName,
-        bio,
-        location,
-        phone,
-        skills: skillsArray,
+        full_name: fullName.trim(),
+        bio: bio.trim() || null,
+        location: location.trim(),
+        phone: phone.trim() || null,
+        skills: selectedSkills,
       })
 
       if (updateError) throw updateError
 
+      trackClientEvent(APP_EVENTS.PROFILE_UPDATE)
       setSuccess(true)
       router.refresh()
     } catch (err: unknown) {
@@ -88,15 +109,23 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
       </div>
 
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+          Full name <span className="text-red-500">*</span>
+        </label>
         <input
           id="fullName"
           type="text"
           required
           value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          onChange={(e) => {
+            setFullName(e.target.value)
+            if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: '' }))
+          }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
+        {fieldErrors.fullName && (
+          <p className="mt-1 text-sm text-red-600">{fieldErrors.fullName}</p>
+        )}
       </div>
 
       <div>
@@ -111,39 +140,45 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
         />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input
-            id="location"
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="City, State"
-          />
-        </div>
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
+      <div>
+        <LocationField
+          value={location}
+          onChange={(value) => {
+            setLocation(value)
+            if (fieldErrors.location) setFieldErrors((prev) => ({ ...prev, location: '' }))
+          }}
+          required
+          label="Location"
+          placeholder="City, State"
+        />
+        {fieldErrors.location && (
+          <p className="mt-1 text-sm text-red-600">{fieldErrors.location}</p>
+        )}
       </div>
 
       <div>
-        <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
         <input
-          id="skills"
-          type="text"
-          value={skills}
-          onChange={(e) => setSkills(e.target.value)}
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="Teaching, First Aid, Event Planning (comma-separated)"
+        />
+      </div>
+
+      <div>
+        <p className="text-sm font-medium text-gray-700 mb-2">
+          Skills <span className="text-red-500">*</span>
+        </p>
+        <SkillPicker
+          selected={selectedSkills}
+          onChange={(skills) => {
+            setSelectedSkills(skills)
+            if (fieldErrors.skills) setFieldErrors((prev) => ({ ...prev, skills: '' }))
+          }}
+          error={fieldErrors.skills}
+          hint="Tap every skill that applies to you."
         />
       </div>
 

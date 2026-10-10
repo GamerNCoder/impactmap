@@ -47,11 +47,19 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
         <div className="mt-6 bg-white rounded-lg shadow-sm p-8">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-3xl font-bold text-gray-900">{organization.name}</h1>
-            {organization.verified && (
-              <span className="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full shrink-0">
-                Verified
-              </span>
-            )}
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {organization.verified && (
+                <span className="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">
+                  Verified
+                </span>
+              )}
+              <Link
+                href={`/organizations/${id}/manage`}
+                className="text-sm text-indigo-600 font-medium hover:text-indigo-800"
+              >
+                Coordinator dashboard →
+              </Link>
+            </div>
           </div>
 
           {organization.description && (

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { trackClientEvent } from '@/lib/track-client'
+import { APP_EVENTS } from '@/lib/app-events'
 
 type LogHoursFormProps = {
   opportunityId: string
@@ -46,6 +48,11 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
 
       if (insertError) throw insertError
 
+      trackClientEvent(APP_EVENTS.HOURS_LOG, {
+        resourceType: 'opportunity',
+        resourceId: opportunityId,
+      })
+
       setSuccess(true)
       setHours('')
       setDescription('')
@@ -60,7 +67,8 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
   if (success) {
     return (
       <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
-        Hours logged for <strong>{opportunityTitle}</strong>.
+        Hours logged for <strong>{opportunityTitle}</strong>. Pending coordinator verification — check your{' '}
+        <a href="/passport" className="underline font-medium">Impact Passport</a> once approved.
         <button
           type="button"
           onClick={() => setSuccess(false)}

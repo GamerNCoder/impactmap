@@ -1,14 +1,236 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
+import Logo from '@/components/Logo'
+import ThemeToggle from '@/components/ThemeToggle'
+import QrScanLauncher from '@/components/QrScanLauncher'
+
+const PRIMARY_NAV = [
+  { href: '/opportunities', label: 'Events' },
+  { href: '/dashboard', label: 'Hub' },
+]
+
+const MORE_NAV = [
+  { href: '/scan', label: 'Scan QR' },
+  { href: '/verify', label: 'Verify credential' },
+  { href: '/matches', label: 'Discover' },
+  { href: '/dashboard/analytics', label: 'Analytics' },
+  { href: '/skills/verify', label: 'Verify skills' },
+  { href: '/community', label: 'Community' },
+  { href: '/messages', label: 'Messages' },
+  { href: '/passport', label: 'Passport' },
+  { href: '/opportunities/new', label: 'Host event' },
+  { href: '/solutions', label: 'For organizations' },
+]
+
+const GUEST_MORE = [
+  { href: '/scan', label: 'Scan QR' },
+  { href: '/verify', label: 'Verify credential' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/auth/login', label: 'Sign in' },
+]
+
+function NavDropdown({
+  label,
+  items,
+  active,
+}: {
+  label: string
+  items: { href: string; label: string }[]
+  active?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
+          active
+            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+        }`}
+        aria-expanded={open}
+        aria-haspopup="true"
+      >
+        {label}
+        <svg className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-48 py-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg z-50 motion-nav-dropdown">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [])
+
+  const items = [{ href: '/profile', label: 'Profile' }]
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        aria-label="Account menu"
+        aria-expanded={open}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg z-50 motion-nav-dropdown">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className={`block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                pathname.startsWith(item.href)
+                  ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onSignOut() }}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MobileMenu({
+  user,
+  onSignOut,
+  linkClass,
+}: {
+  user: { id: string } | null
+  onSignOut: () => void
+  linkClass: (href: string) => string
+}) {
+  const [open, setOpen] = useState(false)
+
+  const links = user
+    ? [...PRIMARY_NAV, ...MORE_NAV]
+    : [{ href: '/opportunities', label: 'Events' }, ...GUEST_MORE.filter((l) => l.href !== '/auth/login')]
+
+  return (
+    <div className="md:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        aria-label="Menu"
+        aria-expanded={open}
+      >
+        {open ? (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 top-14 bg-black/20 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-14 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50 px-4 py-3 space-y-1">
+            {links.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`block px-3 py-2.5 rounded-lg text-sm ${linkClass(item.href)}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {user ? (
+              <>
+                <Link href="/profile" onClick={() => setOpen(false)} className={`block px-3 py-2.5 rounded-lg text-sm ${linkClass('/profile')}`}>
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setOpen(false); onSignOut() }}
+                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-gray-600 dark:text-gray-400"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <div className="pt-2 flex gap-2">
+                <Link href="/auth/login" onClick={() => setOpen(false)} className="flex-1 text-center py-2 rounded-lg text-sm border border-gray-200 dark:border-gray-700">
+                  Sign in
+                </Link>
+                <Link href="/auth/signup" onClick={() => setOpen(false)} className="flex-1 text-center py-2 rounded-lg text-sm bg-emerald-600 text-white font-medium">
+                  Get started
+                </Link>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function Navbar() {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
   const supabase = createClient()
 
   useEffect(() => {
@@ -17,13 +239,10 @@ export default function Navbar() {
       setUser(user)
       setLoading(false)
     }
-
     getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
-
     return () => subscription.unsubscribe()
   }, [supabase])
 
@@ -33,82 +252,70 @@ export default function Navbar() {
     router.refresh()
   }
 
+  const linkClass = (href: string) => {
+    const active = pathname === href || (href !== '/' && !href.startsWith('/#') && pathname.startsWith(href))
+    return active
+      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+  }
+
+  const moreActive =
+    MORE_NAV.some((item) => pathname.startsWith(item.href)) ||
+    pathname.startsWith('/opportunities/new')
+
+  const guestMoreActive = GUEST_MORE.some(
+    (item) => !item.href.startsWith('/#') && !item.href.startsWith('/auth') && pathname.startsWith(item.href)
+  )
+
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <span className="text-2xl font-bold text-indigo-600">ImpactMap</span>
-              </div>
-            </Link>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/"
-                className="border-transparent text-gray-900 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Home
-              </Link>
-              <Link
-                href="/opportunities"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Opportunities
-              </Link>
-              <Link
-                href="/organizations"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Organizations
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center">
-            {loading ? (
-              <div className="text-sm text-gray-500">Loading...</div>
-            ) : user ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/matches"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Matches
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/profile"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  Sign out
-                </button>
+    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="flex justify-between h-14">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Logo size="sm" />
+
+            {user ? (
+              <div className="hidden md:flex items-center">
+                {PRIMARY_NAV.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-3 py-2 rounded-lg text-sm transition-colors ${linkClass(item.href)}`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <NavDropdown label="More" items={MORE_NAV} active={moreActive} />
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/auth/login"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Sign in
+              <div className="hidden md:flex items-center">
+                <Link href="/opportunities" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/opportunities')}`}>
+                  Events
                 </Link>
-                <Link
-                  href="/auth/signup"
-                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  Get started
+                <Link href="/solutions" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/solutions')}`}>
+                  Organizations
                 </Link>
+                <NavDropdown label="More" items={GUEST_MORE} active={guestMoreActive} />
               </div>
+            )}
+
+            <MobileMenu user={user} onSignOut={handleLogout} linkClass={linkClass} />
+          </div>
+
+          <div className="flex items-center gap-1">
+            <QrScanLauncher variant="icon" />
+            <ThemeToggle />
+            {loading ? (
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+            ) : user ? (
+              <AccountMenu onSignOut={handleLogout} />
+            ) : (
+              <Link
+                href="/auth/signup"
+                className="hidden sm:inline-flex text-sm font-semibold bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                Get started
+              </Link>
             )}
           </div>
         </div>
