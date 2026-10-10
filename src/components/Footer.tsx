@@ -37,7 +37,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-600">
-          © {new Date().getFullYear()} ImpactMap · Verified volunteer infrastructure for nonprofits, schools, and employers
+          © {new Date().getFullYear()} ImpactMap · Verified service hours for students, schools, and nonprofits
         </div>
       </div>
     </footer>

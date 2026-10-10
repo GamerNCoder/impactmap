@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ImpactMap - Verified Volunteer Infrastructure",
-  description: "SkillMatch, Commitment Score, and coordinator-verified Impact Passport credentials for volunteers and organizations.",
+  title: "ImpactMap - Verified Service Hours for Students",
+  description: "Find local volunteer events, get your service hours approved by the organizer, and share one verified record with your school.",
 };
 
 export default function RootLayout({

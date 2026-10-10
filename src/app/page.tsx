@@ -45,21 +45,21 @@ export default async function Home() {
             <div>
               <p className="inline-flex items-center gap-2 text-emerald-400 text-sm font-semibold tracking-wide uppercase mb-6 motion-fade-in-up">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Verified volunteer infrastructure · ✨ AI-powered
+                Service hours for students
               </p>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] motion-fade-in-up motion-delay-1">
-                Volunteer with proof.
-                <span className="block text-emerald-400 mt-2">Not just good intentions.</span>
+                Find service hours.
+                <span className="block text-emerald-400 mt-2">Get them verified.</span>
               </h1>
               <p className="mt-6 text-lg text-gray-400 max-w-lg leading-relaxed motion-fade-in-up motion-delay-2">
-                ImpactMap matches your skills to real events, tracks your reliability with a Commitment Score, and issues coordinator-verified Impact Passport credentials anyone can audit.
+                Many schools, honor societies, and scholarships ask for community service hours. ImpactMap finds volunteer events near you, has the organizer sign off on your hours, and gives you one record your counselor can check with a code instead of a paper form.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3 motion-fade-in-up motion-delay-3">
                 {user ? (
                   <>
                     <Link href="/matches" className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 px-6 py-3 rounded-xl font-semibold motion-pressable">
-                      Open SkillMatch
+                      Find events near me
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                     </Link>
                     <Link href="/dashboard" className="inline-flex items-center gap-2 border border-gray-700 hover:border-gray-500 text-white px-6 py-3 rounded-xl font-semibold motion-pressable">
@@ -132,12 +132,11 @@ export default async function Home() {
           </div>
 
           {/* Live stats */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-16 grid grid-cols-3 gap-4">
             {[
               { label: "Open events", value: eventCount ?? 0 },
               { label: "Volunteers", value: memberCount ?? 0 },
               { label: "Verified hours", value: verifiedHoursCount ?? 0 },
-              { label: "Avg. match accuracy", value: "Skill-based" },
             ].map((stat) => (
               <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
                 <p className="text-2xl font-bold text-white">{stat.value}</p>
@@ -151,47 +150,39 @@ export default async function Home() {
       {/* Product pillars */}
       <section id="how-it-works" className="py-20 px-4 bg-white dark:bg-gray-950">
         <div className="max-w-7xl mx-auto">
-          <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm uppercase tracking-wider text-center mb-3">The ImpactMap stack</p>
+          <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm uppercase tracking-wider text-center mb-3">How it works</p>
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
-            Four systems. One volunteer record.
+            Three steps. One record you can trust.
           </h2>
           <p className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-14">
-            Every other platform stops at listings. ImpactMap closes the loop — match, prove, verify, with AI that helps you every step.
+            Paper hour logs get lost and are easy to fake. ImpactMap keeps the whole trail, from sign-up to sign-off, in one place.
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 step: "01",
-                title: "SkillMatch AI",
-                tagline: "Matches + insights",
-                body: "We score every open event against your skills — then AI explains why you'll love each top match in plain language.",
+                title: "Find an event",
+                tagline: "Matched to you",
+                body: "Pick your interests once. We rank local events by fit, distance, and when you're free, and say why each one is a good match.",
                 href: "/matches",
                 color: "from-violet-500 to-indigo-500",
               },
               {
                 step: "02",
-                title: "Commitment Score",
-                tagline: "Prove you're reliable",
-                body: "A living reliability signal from verified hours, completed placements, and follow-through — visible to hosts before you arrive.",
+                title: "Log and verify hours",
+                tagline: "Signed off on site",
+                body: "Check in with the event's QR code, log your hours, and the organizer approves them. No chasing signatures.",
                 href: "/dashboard",
                 color: "from-emerald-500 to-teal-500",
               },
               {
                 step: "03",
-                title: "Impact Passport",
-                tagline: "Credentials that verify",
-                body: "Coordinators attest your hours. You get a public IMP- code employers, schools, and funders can audit instantly.",
+                title: "Share your record",
+                tagline: "Impact Passport",
+                body: "Every verified hour gets an IMP- code. Counselors, honor societies, and scholarship committees can check it in seconds.",
                 href: "/passport",
                 color: "from-amber-500 to-orange-500",
-              },
-              {
-                step: "04",
-                title: "Impact Copilot",
-                tagline: "AI guide, always on",
-                body: "Floating assistant for match advice, ID verification help, impact stories, and hosting tips — right when you need it.",
-                href: "/dashboard",
-                color: "from-pink-500 to-rose-500",
               },
             ].map((pillar) => (
               <div key={pillar.step} className="group relative bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
@@ -211,33 +202,32 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* B2B section */}
+      {/* Schools and nonprofits */}
       <section className="py-20 px-4 bg-indigo-950 text-white">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-4">For organizations</p>
+            <p className="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-4">For schools and nonprofits</p>
             <h2 className="text-3xl md:text-4xl font-bold">
-              Grant-ready volunteer verification for nonprofits, schools, and employers.
+              Less paperwork for counselors. More volunteers for local groups.
             </h2>
             <p className="mt-4 text-indigo-200 leading-relaxed">
-              Coordinators verify hours with supervisor attestation, issue IMP- credentials volunteers can share, and export CSV impact reports funders can audit — with role-based access and a full audit trail.
+              Nonprofits post events and approve hours in one dashboard. Counselors look up a student&apos;s IMP- code instead of reading handwritten logs. Free for everyone.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/solutions" className="bg-white text-indigo-900 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50">
-                See organization features
+              <Link href="/opportunities/new" className="bg-white text-indigo-900 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-50">
+                Post an event
               </Link>
-              <Link href="/pricing" className="border border-indigo-400 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-900">
-                Pricing
+              <Link href="/verify" className="border border-indigo-400 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-900">
+                Check a student&apos;s hours
               </Link>
             </div>
           </div>
           <div className="bg-indigo-900/50 border border-indigo-800 rounded-2xl p-6 space-y-4">
             {[
-              'Coordinator dashboard with hour & completion verification',
-              'Grant-ready CSV export with verification codes',
-              'Verified organization badge for institutional trust',
-              'Approval workflow for coordinator access',
-              'Security audit log for compliance reviews',
+              'Approve or reject logged hours in one click',
+              'QR check-in so hours match who actually showed up',
+              'Public verification page for every IMP- code',
+              'CSV export of verified hours for school records',
             ].map((item) => (
               <div key={item} className="flex gap-3 text-sm text-indigo-100">
                 <span className="text-emerald-400">✓</span>
@@ -251,13 +241,13 @@ export default async function Home() {
       {/* Workflow */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">How a volunteer journey works</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">Your first verified hour</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { n: 1, title: "Set your skills", desc: "60-second onboarding powers SkillMatch" },
-              { n: 2, title: "Join an event", desc: "One-click sign-up, capacity enforced" },
-              { n: 3, title: "Log & verify hours", desc: "Coordinator attests on-platform" },
-              { n: 4, title: "Share credentials", desc: "Public IMP- verification links" },
+              { n: 1, title: "Pick your interests", desc: "One-minute setup, then see matches" },
+              { n: 2, title: "Sign up for an event", desc: "One tap, and the organizer sees you're coming" },
+              { n: 3, title: "Show up and check in", desc: "Scan the QR code at the event" },
+              { n: 4, title: "Get hours approved", desc: "Organizer signs off and you get an IMP- code" },
             ].map((step, i) => (
               <div key={step.n} className="relative">
                 {i < 3 && <div className="hidden lg:block absolute top-8 left-full w-full h-px bg-emerald-300 dark:bg-emerald-800 -translate-x-1/2 z-0" />}
@@ -327,9 +317,9 @@ export default async function Home() {
       {/* CTA */}
       <section className="py-20 px-4 bg-emerald-600">
         <div className="max-w-3xl mx-auto text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Your impact deserves a record</h2>
+          <h2 className="text-3xl font-bold mb-4">Make your hours count</h2>
           <p className="text-emerald-100 text-lg mb-8">
-            Join ImpactMap free. Get matched, build your score, earn verified credentials.
+            Free for students. Find an event this weekend and have verified hours by Monday.
           </p>
           <Link href={user ? "/matches" : "/auth/signup"} className="inline-block bg-white text-emerald-700 px-8 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-colors">
             {user ? "See your matches" : "Start for free"}
