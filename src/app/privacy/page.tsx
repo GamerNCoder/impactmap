@@ -67,7 +67,6 @@ export default function PrivacyPage() {
         <h2>7. Security</h2>
         <p>
           We use encryption in transit, row-level database security, role-based access controls, and audit logging.
-          See our <Link href="/security">Security overview</Link> for details.
         </p>
 
         <h2>8. Children</h2>

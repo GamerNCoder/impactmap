@@ -78,9 +78,6 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <CommitmentBadge commitment={commitment} />
-              <Link href="/dashboard/analytics" className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-                Analytics →
-              </Link>
               <Link href="/passport" className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
                 Impact Passport →
               </Link>

@@ -18,14 +18,11 @@ export default function Footer() {
               <li><Link href="/matches" className="hover:text-emerald-400 transition-colors">SkillMatch</Link></li>
               <li><Link href="/passport" className="hover:text-emerald-400 transition-colors">Impact Passport</Link></li>
               <li><Link href="/opportunities" className="hover:text-emerald-400 transition-colors">Events</Link></li>
-              <li><Link href="/community" className="hover:text-emerald-400 transition-colors">Community</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="text-white font-semibold mb-3 text-sm">Organizations</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/solutions" className="hover:text-emerald-400 transition-colors">For Organizations</Link></li>
-              <li><Link href="/pricing" className="hover:text-emerald-400 transition-colors">Pricing</Link></li>
               <li><Link href="/organizations" className="hover:text-emerald-400 transition-colors">Directory</Link></li>
               <li><Link href="/opportunities/new" className="hover:text-emerald-400 transition-colors">Post an event</Link></li>
             </ul>
@@ -35,7 +32,6 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link></li>
               <li><Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy</Link></li>
-              <li><Link href="/security" className="hover:text-emerald-400 transition-colors">Security</Link></li>
               <li><Link href="/auth/login" className="hover:text-emerald-400 transition-colors">Sign in</Link></li>
             </ul>
           </div>

@@ -12,8 +12,6 @@ import IdVerificationBadge from '@/components/IdVerificationBadge'
 import { getVolunteerReviews } from '@/lib/volunteer-reviews'
 import AchievementBadges from '@/components/AchievementBadges'
 import { syncUserBadges } from '@/lib/badge-data'
-import SkillVerificationPanel from '@/components/SkillVerificationPanel'
-import { getUserCompetencyResults } from '@/lib/competency-data'
 
 export const metadata = {
   title: 'Profile | ImpactMap',
@@ -55,7 +53,6 @@ export default async function ProfilePage() {
   const reviews = await getVolunteerReviews(user.id)
   const avgReview = averageRating(reviews)
   const badges = await syncUserBadges(user.id)
-  const competencyResults = await getUserCompetencyResults(user.id)
 
   return (
     <div className="bg-gray-50 min-h-full">
@@ -90,12 +87,6 @@ export default async function ProfilePage() {
           <AchievementBadges badges={badges} />
         </section>
 
-        <section className="bg-white rounded-lg shadow-sm p-8">
-          <SkillVerificationPanel
-            profileSkills={(profile?.skills as string[]) ?? []}
-            results={competencyResults}
-          />
-        </section>
 
         <section className="bg-white rounded-lg shadow-sm p-8">
           <IdVerificationForm

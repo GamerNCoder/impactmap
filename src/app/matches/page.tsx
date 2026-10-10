@@ -5,7 +5,6 @@ import MatchedOpportunityCard from '@/components/MatchedOpportunityCard'
 import TrackOnce from '@/components/TrackOnce'
 import { APP_EVENTS } from '@/lib/app-events'
 import { getVolunteerMatches } from '@/lib/matching-data'
-import { getUserCompetencyResults } from '@/lib/competency-data'
 
 export const metadata = {
   title: 'Your Matches | ImpactMap',
@@ -26,9 +25,6 @@ export default async function MatchesPage() {
   }
 
   const { ranked, completeness, appliedCount } = await getVolunteerMatches(user.id)
-  const competencyResults = await getUserCompetencyResults(user.id)
-  const verifiedSet = new Set(competencyResults.filter((r) => r.passed).map((r) => r.skill_key))
-  const unverifiedSkillCount = ((profile.skills ?? []) as string[]).filter((s) => !verifiedSet.has(s)).length
   const strongMatches = ranked.filter((r) => r.match.score >= 60)
   const otherMatches = ranked.filter((r) => r.match.score < 60)
 
@@ -48,24 +44,6 @@ export default async function MatchesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {unverifiedSkillCount > 0 && (
-          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-lg p-5 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className="font-medium text-emerald-900 dark:text-emerald-100">
-                {unverifiedSkillCount} skill{unverifiedSkillCount !== 1 ? 's' : ''} not yet verified
-              </p>
-              <p className="text-sm text-emerald-800 dark:text-emerald-200 mt-1">
-                Take a quick competency test to boost your match score and show hosts you mean it.
-              </p>
-            </div>
-            <Link
-              href="/skills/verify"
-              className="shrink-0 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700"
-            >
-              Verify skills
-            </Link>
-          </div>
-        )}
 
         {completeness.percent < 100 && (
           <div className="bg-white border border-indigo-100 rounded-lg p-5 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

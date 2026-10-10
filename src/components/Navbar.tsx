@@ -17,19 +17,13 @@ const MORE_NAV = [
   { href: '/scan', label: 'Scan QR' },
   { href: '/verify', label: 'Verify credential' },
   { href: '/matches', label: 'Discover' },
-  { href: '/dashboard/analytics', label: 'Analytics' },
-  { href: '/skills/verify', label: 'Verify skills' },
-  { href: '/community', label: 'Community' },
-  { href: '/messages', label: 'Messages' },
   { href: '/passport', label: 'Passport' },
   { href: '/opportunities/new', label: 'Host event' },
-  { href: '/solutions', label: 'For organizations' },
 ]
 
 const GUEST_MORE = [
   { href: '/scan', label: 'Scan QR' },
   { href: '/verify', label: 'Verify credential' },
-  { href: '/pricing', label: 'Pricing' },
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/auth/login', label: 'Sign in' },
 ]
@@ -292,7 +286,7 @@ export default function Navbar() {
                 <Link href="/opportunities" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/opportunities')}`}>
                   Events
                 </Link>
-                <Link href="/solutions" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/solutions')}`}>
+                <Link href="/organizations" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/organizations')}`}>
                   Organizations
                 </Link>
                 <NavDropdown label="More" items={GUEST_MORE} active={guestMoreActive} />

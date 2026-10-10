@@ -11,7 +11,6 @@ import { getVolunteerReviews } from '@/lib/volunteer-reviews'
 import AchievementBadges from '@/components/AchievementBadges'
 import { syncUserBadges } from '@/lib/badge-data'
 import { getPublicPassedSkills } from '@/lib/competency-data'
-import { StartConversationButton } from '@/components/MessageComposer'
 import TrackOnce from '@/components/TrackOnce'
 import { APP_EVENTS } from '@/lib/app-events'
 
@@ -71,7 +70,6 @@ export default async function PublicVolunteerPage({ params }: PageProps) {
   const verifiedSkills = await getPublicPassedSkills(id)
   const verifiedSet = new Set(verifiedSkills)
 
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
 
   const { data: idCertificate } = profile.id_certificate_code
     ? await supabase
@@ -140,14 +138,6 @@ export default async function PublicVolunteerPage({ params }: PageProps) {
                 <div className="flex items-center gap-2 mt-3">
                   <StarRating rating={avg} />
                   <span className="text-sm text-indigo-100">{avg} · {reviews.length} reviews</span>
-                </div>
-              )}
-              {currentUser && currentUser.id !== id && (
-                <div className="mt-4">
-                  <StartConversationButton
-                    recipientId={id}
-                    recipientName={profile.full_name ?? 'Volunteer'}
-                  />
                 </div>
               )}
             </div>

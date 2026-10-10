@@ -36,11 +36,6 @@ export async function middleware(request: NextRequest) {
     '/matches',
     '/passport',
     '/onboarding',
-    '/community',
-    '/groups',
-    '/messages',
-    '/transfers',
-    '/skills',
     '/admin',
   ]
   const isOrgManagePath = /^\/organizations\/[^/]+\/manage/.test(pathname)
@@ -81,11 +76,6 @@ export const config = {
     '/matches/:path*',
     '/passport/:path*',
     '/onboarding/:path*',
-    '/community/:path*',
-    '/groups/:path*',
-    '/messages/:path*',
-    '/transfers/:path*',
-    '/skills/:path*',
     '/organizations/:id/manage/:path*',
     '/admin/:path*',
     '/auth/callback',

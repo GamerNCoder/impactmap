@@ -248,12 +248,6 @@ export default async function OrganizationManagePage({ params }: PageProps) {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link
-                href={`/organizations/${id}/analytics`}
-                className="inline-flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700"
-              >
-                View analytics
-              </Link>
               <a
                 href={`/api/org/${id}/export`}
                 className="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
