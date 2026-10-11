@@ -1,12 +1,14 @@
 -- Sample seed data for ImpactMap (run after schema.sql)
 -- Safe to re-run: uses fixed UUIDs and ON CONFLICT
+-- Demo listings for Edison, NJ (NJ-6). Organizers are fictional; locations are real public places.
 
 INSERT INTO organizations (id, name, description, website, email, location, verified) VALUES
-  ('11111111-1111-1111-1111-111111111101', 'City Food Bank', 'Fighting hunger in our community by distributing food to families in need.', 'https://example.com/foodbank', 'volunteer@cityfoodbank.org', 'Downtown', true),
-  ('11111111-1111-1111-1111-111111111102', 'Big Brothers Big Sisters', 'Mentoring youth to build confidence and reach their full potential.', 'https://example.com/bbbs', 'mentor@bbbs.org', 'Multiple Locations', true),
-  ('11111111-1111-1111-1111-111111111103', 'Green Earth Initiative', 'Environmental conservation through community cleanups and education.', 'https://example.com/greenearth', 'hello@greenearth.org', 'City Park', true),
-  ('11111111-1111-1111-1111-111111111104', 'Community Health Clinic', 'Free health services and wellness programs for underserved populations.', 'https://example.com/healthclinic', 'volunteer@healthclinic.org', 'East Side', true)
-ON CONFLICT (id) DO NOTHING;
+  ('11111111-1111-1111-1111-111111111101', 'Edison Student Food Drive', 'Students collecting and sorting food for Middlesex County families in need.', 'https://example.org/edison-food-drive', 'volunteer@example.org', 'Edison, NJ', true),
+  ('11111111-1111-1111-1111-111111111102', 'Edison Library Homework Helpers', 'High schoolers tutoring younger students after school.', 'https://example.org/homework-helpers', 'tutors@example.org', 'Edison Public Library', true),
+  ('11111111-1111-1111-1111-111111111103', 'Green Edison Youth', 'Teen-led park and trail cleanups across Edison.', 'https://example.org/green-edison', 'hello@example.org', 'Roosevelt Park', true),
+  ('11111111-1111-1111-1111-111111111104', 'Edison Senior Tech Buddies', 'Teens helping seniors use phones, email and video calls.', 'https://example.org/tech-buddies', 'buddies@example.org', 'Edison, NJ', true)
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description,
+  website = EXCLUDED.website, email = EXCLUDED.email, location = EXCLUDED.location;
 
 INSERT INTO opportunities (
   id, organization_id, title, description, category, skills_required,
@@ -16,81 +18,84 @@ INSERT INTO opportunities (
   (
     '22222222-2222-2222-2222-222222222201',
     '11111111-1111-1111-1111-111111111101',
-    'Community Food Bank Volunteer',
-    'Help sort, pack, and distribute food donations to families in our community. No experience needed — just a willingness to help and a friendly attitude.',
+    'Saturday Food Sort',
+    'Sort and pack donated food into family boxes for local pantries. No experience needed.',
     'Food Security',
-    ARRAY['Teamwork', 'Physical stamina'],
-    '123 Main St, Downtown',
+    ARRAY['Teamwork'],
+    'Papaianni Park pavilion, Edison, NJ',
     false,
-    '4 hours/week',
+    '3 hours, Saturdays',
     CURRENT_DATE + INTERVAL '7 days',
     CURRENT_DATE + INTERVAL '60 days',
     20, 5, 'open',
-    'Must be 16+. Comfortable standing for extended periods.',
-    'Community service hours, team meals, impact certificate.'
+    'Ages 13+. Closed-toe shoes.',
+    'Verified service hours, certificate.'
   ),
   (
     '22222222-2222-2222-2222-222222222202',
     '11111111-1111-1111-1111-111111111102',
-    'Youth Mentorship Program',
-    'Be a positive role model for a young person. Meet weekly for activities, homework help, and meaningful conversations.',
+    'After-School Homework Help',
+    'Help elementary and middle schoolers with reading and math homework.',
     'Education',
-    ARRAY['Communication', 'Patience', 'Reliability'],
-    'Multiple Locations',
-    true,
+    ARRAY['Patience', 'Communication'],
+    'Edison Public Library (Main Branch), Plainfield Ave, Edison, NJ',
+    false,
     '2 hours/week',
     CURRENT_DATE + INTERVAL '14 days',
     CURRENT_DATE + INTERVAL '45 days',
     15, 3, 'open',
-    'Background check required. 6-month minimum commitment.',
-    'Training provided, networking events, reference letters.'
+    'Ages 14+. Weekly commitment for at least one month.',
+    'Verified service hours, recommendation letter after 20 hours.'
   ),
   (
     '22222222-2222-2222-2222-222222222203',
     '11111111-1111-1111-1111-111111111103',
-    'Environmental Cleanup Day',
-    'Join us for a park cleanup event. Help remove litter, plant native species, and restore natural habitats.',
+    'Roosevelt Park Fall Cleanup',
+    'Pick up litter around the lake and trails and clear leaves from paths.',
     'Environment',
     ARRAY['Outdoor work'],
-    'City Park, North Entrance',
+    'Roosevelt Park, Edison, NJ',
+    false,
+    'One-time, 3 hours',
+    CURRENT_DATE + INTERVAL '10 days',
+    CURRENT_DATE + INTERVAL '9 days',
+    40, 12, 'open',
+    'Ages 13+. Gloves and bags provided.',
+    'Verified service hours, group photo.'
+  ),
+  (
+    '22222222-2222-2222-2222-222222222204',
+    '11111111-1111-1111-1111-111111111103',
+    'Dismal Swamp Trail Restoration',
+    'Remove invasive plants and help maintain boardwalk trails in the conservation area.',
+    'Environment',
+    ARRAY['Outdoor work', 'Physical stamina'],
+    'Dismal Swamp Conservation Area, New Durham Rd, Edison, NJ',
     false,
     'One-time, 4 hours',
     CURRENT_DATE + INTERVAL '21 days',
     CURRENT_DATE + INTERVAL '20 days',
-    50, 12, 'open',
-    'Wear closed-toe shoes. Gloves and supplies provided.',
-    'Free lunch, volunteer t-shirt, group photo.'
-  ),
-  (
-    '22222222-2222-2222-2222-222222222204',
-    '11111111-1111-1111-1111-111111111104',
-    'Health Clinic Front Desk Assistant',
-    'Greet patients, manage appointment check-ins, and help maintain a welcoming clinic environment.',
-    'Health',
-    ARRAY['Customer service', 'Organization'],
-    '456 Health Ave, East Side',
-    false,
-    '6 hours/week',
-    CURRENT_DATE + INTERVAL '10 days',
-    CURRENT_DATE + INTERVAL '30 days',
-    8, 2, 'open',
-    'Must be 18+. HIPAA training provided on-site.',
-    'Healthcare exposure, flexible scheduling, training certificate.'
+    25, 6, 'open',
+    'Ages 14+. Long pants and boots recommended.',
+    'Verified service hours, intro to local ecology.'
   ),
   (
     '22222222-2222-2222-2222-222222222205',
-    '11111111-1111-1111-1111-111111111101',
-    'Virtual Fundraising Coordinator',
-    'Help plan and run online fundraising campaigns from home. Great for marketing and social media enthusiasts.',
+    '11111111-1111-1111-1111-111111111104',
+    'Virtual Tech Help for Seniors',
+    'Walk seniors through video calls, email and phone settings over a scheduled video chat.',
     'Community',
-    ARRAY['Social media', 'Writing', 'Organization'],
+    ARRAY['Patience', 'Tech basics'],
     NULL,
     true,
-    '3 hours/week',
+    '1 hour/week',
     CURRENT_DATE,
     CURRENT_DATE + INTERVAL '90 days',
-    5, 1, 'open',
-    'Reliable internet connection. Experience with social platforms preferred.',
-    'Remote work experience, portfolio projects, nonprofit references.'
+    10, 2, 'open',
+    'Ages 13+. Reliable internet connection.',
+    'Verified service hours, remote volunteering experience.'
   )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET organization_id = EXCLUDED.organization_id, title = EXCLUDED.title,
+  description = EXCLUDED.description, category = EXCLUDED.category, skills_required = EXCLUDED.skills_required,
+  location = EXCLUDED.location, remote = EXCLUDED.remote, time_commitment = EXCLUDED.time_commitment,
+  requirements = EXCLUDED.requirements, benefits = EXCLUDED.benefits;
