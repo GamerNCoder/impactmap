@@ -1,28 +1,26 @@
-# ImpactMap — Congressional App Challenge handoff (2026-10-09)
+# ImpactMap — Congressional App Challenge handoff (2026-10-11)
 
-**Goal:** Submit ImpactMap to the Congressional App Challenge. A website is allowed. The deadline is **Oct 26, 2026** (check your district's page). You must disclose AI use in the entry. Target: app working within 48 hours.
+**Goal:** Submit ImpactMap to the Congressional App Challenge. A website is allowed. The deadline is **Oct 26, 2026** (check your district's page). You must disclose AI use in the entry.
 
 **Pitch:** Students find local volunteer events, check in by QR code, the organizer approves their hours, and the student shares an IMP- code their counselor can verify.
 
-## State
-- Repo `~/Projects/impactmap`, branch `cac/core-loop`, 3 commits:
-  1. Snapshot of the uncommitted app work. Automation factory files (`notes/ scripts/ profiles/ repos/ tests/`) are in `.gitignore` and still on disk.
-  2. Cut pricing, solutions, security, transfers, messages, groups, community, skill tests, analytics pages, `api/v1` and the AI Copilot.
-  3. Rewrote the landing page, layout metadata and footer for student service hours.
-- `npx tsc --noEmit` and `eslint` are clean. The dev server runs with `npm run dev` on :3000.
-- The automation factory is **not** being used: its config points at Automation Hub tests.
+## State: the core loop works end to end (locally)
+- Branch `cac/core-loop`, pushed to GitHub.
+- The database runs locally with `supabase start` (Docker). The schema is `supabase/migrations/20261011000000_schema.sql`, rebuilt from the app's queries. Row-level security means students can't verify their own hours, and nobody can take over an org they didn't create.
+- Tests (both passing):
+  - `npm run test:db`: 22 database and security checks.
+  - `npm run test:ui`: a phone-size browser walkthrough. Two accounts sign up → the coordinator posts an event → the student joins → the student logs hours → the coordinator approves → the passport shows the code → a signed-out counselor verifies it.
+- The ID-document upload is gone (a privacy concern for minors). Signup no longer asks for a phone number and requires age 13+.
+- The old cloud env is saved in `.env.dead-cloud.bak`. Its project no longer exists.
 
-## Blocker
-The Supabase project `pgvasfubdwkgugoqqfjf` no longer exists (NXDOMAIN), so every database query fails. The user needs to:
-1. Create a new Supabase project.
-2. Put its URL and anon key in `.env.local`.
-3. Run `supabase/schema.sql`, then `supabase/seed.sql`, in the SQL Editor.
+## Run locally
+`supabase start && npm run dev` → http://localhost:3000
 
-Also needed: the user's city or district, to rewrite the seed with local events. (The current seed uses generic example.com orgs.)
+## Deploy (needs the user's accounts)
+1. `supabase login` and `npx vercel login` (both free).
+2. `./deploy.sh` creates the hosted Supabase project, pushes the schema and seed, sets the Vercel env and deploys. It also turns off email confirmation, because free-tier email allows only a few messages per hour.
 
-## Next steps
-1. Once the database is up, test the full loop in the browser: sign up → onboarding → join event → QR check-in → log hours → org approves → `/passport` → `/verify/[code]`.
-2. Decide whether to keep ID upload on `/profile` (IdVerificationForm). Collecting ID documents from minors is a privacy concern, so cutting it is probably best.
-3. Keep at most one AI feature, the SkillMatch insight. Check which provider `src/lib/ai.ts` uses.
-4. Mobile and accessibility pass.
-5. Deploy on Vercel (a workflow exists in `.github/`). Then the demo video and the AI-use disclosure.
+## Remaining
+1. Deploy (above), then run `BASE_URL=<live url> npm run test:ui`.
+2. Replace the generic example events in the seed with local ones (needs the user's city or district).
+3. Demo video (judged), plus the AI-use disclosure in the entry form.
