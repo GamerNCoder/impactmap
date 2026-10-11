@@ -14,11 +14,19 @@ import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
 
+function ageOn(dateOfBirth: string): number {
+  const dob = new Date(`${dateOfBirth}T00:00:00`)
+  const now = new Date()
+  let age = now.getFullYear() - dob.getFullYear()
+  const m = now.getMonth() - dob.getMonth()
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--
+  return age
+}
+
 export default function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [phone, setPhone] = useState('')
   const [location, setLocation] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [bio, setBio] = useState('')
@@ -39,16 +47,14 @@ export default function SignupPage() {
     if (!fullName.trim()) errors.fullName = 'Please enter your full name.'
     if (!email.trim()) errors.email = 'Please enter your email.'
     if (!password || password.length < 6) errors.password = 'Password must be at least 6 characters.'
-    if (!phone.trim()) errors.phone = 'Please enter your phone number.'
     if (!location.trim()) errors.location = 'Please enter your area or use Locate.'
     else if (looksLikeCoordinates(location)) {
       errors.location = 'Enter a city and state (e.g. Austin, Texas), not GPS coordinates.'
     }
     if (!dateOfBirth) errors.dateOfBirth = 'Please enter your date of birth.'
-    if (!bio.trim() || bio.trim().length < 10) {
-      errors.bio = 'Please write a short intro (at least 10 characters).'
+    else if (ageOn(dateOfBirth) < 13) {
+      errors.dateOfBirth = 'You must be at least 13 to create an account.'
     }
-    if (!referralSource) errors.referralSource = 'Please tell us how you heard about ImpactMap.'
     if (availability.length === 0) errors.availability = 'Please select when you can volunteer.'
     if (categories.length === 0) errors.categories = 'Please select at least one cause you care about.'
     if (!termsAccepted) errors.terms = 'You must agree to the Terms & Conditions.'
@@ -62,13 +68,12 @@ export default function SignupPage() {
       id: userId,
       email: userEmail,
       full_name: fullName.trim(),
-      phone: phone.trim(),
       location: location.trim(),
-      bio: bio.trim(),
+      bio: bio.trim() || null,
       date_of_birth: dateOfBirth,
       volunteer_availability: availability,
       preferred_categories: categories,
-      referral_source: referralSource,
+      referral_source: referralSource || null,
       marketing_consent: marketingConsent,
       terms_accepted_at: now,
       terms_version: CURRENT_TERMS_VERSION,
@@ -90,13 +95,12 @@ export default function SignupPage() {
         options: {
           data: {
             full_name: fullName.trim(),
-            phone: phone.trim(),
-            location: location.trim(),
-            bio: bio.trim(),
+                  location: location.trim(),
+            bio: bio.trim() || null,
             date_of_birth: dateOfBirth,
             volunteer_availability: availability,
             preferred_categories: categories,
-            referral_source: referralSource,
+            referral_source: referralSource || null,
             marketing_consent: marketingConsent,
             terms_version: CURRENT_TERMS_VERSION,
           },
@@ -202,22 +206,6 @@ export default function SignupPage() {
               About you
             </h2>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Phone <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={inputClass}
-                placeholder="(555) 123-4567"
-              />
-              {fieldErrors.phone && <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>}
-            </div>
-            <div>
               <LocationField
                 value={location}
                 onChange={setLocation}
@@ -243,12 +231,10 @@ export default function SignupPage() {
             </div>
             <div>
               <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Short intro <span className="text-red-500">*</span>
+                Short intro <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
                 id="bio"
-                required
-                minLength={10}
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -287,11 +273,10 @@ export default function SignupPage() {
             </div>
             <div>
               <label htmlFor="referral" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                How did you hear about us? <span className="text-red-500">*</span>
+                How did you hear about us? <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <select
                 id="referral"
-                required
                 value={referralSource}
                 onChange={(e) => setReferralSource(e.target.value)}
                 className={inputClass}

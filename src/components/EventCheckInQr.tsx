@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
 import QrCodeImage from '@/components/QrCodeImage'
 import { opportunityQrUrl } from '@/lib/qr-links'
+import { useOrigin } from '@/lib/use-origin'
 
 type EventCheckInQrProps = {
   opportunityId: string
@@ -10,13 +10,10 @@ type EventCheckInQrProps = {
 }
 
 export default function EventCheckInQr({ opportunityId, title }: EventCheckInQrProps) {
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  const url = useMemo(
-    () => (origin ? opportunityQrUrl(origin, opportunityId) : ''),
-    [origin, opportunityId]
-  )
+  const origin = useOrigin()
 
   if (!origin) return null
+  const url = opportunityQrUrl(origin, opportunityId)
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-4">

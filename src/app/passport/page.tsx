@@ -11,8 +11,6 @@ import {
 import { getUserCommitmentScore } from '@/lib/commitment-data'
 import SharePassportButton from '@/components/SharePassportButton'
 import PassportQrCard from '@/components/PassportQrCard'
-import IdVerificationBadge from '@/components/IdVerificationBadge'
-import IdVerificationCertificate from '@/components/IdVerificationCertificate'
 import VolunteerReviewsList from '@/components/VolunteerReviewsList'
 import StarRating, { averageRating } from '@/components/StarRating'
 import { getVolunteerReviews } from '@/lib/volunteer-reviews'
@@ -37,7 +35,7 @@ export default async function PassportPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, email, id_verification_status, id_certificate_code, skills')
+    .select('full_name, email, skills')
     .eq('id', user.id)
     .single()
 
@@ -79,13 +77,6 @@ export default async function PassportPage() {
   const avgReview = averageRating(reviews)
   const badges = await syncUserBadges(user.id)
 
-  const { data: idCertificate } = profile?.id_certificate_code
-    ? await supabase
-        .from('id_verification_submissions')
-        .select('legal_first_name, legal_last_name, reviewed_at, certificate_code')
-        .eq('certificate_code', profile.id_certificate_code)
-        .maybeSingle()
-    : { data: null }
 
   return (
     <div className="bg-gray-50 min-h-full">
@@ -105,7 +96,6 @@ export default async function PassportPage() {
             )}
             <SharePassportButton volunteerId={user.id} />
             <PassportQrCard volunteerId={user.id} volunteerName={profile?.full_name ?? undefined} />
-            <IdVerificationBadge status={profile?.id_verification_status} size="sm" />
           </div>
         </div>
       </div>
@@ -155,20 +145,6 @@ export default async function PassportPage() {
           </div>
         )}
 
-        {profile?.id_certificate_code && (
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Identity verification certificate</h2>
-            <IdVerificationCertificate
-              certificateCode={profile.id_certificate_code}
-              legalName={
-                idCertificate
-                  ? `${idCertificate.legal_first_name} ${idCertificate.legal_last_name}`
-                  : profile.full_name ?? undefined
-              }
-              verifiedAt={idCertificate?.reviewed_at}
-            />
-          </section>
-        )}
 
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Coordinator reviews</h2>

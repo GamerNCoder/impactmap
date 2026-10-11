@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import IdVerificationBadge from '@/components/IdVerificationBadge'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import LogHoursForm from '@/components/LogHoursForm'
@@ -27,7 +26,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, skills, id_verification_status')
+    .select('full_name, skills')
     .eq('id', user.id)
     .single()
 
@@ -104,33 +103,6 @@ export default async function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* ID verification prompt */}
-        {profile?.id_verification_status !== 'verified' && (
-          <section className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900 p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Identity verification</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {profile?.id_verification_status === 'pending'
-                    ? 'Your ID is being reviewed. Hosts will see a verified badge once approved.'
-                    : profile?.id_verification_status === 'rejected'
-                      ? 'Your last ID submission was declined. Please upload a new document.'
-                      : 'Submit your government ID, a live selfie, and a written statement to earn a verified certificate.'}
-                </p>
-              </div>
-              <IdVerificationBadge status={profile?.id_verification_status} size="sm" />
-            </div>
-            {profile?.id_verification_status !== 'pending' && (
-              <Link
-                href="/profile"
-                className="inline-block mt-4 text-sm font-semibold text-emerald-600 hover:underline"
-              >
-                Complete ID verification →
-              </Link>
-            )}
-          </section>
-        )}
-
         {/* Next actions */}
         <section className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white">
           <h2 className="font-bold text-lg mb-4">What to do next</h2>

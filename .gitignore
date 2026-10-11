@@ -53,3 +53,6 @@ automation.config.json
 install.sh
 /tests/
 __pycache__/
+
+# test output
+/test-results

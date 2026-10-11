@@ -17,10 +17,13 @@ export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number]
 
 export function formatDate(date: string | null | undefined): string {
   if (!date) return 'Flexible'
-  return new Date(date).toLocaleDateString('en-US', {
+  // Date-only values (YYYY-MM-DD) are calendar days: format them in UTC so they don't shift a day west of UTC.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(date)
+  return new Date(dateOnly ? `${date}T00:00:00Z` : date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    ...(dateOnly ? { timeZone: 'UTC' } : {}),
   })
 }
 

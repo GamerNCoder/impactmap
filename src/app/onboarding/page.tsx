@@ -17,26 +17,13 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, location, skills, id_verification_status')
+    .select('full_name, location, skills')
     .eq('id', user.id)
     .single()
 
-  const idOk =
-    profile?.id_verification_status === 'pending' ||
-    profile?.id_verification_status === 'verified'
-
-  if (profile?.skills && profile.skills.length > 0 && idOk) {
+  if (profile?.skills && profile.skills.length > 0) {
     redirect('/dashboard')
   }
-
-  const { data: latestSubmission } = await supabase
-    .from('id_verification_submissions')
-    .select('rejection_reason')
-    .eq('user_id', user.id)
-    .eq('status', 'rejected')
-    .order('submitted_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
@@ -48,8 +35,6 @@ export default async function OnboardingPage() {
           <OnboardingWizard
             initialName={profile?.full_name ?? ''}
             initialLocation={profile?.location ?? ''}
-            initialIdStatus={profile?.id_verification_status}
-            initialRejectionReason={latestSubmission?.rejection_reason}
           />
         </div>
       </main>

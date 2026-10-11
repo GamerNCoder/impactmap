@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
-import IdVerificationCertificate from '@/components/IdVerificationCertificate'
 import StarRating, { averageRating } from '@/components/StarRating'
 import VolunteerReviewsList from '@/components/VolunteerReviewsList'
 import { formatDate } from '@/lib/constants'
@@ -34,7 +33,7 @@ export default async function PublicVolunteerPage({ params }: PageProps) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, skills, location, id_verification_status, id_certificate_code')
+    .select('full_name, skills, location')
     .eq('id', id)
     .maybeSingle()
 
@@ -71,13 +70,6 @@ export default async function PublicVolunteerPage({ params }: PageProps) {
   const verifiedSet = new Set(verifiedSkills)
 
 
-  const { data: idCertificate } = profile.id_certificate_code
-    ? await supabase
-        .from('id_verification_submissions')
-        .select('legal_first_name, legal_last_name, reviewed_at')
-        .eq('certificate_code', profile.id_certificate_code)
-        .maybeSingle()
-    : { data: null }
   const avg = averageRating(reviews)
 
   const { data: volunteerOpps } = await supabase
@@ -117,20 +109,6 @@ export default async function PublicVolunteerPage({ params }: PageProps) {
             <div>
               <p className="text-indigo-200 text-sm font-medium uppercase tracking-wide">Public Impact Passport</p>
               <h1 className="text-3xl font-bold mt-2">{profile.full_name}</h1>
-              {profile.id_verification_status === 'verified' && profile.id_certificate_code && (
-                <div className="mt-3 max-w-sm">
-                  <IdVerificationCertificate
-                    certificateCode={profile.id_certificate_code}
-                    legalName={
-                      idCertificate
-                        ? `${idCertificate.legal_first_name} ${idCertificate.legal_last_name}`
-                        : profile.full_name ?? undefined
-                    }
-                    verifiedAt={idCertificate?.reviewed_at}
-                    compact
-                  />
-                </div>
-              )}
               {profile.location && (
                 <p className="text-indigo-100 mt-1">{profile.location}</p>
               )}

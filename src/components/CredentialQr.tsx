@@ -1,5 +1,6 @@
 'use client'
 
+import { useOrigin } from '@/lib/use-origin'
 import { useMemo } from 'react'
 import QrCodeImage from '@/components/QrCodeImage'
 import { verifyQrUrl } from '@/lib/qr-links'
@@ -10,7 +11,7 @@ type CredentialQrProps = {
 }
 
 export default function CredentialQr({ code, label = 'Scan to verify' }: CredentialQrProps) {
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const origin = useOrigin()
   const url = useMemo(() => (origin ? verifyQrUrl(origin, code) : ''), [origin, code])
 
   if (!origin) return null

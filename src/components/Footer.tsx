@@ -7,9 +7,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-5 gap-8">
           <div className="md:col-span-2">
-            <Logo size="sm" />
+            <Logo size="sm" onDark />
             <p className="mt-4 text-sm max-w-md leading-relaxed">
-              Verified volunteer infrastructure for individuals and organizations — SkillMatch, Commitment Score, and audit-grade Impact Passport credentials.
+              Find local volunteer events, check in by QR code, and earn coordinator-verified service hours that counselors can check in seconds.
             </p>
           </div>
           <div>

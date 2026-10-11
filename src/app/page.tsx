@@ -24,7 +24,7 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(3),
     supabase.from("opportunities").select("*", { count: "exact", head: true }).eq("status", "open"),
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("volunteer_hours").select("*", { count: "exact", head: true }).eq("verified", true),
   ]);
 

@@ -3,6 +3,7 @@ import Link from 'next/link'
 type LogoProps = {
   size?: 'sm' | 'md' | 'lg'
   showText?: boolean
+  onDark?: boolean
 }
 
 const sizes = {
@@ -11,7 +12,7 @@ const sizes = {
   lg: { icon: 40, text: 'text-2xl' },
 }
 
-export default function Logo({ size = 'md', showText = true }: LogoProps) {
+export default function Logo({ size = 'md', showText = true, onDark = false }: LogoProps) {
   const s = sizes[size]
 
   return (
@@ -26,8 +27,8 @@ export default function Logo({ size = 'md', showText = true }: LogoProps) {
       </span>
       {showText && (
         <span className={`font-bold tracking-tight ${s.text}`}>
-          <span className="text-gray-900 dark:text-white">Impact</span>
-          <span className="text-emerald-600 dark:text-emerald-400">Map</span>
+          <span className={onDark ? 'text-white' : 'text-gray-900 dark:text-white'}>Impact</span>
+          <span className={onDark ? 'text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'}>Map</span>
         </span>
       )}
     </Link>
