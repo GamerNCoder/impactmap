@@ -16,6 +16,13 @@
 ## Run locally
 `supabase start && npm run dev` → http://localhost:3000
 
+## NEXT ACTION (as of 2026-10-11): deploy is blocked on logins
+- Checked 2026-10-11: `supabase projects list` fails (not logged in), and the Vercel token is invalid.
+- Ask the user to type `! supabase login` and `! npx vercel login` in the prompt, then run `./deploy.sh` (verify both logins first).
+- After deploy: `BASE_URL=<live url> npm run test:ui`, give the user the URL, and commit/push any changes.
+- Docker is only for the local DB (`supabase start`). The live site doesn't need it, and Docker can be quit after deploy.
+- A Stop hook in `.claude/settings.local.json` runs `~/bin/git-checkpoint`, which snapshots the files to `refs/checkpoints/auto` after every turn.
+
 ## Deploy (needs the user's accounts)
 1. `supabase login` and `npx vercel login` (both free).
 2. `./deploy.sh` creates the hosted Supabase project, pushes the schema and seed, sets the Vercel env and deploys. It also turns off email confirmation, because free-tier email allows only a few messages per hour.
