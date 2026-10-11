@@ -16,18 +16,16 @@
 ## Run locally
 `supabase start && npm run dev` → http://localhost:3000
 
-## NEXT ACTION (as of 2026-10-11): deploy is blocked on logins
-- Re-checked 2026-10-11: Supabase and Vercel are now both logged in. The only blocker is that auto mode blocks `./deploy.sh` (production deploy), so the user must run it or allow it.
-- Ask the user to type `! supabase login` and `! npx vercel login` in the prompt, then run `./deploy.sh` (verify both logins first).
-- After deploy: `BASE_URL=<live url> npm run test:ui`, give the user the URL, and commit/push any changes.
-- Docker is only for the local DB (`supabase start`). The live site doesn't need it, and Docker can be quit after deploy.
-- A Stop hook in `.claude/settings.local.json` runs `~/bin/git-checkpoint`, which snapshots the files to `refs/checkpoints/auto` after every turn.
+## LIVE (2026-10-11): https://impactmap.vercel.app
+- Supabase project `impactmap-cac` (ref zolvpddzpimegnkimszh); state in `.env.deploy.local` (gitignored). The old paused `impactmap` project still exists and is unused.
+- `BASE_URL=https://impactmap.vercel.app npm run test:ui` passed. It left test data in prod: org "Austin Park Friends <run>", event "Saturday park cleanup", and 2 example.com users. Delete these in the Supabase dashboard before judging.
+- Re-deploy: `./deploy.sh` (idempotent).
 
 ## Deploy (needs the user's accounts)
 1. `supabase login` and `npx vercel login` (both free).
 2. `./deploy.sh` creates the hosted Supabase project, pushes the schema and seed, sets the Vercel env and deploys. It also turns off email confirmation, because free-tier email allows only a few messages per hour.
 
 ## Remaining
-1. Deploy (above), then run `BASE_URL=<live url> npm run test:ui`.
+1. ~~Deploy~~ done. Clean up the prod test data (see above).
 2. ~~Local seed events~~ done: Edison, NJ (NJ-6, Rep. Frank Pallone) demo events. Organizers are fictional; locations are real public places.
 3. Demo video (judged), plus the AI-use disclosure in the entry form.
