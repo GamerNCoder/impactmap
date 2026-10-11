@@ -17,7 +17,7 @@
 `supabase start && npm run dev` → http://localhost:3000
 
 ## NEXT ACTION (as of 2026-10-11): deploy is blocked on logins
-- Checked 2026-10-11: `supabase projects list` fails (not logged in), and the Vercel token is invalid.
+- Re-checked 2026-10-11: Supabase and Vercel are now both logged in. The only blocker is that auto mode blocks `./deploy.sh` (production deploy), so the user must run it or allow it.
 - Ask the user to type `! supabase login` and `! npx vercel login` in the prompt, then run `./deploy.sh` (verify both logins first).
 - After deploy: `BASE_URL=<live url> npm run test:ui`, give the user the URL, and commit/push any changes.
 - Docker is only for the local DB (`supabase start`). The live site doesn't need it, and Docker can be quit after deploy.
@@ -29,5 +29,5 @@
 
 ## Remaining
 1. Deploy (above), then run `BASE_URL=<live url> npm run test:ui`.
-2. Replace the generic example events in the seed with local ones (needs the user's city or district).
+2. ~~Local seed events~~ done: Edison, NJ (NJ-6, Rep. Frank Pallone) demo events. Organizers are fictional; locations are real public places.
 3. Demo video (judged), plus the AI-use disclosure in the entry form.
