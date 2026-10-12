@@ -2,7 +2,6 @@ import Link from 'next/link'
 import EventLocation from '@/components/EventLocation'
 import { formatDate } from '@/lib/constants'
 import { getCategoryStyle } from '@/lib/categories'
-import MatchBadge from '@/components/MatchBadge'
 
 type EventCardProps = {
   id: string
@@ -14,7 +13,8 @@ type EventCardProps = {
   volunteersNeeded?: number | null
   volunteersCount?: number
   startDate?: string | null
-  matchScore?: number
+  verified?: boolean
+  distanceMi?: number | null
 }
 
 export default function EventCard({
@@ -27,7 +27,8 @@ export default function EventCard({
   volunteersNeeded,
   volunteersCount = 0,
   startDate,
-  matchScore,
+  verified = false,
+  distanceMi = null,
 }: EventCardProps) {
   const cat = getCategoryStyle(category)
   const capacity = volunteersNeeded ?? 0
@@ -46,8 +47,8 @@ export default function EventCard({
             <span className={`w-1.5 h-1.5 rounded-full ${cat.dot}`} />
             {category}
           </span>
-          {matchScore != null && matchScore > 0 && (
-            <MatchBadge score={matchScore} size="sm" />
+          {distanceMi != null && (
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{distanceMi < 0.1 ? 'Here' : `${distanceMi.toFixed(1)} mi`}</span>
           )}
         </div>
 
@@ -55,7 +56,14 @@ export default function EventCard({
           {title}
         </h3>
         {organizationName && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{organizationName}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            {organizationName}
+            {verified && (
+              <span className="ml-1.5 inline-flex items-center text-xs font-semibold text-emerald-700 dark:text-emerald-400" title="ImpactMap checked this organizer">
+                ✓ Verified organizer
+              </span>
+            )}
+          </p>
         )}
 
         {startDate && (

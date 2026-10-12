@@ -15,8 +15,8 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3 text-sm">Volunteers</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/matches" className="hover:text-emerald-400 transition-colors">SkillMatch</Link></li>
-              <li><Link href="/passport" className="hover:text-emerald-400 transition-colors">Impact Passport</Link></li>
+              <li><Link href="/passport" className="hover:text-emerald-400 transition-colors">My hours</Link></li>
+              <li><Link href="/verify" className="hover:text-emerald-400 transition-colors">Check a code</Link></li>
               <li><Link href="/opportunities" className="hover:text-emerald-400 transition-colors">Events</Link></li>
             </ul>
           </div>
@@ -30,6 +30,7 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3 text-sm">Legal &amp; Trust</h3>
             <ul className="space-y-2 text-sm">
+              <li><Link href="/safety" className="hover:text-emerald-400 transition-colors">Student safety</Link></li>
               <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link></li>
               <li><Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy</Link></li>
               <li><Link href="/auth/login" className="hover:text-emerald-400 transition-colors">Sign in</Link></li>

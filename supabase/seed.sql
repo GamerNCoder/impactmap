@@ -13,7 +13,7 @@ ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.desc
 INSERT INTO opportunities (
   id, organization_id, title, description, category, skills_required,
   location, remote, time_commitment, start_date, deadline,
-  volunteers_needed, volunteers_count, status, requirements, benefits
+  volunteers_needed, volunteers_count, status, requirements, benefits, latitude, longitude
 ) VALUES
   (
     '22222222-2222-2222-2222-222222222201',
@@ -29,7 +29,8 @@ INSERT INTO opportunities (
     CURRENT_DATE + INTERVAL '60 days',
     20, 5, 'open',
     'Ages 13+. Closed-toe shoes.',
-    'Verified service hours, certificate.'
+    'Verified service hours, certificate.',
+    40.5285, -74.3915
   ),
   (
     '22222222-2222-2222-2222-222222222202',
@@ -45,7 +46,8 @@ INSERT INTO opportunities (
     CURRENT_DATE + INTERVAL '45 days',
     15, 3, 'open',
     'Ages 14+. Weekly commitment for at least one month.',
-    'Verified service hours, recommendation letter after 20 hours.'
+    'Verified service hours, recommendation letter after 20 hours.',
+    40.517465, -74.408179
   ),
   (
     '22222222-2222-2222-2222-222222222203',
@@ -61,7 +63,8 @@ INSERT INTO opportunities (
     CURRENT_DATE + INTERVAL '9 days',
     40, 12, 'open',
     'Ages 13+. Gloves and bags provided.',
-    'Verified service hours, group photo.'
+    'Verified service hours, group photo.',
+    40.547088, -74.341672
   ),
   (
     '22222222-2222-2222-2222-222222222204',
@@ -77,7 +80,8 @@ INSERT INTO opportunities (
     CURRENT_DATE + INTERVAL '20 days',
     25, 6, 'open',
     'Ages 14+. Long pants and boots recommended.',
-    'Verified service hours, intro to local ecology.'
+    'Verified service hours, intro to local ecology.',
+    40.558148, -74.401524
   ),
   (
     '22222222-2222-2222-2222-222222222205',
@@ -93,9 +97,11 @@ INSERT INTO opportunities (
     CURRENT_DATE + INTERVAL '90 days',
     10, 2, 'open',
     'Ages 13+. Reliable internet connection.',
-    'Verified service hours, remote volunteering experience.'
+    'Verified service hours, remote volunteering experience.',
+    NULL, NULL
   )
 ON CONFLICT (id) DO UPDATE SET organization_id = EXCLUDED.organization_id, title = EXCLUDED.title,
   description = EXCLUDED.description, category = EXCLUDED.category, skills_required = EXCLUDED.skills_required,
   location = EXCLUDED.location, remote = EXCLUDED.remote, time_commitment = EXCLUDED.time_commitment,
-  requirements = EXCLUDED.requirements, benefits = EXCLUDED.benefits;
+  requirements = EXCLUDED.requirements, benefits = EXCLUDED.benefits,
+  latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude;

@@ -5,11 +5,7 @@ import JoinEventButton from '@/components/JoinEventButton'
 import EventCheckInQr from '@/components/EventCheckInQr'
 import TrackOnce from '@/components/TrackOnce'
 import { APP_EVENTS } from '@/lib/app-events'
-import SkillMatchPanel from '@/components/SkillMatchPanel'
-import CommitmentBadge from '@/components/CommitmentBadge'
 import { formatDate } from '@/lib/constants'
-import { computeMatch } from '@/lib/matching'
-import { getUserCommitmentScore } from '@/lib/commitment-data'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -49,7 +45,6 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let existingApplication = null
-  let skillMatch = null
   let isHost = false
   if (user) {
     isHost = opportunity.posted_by === user.id
@@ -61,47 +56,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       .eq('user_id', user.id)
       .maybeSingle()
     existingApplication = data
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('skills, location, bio')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    const { data: pastApps } = await supabase
-      .from('applications')
-      .select('opportunities(category)')
-      .eq('user_id', user.id)
-
-    const pastCategories = [
-      ...new Set(
-        (pastApps ?? [])
-          .map((a) => {
-            const opp = a.opportunities as unknown as { category: string } | null
-            return opp?.category
-          })
-          .filter(Boolean) as string[]
-      ),
-    ]
-
-    skillMatch = computeMatch(
-      {
-        skills: profile?.skills ?? null,
-        location: profile?.location ?? null,
-        bio: profile?.bio ?? null,
-      },
-      {
-        id: opportunity.id,
-        category: opportunity.category,
-        skills_required: opportunity.skills_required,
-        location: opportunity.location,
-        remote: opportunity.remote,
-      },
-      pastCategories
-    )
   }
-
-  const commitment = user ? await getUserCommitmentScore(user.id) : null
 
   const isJoined = existingApplication?.status === 'accepted' || existingApplication?.status === 'pending'
   const isFull =
@@ -146,8 +101,10 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                   className="text-indigo-600 hover:text-indigo-800 font-medium"
                 >
                   {org.name}
-                  {org.verified && ' ✓'}
                 </Link>
+              )}
+              {org?.verified && (
+                <span className="ml-2 text-xs font-semibold text-emerald-700" title="ImpactMap checked this organizer">✓ Verified organizer</span>
               )}
 
               <div className="mt-6 prose prose-gray max-w-none">
@@ -184,17 +141,6 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
           </div>
 
           <div className="space-y-6">
-            {skillMatch && !existingApplication && (
-              <SkillMatchPanel match={skillMatch} />
-            )}
-
-            {commitment && (
-              <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
-                <span className="text-sm text-gray-600">Your Commitment Score</span>
-                <CommitmentBadge commitment={commitment} size="sm" />
-              </div>
-            )}
-
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
               <dl className="space-y-3 text-sm">

@@ -13,7 +13,7 @@ async function fail(page, name, err) {
 }
 async function step(page, name, fn) { try { await fn(); log(name, '✓') } catch (e) { await fail(page, name, e) } }
 
-async function signup(label) {
+async function signup(label, dob = '2009-05-01') {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }) // phone-size
   const page = await ctx.newPage()
   page.on('pageerror', e => console.log(`  [${label} page error] ${e.message.split('\\n')[0]}`))
@@ -22,20 +22,15 @@ async function signup(label) {
     await page.fill('#fullName', `Test ${label}`)
     await page.fill('#email', `${label}-${run}@example.com`)
     await page.fill('#password', 'test-password-123')
-    await page.getByPlaceholder('City, neighborhood').fill('Austin, Texas')
-    await page.fill('#dob', '2009-05-01')
-    await page.getByRole('button', { name: 'Weekends', exact: true }).click()
-    await page.getByRole('button', { name: 'Environment', exact: true }).click()
+    await page.fill('#dob', dob)
+    if (await page.locator('#guardianName').isVisible()) {
+      await page.fill('#guardianName', 'Pat Parent')
+      await page.fill('#guardianEmail', `parent-${run}@example.com`)
+      await page.locator('#guardianConsent').check()
+    }
     await page.locator('#signup-terms').check()
     await page.locator('button[type=submit]').click()
-    await page.waitForURL(/onboarding/, { timeout: 15000 })
-  })
-  await step(page, `${label}: onboarding`, async () => {
-    await page.getByRole('button', { name: 'Continue' }).click()
-    await page.locator('form button[type=button]').filter({ hasNotText: 'Back' }).first().click()
-    await page.getByRole('button', { name: 'Continue' }).click()
-    await page.getByRole('button', { name: 'See my matches' }).click()
-    await page.waitForURL(/matches/, { timeout: 15000 })
+    await page.waitForURL(/opportunities/, { timeout: 15000 })
   })
   return page
 }
@@ -45,12 +40,12 @@ let eventUrl
 await step(coord, 'coordinator: create org + event', async () => {
   await coord.goto(`${BASE}/opportunities/new`)
   const orgName = coord.getByPlaceholder('Organization or group name')
-  if (await orgName.isVisible()) await orgName.fill(`Austin Park Friends ${run}`)
+  if (await orgName.isVisible()) await orgName.fill(`Test Org ${run}`)
   await coord.fill('#title', 'Saturday park cleanup')
   await coord.fill('#description', 'Pick up litter and plant native flowers along the creek trail.')
   await coord.selectOption('#category', 'Environment')
   await coord.fill('#startDate', '2026-10-17')
-  await coord.fill('#location', 'Zilker Park, Austin TX')
+  await coord.fill('#location', '340 Plainfield Ave, Edison, NJ')
   await coord.fill('#capacity', '10')
   await coord.fill('#timeCommitment', '3 hours')
   await coord.locator('button[type=submit]').click()
@@ -59,7 +54,14 @@ await step(coord, 'coordinator: create org + event', async () => {
 })
 await coord.screenshot({ path: `${shots}/01-event-coordinator.png`, fullPage: true })
 
-const student = await signup('student')
+const student = await signup('student', '2011-06-01') // 15: guardian consent path
+await step(student, 'student: map shows event pins', async () => {
+  await student.goto(`${BASE}/opportunities`)
+  await student.locator('.leaflet-container').waitFor({ timeout: 15000 })
+  const pins = await student.locator('path.leaflet-interactive').count()
+  if (pins < 1) throw new Error(`expected map pins, got ${pins}`)
+})
+await student.screenshot({ path: `${shots}/00-map.png`, fullPage: true })
 await step(student, 'student: join via check-in link', async () => {
   await student.goto(eventUrl)
   await student.getByRole('button', { name: /join/i }).first().click()
@@ -84,12 +86,7 @@ await step(coord, 'coordinator: approve hours', async () => {
     await coord.goto(`${BASE}${org}/manage`)
   }
   await coord.screenshot({ path: `${shots}/03-manage.png`, fullPage: true })
-  const form = coord.locator('form').filter({ hasText: 'Verify & issue Impact Passport credential' }).first()
-  const inputs = form.locator('input')
-  await inputs.nth(0).fill('Ms. Rivera')
-  await inputs.nth(1).fill('Volunteer Coordinator')
-  await form.locator('input[type=email]').fill('rivera@example.org')
-  await form.locator('button[type=submit]').click()
+  await coord.getByRole('button', { name: /^Approve 3h$/ }).first().click()
   const el = coord.getByText(/IMP-[A-F0-9]{8,}/).first()
   await el.waitFor({ timeout: 10000 })
   code = (await el.innerText()).match(/IMP-[A-F0-9]+/)[0]
@@ -100,6 +97,14 @@ await step(student, 'student: passport shows code', async () => {
   await student.goto(`${BASE}/passport`)
   await student.getByText(code).first().waitFor({ timeout: 10000 })
 })
+await step(student, 'student: sets goal and opens counselor report', async () => {
+  await student.getByRole('button', { name: '40h' }).click()
+  await student.getByText('3.0 of 40 hours').first().waitFor({ timeout: 10000 })
+  await student.goto(`${BASE}/passport/report`)
+  await student.getByText(code).first().waitFor({ timeout: 10000 })
+  await student.locator(`img[alt="QR code to verify ${code}"]`).waitFor({ timeout: 5000 })
+})
+await student.screenshot({ path: `${shots}/06-report.png`, fullPage: true })
 await student.screenshot({ path: `${shots}/04-passport.png`, fullPage: true })
 
 const anonCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } })

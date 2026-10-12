@@ -119,6 +119,8 @@ export type Database = {
           end_date: string | null
           id: string
           image_url: string | null
+          latitude: number | null
+          longitude: number | null
           location: string | null
           organization_id: string | null
           posted_by: string | null
@@ -142,6 +144,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           location?: string | null
           organization_id?: string | null
           posted_by?: string | null
@@ -165,6 +169,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           location?: string | null
           organization_id?: string | null
           posted_by?: string | null
@@ -262,6 +268,10 @@ export type Database = {
           bio: string | null
           created_at: string | null
           date_of_birth: string | null
+          hours_goal: number | null
+          guardian_name: string | null
+          guardian_email: string | null
+          guardian_consent_at: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -284,6 +294,10 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          hours_goal?: number | null
+          guardian_name?: string | null
+          guardian_email?: string | null
+          guardian_consent_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -306,6 +320,10 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          hours_goal?: number | null
+          guardian_name?: string | null
+          guardian_email?: string | null
+          guardian_consent_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string

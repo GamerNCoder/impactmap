@@ -5,14 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import TermsCheckbox, { setTermsPendingCookie } from '@/components/TermsCheckbox'
-import LocationField from '@/components/LocationField'
-import ChoiceChipPicker from '@/components/ChoiceChipPicker'
-import { OPPORTUNITY_CATEGORIES } from '@/lib/constants'
-import { REFERRAL_SOURCES, VOLUNTEER_AVAILABILITY } from '@/lib/signup-options'
-import { looksLikeCoordinates } from '@/lib/geocode'
 import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
+
+const GUARDIAN_AGE = 16
 
 function ageOn(dateOfBirth: string): number {
   const dob = new Date(`${dateOfBirth}T00:00:00`)
@@ -27,13 +24,10 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [location, setLocation] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
-  const [bio, setBio] = useState('')
-  const [referralSource, setReferralSource] = useState('')
-  const [availability, setAvailability] = useState<string[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [marketingConsent, setMarketingConsent] = useState(false)
+  const [guardianName, setGuardianName] = useState('')
+  const [guardianEmail, setGuardianEmail] = useState('')
+  const [guardianConsent, setGuardianConsent] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,44 +35,27 @@ export default function SignupPage() {
 
   const router = useRouter()
   const supabase = createClient()
+  const age = dateOfBirth ? ageOn(dateOfBirth) : null
+  const needsGuardian = age !== null && age >= 13 && age < GUARDIAN_AGE
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {}
-    if (!fullName.trim()) errors.fullName = 'Please enter your full name.'
+    if (!fullName.trim()) errors.fullName = 'Please enter your name.'
     if (!email.trim()) errors.email = 'Please enter your email.'
-    if (!password || password.length < 6) errors.password = 'Password must be at least 6 characters.'
-    if (!location.trim()) errors.location = 'Please enter your area or use Locate.'
-    else if (looksLikeCoordinates(location)) {
-      errors.location = 'Enter a city and state (e.g. Austin, Texas), not GPS coordinates.'
+    if (!password || password.length < 6) errors.password = 'Use at least 6 characters.'
+    if (!dateOfBirth) errors.dateOfBirth = 'Please enter your birthday.'
+    else if (age !== null && age < 13) errors.dateOfBirth = 'You must be at least 13 to use ImpactMap.'
+    if (needsGuardian) {
+      if (!guardianName.trim()) errors.guardianName = 'Please enter your parent or guardian’s name.'
+      if (!guardianEmail.trim()) errors.guardianEmail = 'Please enter their email.'
+      else if (guardianEmail.trim().toLowerCase() === email.trim().toLowerCase()) {
+        errors.guardianEmail = 'Use your parent or guardian’s own email.'
+      }
+      if (!guardianConsent) errors.guardianConsent = 'Your parent or guardian must agree.'
     }
-    if (!dateOfBirth) errors.dateOfBirth = 'Please enter your date of birth.'
-    else if (ageOn(dateOfBirth) < 13) {
-      errors.dateOfBirth = 'You must be at least 13 to create an account.'
-    }
-    if (availability.length === 0) errors.availability = 'Please select when you can volunteer.'
-    if (categories.length === 0) errors.categories = 'Please select at least one cause you care about.'
-    if (!termsAccepted) errors.terms = 'You must agree to the Terms & Conditions.'
+    if (!termsAccepted) errors.terms = 'You must agree to the Terms.'
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
-  }
-
-  const saveProfile = async (userId: string, userEmail: string) => {
-    const now = new Date().toISOString()
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: userId,
-      email: userEmail,
-      full_name: fullName.trim(),
-      location: location.trim(),
-      bio: bio.trim() || null,
-      date_of_birth: dateOfBirth,
-      volunteer_availability: availability,
-      preferred_categories: categories,
-      referral_source: referralSource || null,
-      marketing_consent: marketingConsent,
-      terms_accepted_at: now,
-      terms_version: CURRENT_TERMS_VERSION,
-    })
-    if (profileError) throw profileError
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -92,35 +69,35 @@ export default function SignupPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-                  location: location.trim(),
-            bio: bio.trim() || null,
-            date_of_birth: dateOfBirth,
-            volunteer_availability: availability,
-            preferred_categories: categories,
-            referral_source: referralSource || null,
-            marketing_consent: marketingConsent,
-            terms_version: CURRENT_TERMS_VERSION,
-          },
-        },
+        options: { data: { full_name: fullName.trim(), terms_version: CURRENT_TERMS_VERSION } },
       })
-
       if (signUpError) throw signUpError
 
-      if (data?.user) {
-        await saveProfile(data.user.id, email)
-      }
+      if (data?.session && data.user) {
+        const now = new Date().toISOString()
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            full_name: fullName.trim(),
+            date_of_birth: dateOfBirth,
+            terms_accepted_at: now,
+            terms_version: CURRENT_TERMS_VERSION,
+            ...(needsGuardian && {
+              guardian_name: guardianName.trim(),
+              guardian_email: guardianEmail.trim(),
+              guardian_consent_at: now,
+            }),
+          })
+          .eq('id', data.user.id)
+        if (profileError) throw profileError
 
-      if (data?.session) {
         trackClientEvent(APP_EVENTS.AUTH_SIGNUP)
-        router.push('/onboarding')
+        router.push('/opportunities')
         router.refresh()
         return
       }
 
-      setError('Account created. Check your email to confirm, then sign in to finish setup.')
+      setError('Account created. Check your email to confirm, then sign in.')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
@@ -129,16 +106,17 @@ export default function SignupPage() {
   }
 
   const inputClass =
-    'appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-shadow duration-200'
+    'appearance-none rounded-lg block w-full px-3 py-3 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+  const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
+  const errorText = (key: string) =>
+    fieldErrors[key] ? <p className="mt-1 text-sm text-red-600">{fieldErrors[key]}</p> : null
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto space-y-8 motion-fade-in-up">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4">
+      <div className="max-w-md mx-auto space-y-6 motion-fade-in-up">
         <div className="text-center">
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Create your account</h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Tell us about yourself so we can match you with the right volunteer events.
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Find events, log hours, and get them verified.</p>
         </div>
 
         {error && (
@@ -147,176 +125,59 @@ export default function SignupPage() {
           </div>
         )}
 
-        <form className="space-y-8" onSubmit={handleSignup}>
-          <section className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-              Account
-            </h2>
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Full name <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="fullName"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className={inputClass}
-                placeholder="Alex Johnson"
-              />
-              {fieldErrors.fullName && <p className="mt-1 text-sm text-red-600">{fieldErrors.fullName}</p>}
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-                placeholder="you@example.com"
-              />
-              {fieldErrors.email && <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>}
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-                placeholder="At least 6 characters"
-              />
-              {fieldErrors.password && <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>}
-            </div>
-          </section>
+        <form className="space-y-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6" onSubmit={handleSignup} noValidate>
+          <div>
+            <label htmlFor="fullName" className={labelClass}>Full name</label>
+            <input id="fullName" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} placeholder="Alex Johnson" />
+            {errorText('fullName')}
+          </div>
+          <div>
+            <label htmlFor="email" className={labelClass}>Email</label>
+            <input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="you@example.com" />
+            {errorText('email')}
+          </div>
+          <div>
+            <label htmlFor="password" className={labelClass}>Password</label>
+            <input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="At least 6 characters" />
+            {errorText('password')}
+          </div>
+          <div>
+            <label htmlFor="dob" className={labelClass}>Birthday</label>
+            <input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className={inputClass} />
+            <p className="mt-1 text-xs text-gray-500">Kept private. Organizers never see it.</p>
+            {errorText('dateOfBirth')}
+          </div>
 
-          <section className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-              About you
-            </h2>
-            <div>
-              <LocationField
-                value={location}
-                onChange={setLocation}
-                required
-                label="Your area"
-                placeholder="City, neighborhood"
-              />
-              {fieldErrors.location && <p className="mt-1 text-sm text-red-600">{fieldErrors.location}</p>}
-            </div>
-            <div>
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Date of birth <span className="text-red-500">*</span>
+          {needsGuardian && (
+            <fieldset className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-4 space-y-3">
+              <legend className="px-1 text-sm font-semibold text-emerald-900 dark:text-emerald-200">Parent or guardian (under {GUARDIAN_AGE})</legend>
+              <div>
+                <label htmlFor="guardianName" className={labelClass}>Their name</label>
+                <input id="guardianName" value={guardianName} onChange={(e) => setGuardianName(e.target.value)} className={inputClass} />
+                {errorText('guardianName')}
+              </div>
+              <div>
+                <label htmlFor="guardianEmail" className={labelClass}>Their email</label>
+                <input id="guardianEmail" type="email" value={guardianEmail} onChange={(e) => setGuardianEmail(e.target.value)} className={inputClass} />
+                {errorText('guardianEmail')}
+              </div>
+              <label htmlFor="guardianConsent" className="flex items-start gap-3 cursor-pointer">
+                <input id="guardianConsent" type="checkbox" checked={guardianConsent} onChange={(e) => setGuardianConsent(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">My parent or guardian knows I&apos;m joining ImpactMap and agrees.</span>
               </label>
-              <input
-                id="dob"
-                type="date"
-                required
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                className={inputClass}
-              />
-              {fieldErrors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfBirth}</p>}
-            </div>
-            <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Short intro <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <textarea
-                id="bio"
-                rows={3}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className={inputClass}
-                placeholder="Why do you want to volunteer? What are you hoping to contribute?"
-              />
-              {fieldErrors.bio && <p className="mt-1 text-sm text-red-600">{fieldErrors.bio}</p>}
-            </div>
-          </section>
+              {errorText('guardianConsent')}
+            </fieldset>
+          )}
 
-          <section className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide">
-              Volunteer preferences
-            </h2>
-            <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                When can you volunteer? <span className="text-red-500">*</span>
-              </p>
-              <ChoiceChipPicker
-                options={VOLUNTEER_AVAILABILITY}
-                selected={availability}
-                onChange={setAvailability}
-                error={fieldErrors.availability}
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Causes you care about <span className="text-red-500">*</span>
-              </p>
-              <ChoiceChipPicker
-                options={OPPORTUNITY_CATEGORIES}
-                selected={categories}
-                onChange={setCategories}
-                error={fieldErrors.categories}
-              />
-            </div>
-            <div>
-              <label htmlFor="referral" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                How did you hear about us? <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <select
-                id="referral"
-                value={referralSource}
-                onChange={(e) => setReferralSource(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Select one</option>
-                {REFERRAL_SOURCES.map((source) => (
-                  <option key={source} value={source}>
-                    {source}
-                  </option>
-                ))}
-              </select>
-              {fieldErrors.referralSource && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.referralSource}</p>
-              )}
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <TermsCheckbox
-              checked={termsAccepted}
-              onChange={(value) => {
-                setTermsAccepted(value)
-                if (fieldErrors.terms) setFieldErrors((prev) => ({ ...prev, terms: '' }))
-                if (value) setTermsPendingCookie(CURRENT_TERMS_VERSION)
-              }}
-              error={fieldErrors.terms}
-              id="signup-terms"
-            />
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={marketingConsent}
-                onChange={(e) => setMarketingConsent(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Send me occasional emails about new events and ImpactMap updates (optional).
-              </span>
-            </label>
-          </section>
+          <TermsCheckbox
+            checked={termsAccepted}
+            onChange={(value) => {
+              setTermsAccepted(value)
+              if (value) setTermsPendingCookie(CURRENT_TERMS_VERSION)
+            }}
+            error={fieldErrors.terms}
+            id="signup-terms"
+          />
 
           <button
             type="submit"
@@ -325,13 +186,14 @@ export default function SignupPage() {
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
+          <p className="text-xs text-center text-gray-500">
+            <Link href="/safety" className="underline">How we keep students safe</Link>
+          </p>
         </form>
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium text-emerald-600 hover:underline">
-            Sign in
-          </Link>
+          <Link href="/auth/login" className="font-medium text-emerald-600 hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

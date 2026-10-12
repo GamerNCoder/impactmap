@@ -14,7 +14,14 @@
 - The old cloud env is saved in `.env.dead-cloud.bak`. Its project no longer exists.
 
 ## Run locally
-`supabase start && npm run dev` → http://localhost:3000
+Docker/Supabase runs on CLEAN, not the Mac: `scripts/clean-db.sh up` (start + SSH tunnel to localhost:54321-54324), `scripts/clean-db.sh reset` (apply migrations + seed), `scripts/clean-db.sh stop`. Then `npm run dev` → http://localhost:3000.
+
+## 2026-10-12: judge-ready features + simplification
+- Map: `/opportunities` shows a Leaflet/OpenStreetMap map of events (Edison default) with "Near me" sorting by distance. New events are geocoded from their address (`/api/geocode/search`).
+- Hours goal + counselor report: goal on Home and My hours (`profiles.hours_goal`), printable `/passport/report` with a QR per verified entry.
+- Safety: under-16 signup needs guardian name, email and consent; signed-in users can no longer read other users' email, birthday or guardian info (own data via `my_profile()` RPC); CSV export no longer includes student emails; `/safety` page; "Verified organizer" badge.
+- Simplified: signup down to 4 fields; onboarding, SkillMatch, AI, commitment score, reviews, badges and "impact value" removed (29 files); nav is Events / Home / My hours / Host an event; organizer approval is one tap, signed as the logged-in organizer.
+- Tests: test:db 26 checks, test:ui adds map pins, guardian path, goal and report.
 
 ## LIVE (2026-10-11): https://impactmap.vercel.app
 - Supabase project `impactmap-cac` (ref zolvpddzpimegnkimszh); state in `.env.deploy.local` (gitignored). The old paused `impactmap` project still exists and is unused.

@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TrackPageView from '@/components/TrackPageView'
 
-const MINIMAL_ROUTES = ['/auth', '/onboarding']
+const MINIMAL_ROUTES = ['/auth', '/onboarding', '/passport/report']
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

@@ -4,16 +4,12 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import LogHoursForm from '@/components/LogHoursForm'
 import DashboardQrFocus from '@/components/DashboardQrFocus'
-import EventCard from '@/components/EventCard'
-import { formatDate, statusColor, statusLabel } from '@/lib/constants'
-import { getVolunteerMatches } from '@/lib/matching-data'
-import { getUserCommitmentScore } from '@/lib/commitment-data'
-import CommitmentBadge from '@/components/CommitmentBadge'
-import { formatImpactValue } from '@/lib/impact-passport'
+import HoursGoal from '@/components/HoursGoal'
+import { formatDate } from '@/lib/constants'
 
 export const metadata = {
-  title: 'Hub | ImpactMap',
-  description: 'Your volunteer command center.',
+  title: 'Home | ImpactMap',
+  description: 'Log hours and track your goal.',
 }
 
 export default async function DashboardPage() {
@@ -26,39 +22,32 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, skills')
+    .select('full_name, hours_goal')
     .eq('id', user.id)
     .single()
 
-  if (!profile?.skills?.length) {
-    redirect('/onboarding')
-  }
-
   const { data: applications } = await supabase
     .from('applications')
-    .select('*, opportunities(id, title, category, status)')
+    .select('id, status, opportunities(id, title, start_date)')
     .eq('user_id', user.id)
+    .in('status', ['accepted', 'completed'])
     .order('created_at', { ascending: false })
 
   const { data: hours } = await supabase
     .from('volunteer_hours')
-    .select('*, opportunities(title)')
+    .select('hours, verified')
     .eq('user_id', user.id)
-    .order('date', { ascending: false })
 
   const { data: hostedEvents } = await supabase
     .from('opportunities')
-    .select('id, title, volunteers_count, volunteers_needed, status, organization_id, start_date')
+    .select('id, title, volunteers_count, volunteers_needed, organization_id, start_date')
     .eq('posted_by', user.id)
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const acceptedApps = (applications || []).filter((a) => a.status === 'accepted' || a.status === 'completed')
-  const { ranked: topMatches } = await getVolunteerMatches(user.id, 2)
-  const bestMatches = topMatches.filter((r) => r.match.score >= 40)
-  const commitment = await getUserCommitmentScore(user.id)
-  const verifiedHours = (hours || []).filter((h) => h.verified).reduce((s, e) => s + Number(e.hours), 0)
-  const pendingHours = (hours || []).filter((h) => !h.verified).length
+  const joined = (applications ?? []).filter((a) => a.opportunities)
+  const verifiedHours = (hours ?? []).filter((h) => h.verified).reduce((s, e) => s + Number(e.hours), 0)
+  const pendingCount = (hours ?? []).filter((h) => !h.verified).length
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
 
   return (
@@ -66,60 +55,58 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <DashboardQrFocus />
       </Suspense>
-      {/* Command center header */}
-      <div className="bg-gray-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="text-emerald-400 text-sm font-semibold uppercase tracking-wider mb-2">Your hub</p>
-              <h1 className="text-3xl font-bold">Hey {firstName}</h1>
-              <p className="mt-2 text-gray-400">Here&apos;s your impact at a glance.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <CommitmentBadge commitment={commitment} />
-              <Link href="/passport" className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-                Impact Passport →
-              </Link>
-              <Link href="/scan" className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-                Scan QR
-              </Link>
-            </div>
+      <div className="bg-gradient-to-br from-emerald-700 to-teal-700 text-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+          <h1 className="text-3xl font-bold">Hey {firstName}</h1>
+          <p className="mt-4 text-4xl font-extrabold">
+            {verifiedHours.toFixed(1)}
+            <span className="text-lg font-semibold text-emerald-100 ml-2">verified hours</span>
+          </p>
+          {pendingCount > 0 && (
+            <p className="text-sm text-emerald-100 mt-1">
+              {pendingCount} log{pendingCount === 1 ? '' : 's'} waiting for organizer approval
+            </p>
+          )}
+          <div className="mt-5">
+            <HoursGoal userId={user.id} verifiedHours={verifiedHours} goal={profile?.hours_goal ?? null} />
           </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-            {[
-              { label: 'Verified hours', value: verifiedHours.toFixed(1), accent: true },
-              { label: 'Impact value', value: formatImpactValue(verifiedHours), accent: false },
-              { label: 'Active events', value: String(acceptedApps.length), accent: false },
-              { label: 'Pending verify', value: String(pendingHours), accent: false },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <p className={`text-2xl font-bold ${stat.accent ? 'text-emerald-400' : 'text-white'}`}>{stat.value}</p>
-                <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+          <Link href="/passport" className="inline-block mt-5 text-sm font-semibold underline underline-offset-4">
+            My hours &amp; counselor report →
+          </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Next actions */}
-        <section className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white">
-          <h2 className="font-bold text-lg mb-4">What to do next</h2>
-          <div className="grid sm:grid-cols-3 gap-3">
-            <Link href="/matches" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors">
-              <p className="font-semibold">Check SkillMatch</p>
-              <p className="text-sm text-emerald-100 mt-1">Find your best-fit events</p>
-            </Link>
-            <Link href="/opportunities" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors">
-              <p className="font-semibold">Browse events</p>
-              <p className="text-sm text-emerald-100 mt-1">Join with one click</p>
-            </Link>
-            <Link href="/opportunities/new" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors">
-              <p className="font-semibold">Host an event</p>
-              <p className="text-sm text-emerald-100 mt-1">Post and manage sign-ups</p>
-            </Link>
-          </div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Log hours</h2>
+          <p className="text-sm text-gray-500 mb-4">After an event, log your time. The organizer approves it.</p>
+          {joined.length > 0 ? (
+            <div className="space-y-4">
+              {joined.map((app) => {
+                const opp = app.opportunities as unknown as { id: string; title: string; start_date: string | null }
+                return (
+                  <div
+                    key={app.id}
+                    data-opportunity-id={opp.id}
+                    className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 transition-shadow"
+                  >
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-3 text-sm">
+                      <Link href={`/opportunities/${opp.id}`} className="hover:text-emerald-600">{opp.title}</Link>
+                      {opp.start_date && <span className="text-gray-500 font-normal"> · {formatDate(opp.start_date)}</span>}
+                    </h3>
+                    <LogHoursForm opportunityId={opp.id} opportunityTitle={opp.title} />
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-gray-500 text-sm">You haven&apos;t joined an event yet.</p>
+              <Link href="/opportunities" className="inline-block mt-3 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700">
+                Find an event near you
+              </Link>
+            </div>
+          )}
         </section>
 
         {hostedEvents && hostedEvents.length > 0 && (
@@ -142,7 +129,7 @@ export default async function DashboardPage() {
                   </div>
                   {event.organization_id && (
                     <Link href={`/organizations/${event.organization_id}/manage`} className="text-sm font-semibold text-emerald-600">
-                      Manage sign-ups →
+                      Approve hours →
                     </Link>
                   )}
                 </li>
@@ -150,107 +137,6 @@ export default async function DashboardPage() {
             </ul>
           </section>
         )}
-
-        {bestMatches.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Top SkillMatches</h2>
-              <Link href="/matches" className="text-sm font-semibold text-emerald-600">See all →</Link>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              {bestMatches.map((item) => {
-                const org = item.opportunity.organizations as { name: string } | null
-                return (
-                  <EventCard
-                    key={item.opportunity.id}
-                    id={item.opportunity.id}
-                    title={item.opportunity.title}
-                    category={item.opportunity.category}
-                    location={item.opportunity.location}
-                    remote={item.opportunity.remote}
-                    organizationName={org?.name}
-                    volunteersNeeded={item.opportunity.volunteers_needed}
-                    volunteersCount={item.opportunity.volunteers_count}
-                    startDate={item.opportunity.start_date}
-                    matchScore={item.match.score}
-                  />
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Your sign-ups</h2>
-            {applications && applications.length > 0 ? (
-              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                {applications.map((app) => {
-                  const opp = app.opportunities as { id: string; title: string; category: string } | null
-                  const verified = app.status === 'completed' && app.verification_code
-                  return (
-                    <li key={app.id} className="py-4 first:pt-0 flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        {opp ? (
-                          <Link href={`/opportunities/${opp.id}`} className="font-medium text-gray-900 dark:text-white hover:text-emerald-600">
-                            {opp.title}
-                          </Link>
-                        ) : (
-                          <span className="font-medium">Unknown event</span>
-                        )}
-                        {opp && <p className="text-sm text-gray-500 mt-0.5">{opp.category}</p>}
-                        {verified && (
-                          <p className="text-xs mt-2">
-                            <span className="font-mono text-emerald-600">{app.verification_code}</span>
-                            {' · '}
-                            <Link href={`/verify/${app.verification_code}`} className="text-emerald-600 hover:underline" target="_blank">
-                              Public verify →
-                            </Link>
-                          </p>
-                        )}
-                        {app.status === 'accepted' && (
-                          <p className="text-xs text-amber-600 mt-2">Awaiting coordinator completion verification</p>
-                        )}
-                      </div>
-                      <span className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColor(app.status)}`}>
-                        {statusLabel(app.status)}
-                      </span>
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <p className="text-gray-500 text-center py-8 text-sm">
-                No sign-ups yet.{' '}
-                <Link href="/matches" className="text-emerald-600 font-medium">Find a match →</Link>
-              </p>
-            )}
-          </section>
-
-          <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Log hours</h2>
-            {acceptedApps.length > 0 ? (
-              <div className="space-y-4">
-                {acceptedApps.map((app) => {
-                  const opp = app.opportunities as { id: string; title: string } | null
-                  if (!opp) return null
-                  return (
-                    <div
-                      key={app.id}
-                      data-opportunity-id={opp.id}
-                      className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 transition-shadow"
-                    >
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-3 text-sm">{opp.title}</h3>
-                      <LogHoursForm opportunityId={opp.id} opportunityTitle={opp.title} />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8 text-sm">Join an event first, then log hours here.</p>
-            )}
-          </section>
-        </div>
       </div>
     </div>
   )

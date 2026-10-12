@@ -10,79 +10,16 @@ import QrScanLauncher from '@/components/QrScanLauncher'
 
 const PRIMARY_NAV = [
   { href: '/opportunities', label: 'Events' },
-  { href: '/dashboard', label: 'Hub' },
+  { href: '/dashboard', label: 'Home' },
+  { href: '/passport', label: 'My hours' },
+  { href: '/opportunities/new', label: 'Host an event' },
 ]
 
-const MORE_NAV = [
-  { href: '/scan', label: 'Scan QR' },
-  { href: '/verify', label: 'Verify credential' },
-  { href: '/matches', label: 'Discover' },
-  { href: '/passport', label: 'Passport' },
-  { href: '/opportunities/new', label: 'Host event' },
+const GUEST_NAV = [
+  { href: '/opportunities', label: 'Events' },
+  { href: '/verify', label: 'Check a code' },
+  { href: '/safety', label: 'Safety' },
 ]
-
-const GUEST_MORE = [
-  { href: '/scan', label: 'Scan QR' },
-  { href: '/verify', label: 'Verify credential' },
-  { href: '/#how-it-works', label: 'How it works' },
-  { href: '/auth/login', label: 'Sign in' },
-]
-
-function NavDropdown({
-  label,
-  items,
-  active,
-}: {
-  label: string
-  items: { href: string; label: string }[]
-  active?: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-          active
-            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-        }`}
-        aria-expanded={open}
-        aria-haspopup="true"
-      >
-        {label}
-        <svg className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute left-0 top-full mt-1 w-48 py-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg z-50 motion-nav-dropdown">
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
   const [open, setOpen] = useState(false)
@@ -154,8 +91,8 @@ function MobileMenu({
   const [open, setOpen] = useState(false)
 
   const links = user
-    ? [...PRIMARY_NAV, ...MORE_NAV]
-    : [{ href: '/opportunities', label: 'Events' }, ...GUEST_MORE.filter((l) => l.href !== '/auth/login')]
+    ? [...PRIMARY_NAV, { href: '/verify', label: 'Check a code' }]
+    : GUEST_NAV
 
   return (
     <div className="md:hidden">
@@ -253,13 +190,6 @@ export default function Navbar() {
       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
   }
 
-  const moreActive =
-    MORE_NAV.some((item) => pathname.startsWith(item.href)) ||
-    pathname.startsWith('/opportunities/new')
-
-  const guestMoreActive = GUEST_MORE.some(
-    (item) => !item.href.startsWith('/#') && !item.href.startsWith('/auth') && pathname.startsWith(item.href)
-  )
 
   return (
     <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-800">
@@ -279,17 +209,14 @@ export default function Navbar() {
                     {item.label}
                   </Link>
                 ))}
-                <NavDropdown label="More" items={MORE_NAV} active={moreActive} />
               </div>
             ) : (
               <div className="hidden md:flex items-center">
-                <Link href="/opportunities" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/opportunities')}`}>
-                  Events
-                </Link>
-                <Link href="/organizations" className={`px-3 py-2 rounded-lg text-sm ${linkClass('/organizations')}`}>
-                  Organizations
-                </Link>
-                <NavDropdown label="More" items={GUEST_MORE} active={guestMoreActive} />
+                {GUEST_NAV.map((item) => (
+                  <Link key={item.href} href={item.href} className={`px-3 py-2 rounded-lg text-sm ${linkClass(item.href)}`}>
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             )}
 

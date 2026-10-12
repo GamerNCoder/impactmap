@@ -59,7 +59,7 @@ export async function GET(request: Request) {
   }
 
   const { data: { user } } = await supabase.auth.getUser()
-  const safeNext = next.startsWith('/') ? next : '/dashboard'
+  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
 
   if (user) {
     const termsCookie = cookieStore.get('impactmap_terms_pending')?.value
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('skills, terms_accepted_at, terms_version')
+      .select('terms_accepted_at, terms_version')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -91,14 +91,6 @@ export async function GET(request: Request) {
       const redirect = NextResponse.redirect(
         `${origin}/auth/accept-terms?next=${encodeURIComponent(safeNext)}`
       )
-      responseCookies.forEach(({ name, value, options }) => {
-        redirect.cookies.set(name, value, options)
-      })
-      return redirect
-    }
-
-    if (!profile?.skills?.length) {
-      const redirect = NextResponse.redirect(`${origin}/onboarding`)
       responseCookies.forEach(({ name, value, options }) => {
         redirect.cookies.set(name, value, options)
       })

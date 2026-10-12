@@ -158,5 +158,16 @@ const { data: adminTry } = await student.client
   .single()
 check('student cannot make self admin', adminTry?.is_platform_admin === false)
 
-console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed')
+// Minor privacy: other signed-in users (e.g. adult organizers) see names, not contact details.
+const { error: peerEmailErr } = await intruder.client.from('profiles').select('email').eq('id', student.user.id).single()
+check('signed-in users cannot read student email', Boolean(peerEmailErr))
+const { error: peerDobErr } = await intruder.client.from('profiles').select('date_of_birth').eq('id', student.user.id).single()
+check('signed-in users cannot read student birthday', Boolean(peerDobErr))
+const { data: mine } = await student.client.rpc('my_profile').single()
+check('student reads own private profile', mine?.email === `student-${run}@example.com`)
+const { data: goal } = await student.client
+  .from('profiles').update({ hours_goal: 40 }).eq('id', student.user.id).select('hours_goal').single()
+check('student sets hours goal', goal?.hours_goal === 40)
+
+console.log(failures ?`\n${failures} check(s) failed` : '\nAll checks passed')
 process.exit(failures ? 1 : 0)

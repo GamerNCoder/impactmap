@@ -110,6 +110,17 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
         throw new Error('Enter a valid number of spots')
       }
 
+      // Pin the event on the map; posting still works if the address can't be found.
+      let coords: { latitude: number; longitude: number } | null = null
+      if (!remote && location.trim()) {
+        try {
+          const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(location.trim())}`)
+          if (res.ok) coords = await res.json()
+        } catch {
+          coords = null
+        }
+      }
+
       const { data: event, error: eventError } = await supabase
         .from('opportunities')
         .insert({
@@ -125,6 +136,8 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
           volunteers_count: 0,
           time_commitment: timeCommitment.trim() || null,
           status: 'open',
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
         })
         .select('id')
         .single()
@@ -270,7 +283,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
             onChange={(e) => setLocation(e.target.value)}
             disabled={remote}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-50"
-            placeholder="Address or meeting point"
+            placeholder="Street address, e.g. 340 Plainfield Ave, Edison, NJ"
           />
         </div>
         <div>

@@ -77,7 +77,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const completionUserIds = [...new Set((verifiedCompletions ?? []).map((c) => c.user_id))]
   const allUserIds = [...new Set([...hourUserIds, ...completionUserIds])]
   const { data: profiles } = allUserIds.length
-    ? await supabase.from('profiles').select('id, full_name, email').in('id', allUserIds)
+    ? await supabase.from('profiles').select('id, full_name').in('id', allUserIds)
     : { data: [] }
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
@@ -86,7 +86,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const header = [
     'Record Type',
     'Volunteer Name',
-    'Volunteer Email',
     'Opportunity',
     'Category',
     'Date',
@@ -105,7 +104,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return [
       'Service hours',
       profile?.full_name ?? '',
-      profile?.email ?? '',
       opp?.title ?? '',
       opp?.category ?? '',
       h.date,
@@ -125,7 +123,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return [
       'Task completion',
       profile?.full_name ?? '',
-      profile?.email ?? '',
       opp?.title ?? '',
       opp?.category ?? '',
       date,

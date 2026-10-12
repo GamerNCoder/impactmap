@@ -4,17 +4,10 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import VerifyHoursForm from '@/components/VerifyHoursForm'
 import ManageVolunteerFocus from '@/components/ManageVolunteerFocus'
-import QrScanLauncher from '@/components/QrScanLauncher'
 import RequestCoordinatorAccess from '@/components/RequestCoordinatorAccess'
 import CoordinatorRequestActions from '@/components/CoordinatorRequestActions'
-import ApplicationActionButtons from '@/components/ApplicationActionButtons'
-import VerifyCompletionForm from '@/components/VerifyCompletionForm'
-import RateVolunteerForm from '@/components/RateVolunteerForm'
 import { formatDate } from '@/lib/constants'
-import { getOrgReviewLookup } from '@/lib/volunteer-reviews'
 import { canManageOrg } from '@/lib/org-access'
-import { getOrgPlanContext } from '@/lib/org-plan-data'
-import OrgPlanBadge from '@/components/OrgPlanBadge'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -97,7 +90,6 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     verified_at: string | null
   }> = []
 
-  let verifiedHours: Array<{ hours: number; verified_at: string | null }> = []
 
   if (oppIds.length > 0) {
     const { data: pending } = await supabase
@@ -116,7 +108,6 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
     pendingHours = pending ?? []
     verifiedHoursList = verified ?? []
-    verifiedHours = verified ?? []
   }
 
   const profileIds = [...new Set([
@@ -134,63 +125,34 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     : { data: [] }
   const oppMap = new Map((opps ?? []).map((o) => [o.id, o.title]))
 
-  const { data: applications } = oppIds.length
-    ? await supabase
-        .from('applications')
-        .select('id, status, user_id, opportunity_id, created_at, verification_code, completed_at')
-        .in('opportunity_id', oppIds)
-        .in('status', ['accepted', 'pending', 'completed'])
-        .order('created_at', { ascending: false })
-    : { data: [] }
-
-  const joinedApps = (applications ?? []).filter((a) => a.status === 'accepted')
-  const verifiedCompletions = (applications ?? []).filter(
-    (a) => a.status === 'completed' && a.verification_code
-  )
-
-  const appUserIds = [...new Set((applications ?? []).map((a) => a.user_id))]
-  const { data: appProfiles } = appUserIds.length
-    ? await supabase.from('profiles').select('id, full_name').in('id', appUserIds)
-    : { data: [] }
-  const appProfileMap = new Map((appProfiles ?? []).map((p) => [p.id, p.full_name]))
-
-  const totalVerified = verifiedHours.reduce((s, h) => s + Number(h.hours), 0)
+  const totalVerified = verifiedHoursList.reduce((s, h) => s + Number(h.hours), 0)
   const isCoordinator = await canManageOrg(id, user.id)
-  const plan = await getOrgPlanContext(id)
-  const reviewLookup = isCoordinator ? await getOrgReviewLookup(id) : new Map()
-  const unratedCompletions = verifiedCompletions.filter((a) => !reviewLookup.has(a.id))
-  const unratedHours = verifiedHoursList.filter((h) => !reviewLookup.has(h.id))
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+  const approverName = me?.full_name || user.email || 'Organizer'
 
   return (
-    <div className="bg-gray-50 min-h-full">
+    <div className="bg-gray-50 dark:bg-gray-950 min-h-full">
       <Suspense fallback={null}>
         <ManageVolunteerFocus />
       </Suspense>
-      <div className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link href={`/organizations/${id}`} className="text-indigo-600 text-sm hover:underline">
-            ← Back to {organization.name}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+          <Link href={`/organizations/${id}`} className="text-emerald-700 dark:text-emerald-400 text-sm hover:underline">
+            ← {organization.name}
           </Link>
-          <div className="flex flex-wrap items-start justify-between gap-4 mt-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Coordinator dashboard</h1>
-              <p className="text-gray-600 mt-1">Verify hours, track placements, and export grant reports.</p>
-            </div>
-            {plan && <OrgPlanBadge planTier={plan.planTier} verified={plan.verified} />}
-            {isCoordinator && (
-              <QrScanLauncher label="Scan volunteer QR" className="shrink-0" />
-            )}
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mt-3">Approve hours</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Students log hours after your event. Approve them here, and each student gets a code their counselor can check.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {!isCoordinator ? (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-6">
-            <h2 className="font-semibold text-gray-900">Request coordinator access</h2>
-            <p className="text-sm text-gray-600 mt-2 mb-4">
-              Coordinators verify volunteer hours, issue Impact Passport credentials, and export funder reports for {organization.name}.
-              Access requires approval from an existing organization owner.
+          <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 rounded-xl p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white">Ask to help organize</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 mb-4">
+              The owner of {organization.name} must approve you before you can approve student hours.
             </p>
             <RequestCoordinatorAccess
               organizationId={id}
@@ -200,18 +162,12 @@ export default async function OrganizationManagePage({ params }: PageProps) {
           </div>
         ) : (
           <>
-            {organization.verified && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-sm text-indigo-800">
-                ✓ Verified organization — your credentials carry institutional trust for funders and partners.
-              </div>
-            )}
-
             {(pendingRequests ?? []).length > 0 && (
-              <section className="bg-white rounded-lg shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending coordinator requests</h2>
+              <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">People asking to help organize</h2>
                 <ul className="space-y-4">
                   {(pendingRequests ?? []).map((req) => (
-                    <li key={req.id} className="border rounded-lg p-4">
+                    <li key={req.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
                       <p className="font-medium">{(req.profiles as { full_name?: string } | null)?.full_name ?? 'User'}</p>
                       {req.message && <p className="text-sm text-gray-600 mt-1">{req.message}</p>}
                       <div className="mt-3">
@@ -227,177 +183,72 @@ export default async function OrganizationManagePage({ params }: PageProps) {
                 </ul>
               </section>
             )}
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg shadow-sm p-5">
-                <p className="text-sm text-gray-500">Verified hours (all time)</p>
-                <p className="text-2xl font-bold text-gray-900">{totalVerified.toFixed(1)}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm p-5">
-                <p className="text-sm text-gray-500">Grant report value</p>
-                <p className="text-2xl font-bold text-indigo-600">
-                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(
-                    totalVerified * (plan?.hourValuationUsd ?? 33.49)
-                  )}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">${plan?.hourValuationUsd ?? 33.49}/hr</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-sm p-5">
-                <p className="text-sm text-gray-500">Pending verification</p>
-                <p className="text-2xl font-bold text-amber-600">{pendingHours.length}</p>
-              </div>
-            </div>
 
-            <div className="flex flex-wrap gap-3">
-              <a
-                href={`/api/org/${id}/export`}
-                className="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
-              >
-                Download grant-ready CSV
-              </a>
-              {plan && plan.coordinatorCount >= plan.coordinatorSeatLimit && (
-                <span className="text-sm text-amber-700 self-center">
-                  Coordinator seats full ({plan.coordinatorCount}/{plan.coordinatorSeatLimit})
-                </span>
-              )}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <p className="text-sm text-gray-500">Waiting for you</p>
+                <p className="text-3xl font-bold text-amber-600">{pendingHours.length}</p>
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <p className="text-sm text-gray-500">Hours approved</p>
+                <p className="text-3xl font-bold text-emerald-600">{totalVerified.toFixed(1)}</p>
+              </div>
             </div>
 
             <section>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending hour verifications</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hours to approve</h2>
               {pendingHours.length > 0 ? (
                 <div className="space-y-4">
                   {pendingHours.map((entry) => (
                     <div key={entry.id} data-volunteer-id={entry.user_id} className="rounded-xl transition-shadow">
                       <VerifyHoursForm
                         hourId={entry.id}
-                        volunteerId={entry.user_id}
                         organizationId={id}
-                        opportunityId={entry.opportunity_id}
-                        volunteerName={profileMap.get(entry.user_id) || 'Volunteer'}
+                        volunteerName={profileMap.get(entry.user_id) || 'Student'}
                         hours={Number(entry.hours)}
                         date={formatDate(entry.date)}
-                        opportunityTitle={oppMap.get(entry.opportunity_id) || 'Role'}
+                        description={entry.description}
+                        opportunityTitle={oppMap.get(entry.opportunity_id) || 'Event'}
+                        approverName={approverName}
+                        approverEmail={user.email ?? null}
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 bg-white rounded-lg p-6 shadow-sm">No hours awaiting verification.</p>
+                <p className="text-gray-500 bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+                  You&apos;re all caught up. New hours show up here when students log them.
+                </p>
               )}
             </section>
 
-            <section>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Verify task completion ({joinedApps.length} awaiting)
-              </h2>
-              {joinedApps.length > 0 ? (
-                <div className="space-y-4">
-                  {joinedApps.map((app) => (
-                    <div key={app.id} data-volunteer-id={app.user_id} className="rounded-xl transition-shadow">
-                      <VerifyCompletionForm
-                        applicationId={app.id}
-                        volunteerId={app.user_id}
-                        organizationId={id}
-                        opportunityId={app.opportunity_id}
-                        volunteerName={appProfileMap.get(app.user_id) || 'Volunteer'}
-                        opportunityTitle={oppMap.get(app.opportunity_id) || 'Event'}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 bg-white rounded-lg p-6 shadow-sm">No sign-ups awaiting completion verification.</p>
-              )}
-            </section>
-
-            {(unratedCompletions.length > 0 || unratedHours.length > 0) && (
+            {verifiedHoursList.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Rate volunteers ({unratedCompletions.length + unratedHours.length} awaiting review)
-                </h2>
-                <div className="space-y-4">
-                  {unratedCompletions.map((app) => (
-                    <RateVolunteerForm
-                      key={app.id}
-                      volunteerId={app.user_id}
-                      volunteerName={appProfileMap.get(app.user_id) || 'Volunteer'}
-                      organizationId={id}
-                      opportunityId={app.opportunity_id}
-                      opportunityTitle={oppMap.get(app.opportunity_id) || 'Event'}
-                      applicationId={app.id}
-                    />
-                  ))}
-                  {unratedHours.map((entry) => (
-                    <RateVolunteerForm
-                      key={entry.id}
-                      volunteerId={entry.user_id}
-                      volunteerName={profileMap.get(entry.user_id) || 'Volunteer'}
-                      organizationId={id}
-                      opportunityId={entry.opportunity_id}
-                      opportunityTitle={oppMap.get(entry.opportunity_id) || 'Role'}
-                      volunteerHoursId={entry.id}
-                    />
-                  ))}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Approved</h2>
+                  <a href={`/api/org/${id}/export`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+                    Download CSV
+                  </a>
                 </div>
-              </section>
-            )}
-
-            {verifiedCompletions.length > 0 && (
-              <section>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Verified completions ({verifiedCompletions.length})
-                </h2>
-                <ul className="bg-white rounded-lg shadow-sm divide-y">
-                  {verifiedCompletions.map((app) => (
-                    <li key={app.id} className="p-4 flex flex-wrap justify-between gap-3 items-center">
+                <ul className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                  {verifiedHoursList.slice(0, 20).map((h) => (
+                    <li key={h.id} className="p-4 flex flex-wrap justify-between gap-3 items-center">
                       <div>
-                        <p className="font-medium">{appProfileMap.get(app.user_id) || 'Volunteer'}</p>
-                        <p className="text-sm text-gray-600">{oppMap.get(app.opportunity_id)}</p>
-                        {app.completed_at && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Completed {formatDate(app.completed_at.split('T')[0])}
-                          </p>
-                        )}
+                        <p className="font-medium">{profileMap.get(h.user_id) || 'Student'}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {oppMap.get(h.opportunity_id)} · {Number(h.hours)}h · {formatDate(h.date)}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-mono text-sm font-bold text-emerald-600">{app.verification_code}</p>
-                        <a
-                          href={`/verify/${app.verification_code}`}
-                          className="text-xs text-emerald-600 hover:underline"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Public verify →
+                      {h.verification_code && (
+                        <a href={`/verify/${h.verification_code}`} className="font-mono text-sm text-emerald-700 dark:text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">
+                          {h.verification_code}
                         </a>
-                      </div>
+                      )}
                     </li>
                   ))}
                 </ul>
               </section>
             )}
-
-            <section>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending applications</h2>
-              {(applications ?? []).filter((a) => a.status === 'pending').length > 0 ? (
-                <ul className="bg-white rounded-lg shadow-sm divide-y">
-                  {(applications ?? []).filter((a) => a.status === 'pending').map((app) => (
-                      <li key={app.id} className="p-4 flex flex-wrap justify-between gap-3 items-center">
-                        <div>
-                          <p className="font-medium">{appProfileMap.get(app.user_id) || 'Volunteer'}</p>
-                          <p className="text-sm text-gray-600">{oppMap.get(app.opportunity_id)}</p>
-                          <span className="text-xs capitalize text-gray-500">{app.status}</span>
-                        </div>
-                        <ApplicationActionButtons
-                          applicationId={app.id}
-                          volunteerName={appProfileMap.get(app.user_id) || 'Volunteer'}
-                          organizationId={id}
-                        />
-                      </li>
-                    ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500 bg-white rounded-lg p-6 shadow-sm">No pending applications.</p>
-              )}
-            </section>
           </>
         )}
       </div>
