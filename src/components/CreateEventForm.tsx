@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
 import { OPPORTUNITY_CATEGORIES } from '@/lib/constants'
-import AiEventDraftButton from '@/components/AiEventDraftButton'
 import { planLimits } from '@/lib/plan-tiers'
 
 type OrgOption = {
@@ -225,17 +224,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
       </div>
 
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description *</label>
-          <AiEventDraftButton
-            title={title}
-            category={category}
-            orgName={useExistingOrg ? memberOrgs.find((o) => o.id === organizationId)?.name : organizationName}
-            location={location}
-            remote={remote}
-            onDraft={setDescription}
-          />
-        </div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
         <textarea
           id="description"
           required
