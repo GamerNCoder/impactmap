@@ -48,7 +48,7 @@ export default function CoordinatorRequestActions({
           type="button"
           disabled={loading}
           onClick={() => respond('approved')}
-          className="text-sm px-3 py-1 rounded-lg bg-emerald-600 text-white disabled:opacity-50"
+          className="text-sm px-3 py-1 rounded-lg bg-emerald-700 text-white disabled:opacity-50"
         >
           Approve {userName}
         </button>

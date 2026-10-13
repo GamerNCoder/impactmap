@@ -26,11 +26,11 @@ export default function VerifyLookupPage() {
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          <Link href="/scan" className="text-emerald-600 hover:underline">
+          <Link href="/scan" className="text-emerald-700 hover:underline">
             Open full scanner
           </Link>
           {' · '}
-          <Link href="/" className="text-emerald-600 hover:underline">
+          <Link href="/" className="text-emerald-700 hover:underline">
             Home
           </Link>
         </p>

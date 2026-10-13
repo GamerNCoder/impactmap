@@ -78,7 +78,7 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50"
+        className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50"
       >
         {loading ? 'Saving…' : 'Save'}
       </button>

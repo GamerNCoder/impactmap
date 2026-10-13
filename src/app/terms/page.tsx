@@ -13,7 +13,7 @@ export default function TermsPage() {
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <Logo size="sm" />
-          <Link href="/auth/signup" className="text-sm text-emerald-600 hover:underline">
+          <Link href="/auth/signup" className="text-sm text-emerald-700 hover:underline">
             Back to sign up
           </Link>
         </div>

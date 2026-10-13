@@ -96,7 +96,7 @@ export default function VerifyLookupClient() {
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 motion-pressable"
+            className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 motion-pressable"
           >
             Look up credential
           </button>
@@ -118,7 +118,7 @@ export default function VerifyLookupClient() {
               <button
                 type="button"
                 onClick={() => router.push(routeForScanAction(pending))}
-                className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold motion-pressable"
+                className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold motion-pressable"
               >
                 Continue
               </button>

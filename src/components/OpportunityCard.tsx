@@ -30,7 +30,7 @@ export default function OpportunityCard({
 
   return (
     <article className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col">
-      <div className="text-sm text-emerald-600 font-medium mb-2">{category}</div>
+      <div className="text-sm text-emerald-700 font-medium mb-2">{category}</div>
       <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
       {organizationName && (
         <p className="text-gray-600 mb-4">{organizationName}</p>
@@ -46,7 +46,7 @@ export default function OpportunityCard({
       </div>
       <Link
         href={`/opportunities/${id}`}
-        className="mt-auto text-emerald-600 font-medium hover:text-emerald-800"
+        className="mt-auto text-emerald-700 font-medium hover:text-emerald-800"
       >
         View details →
       </Link>

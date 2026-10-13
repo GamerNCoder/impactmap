@@ -41,7 +41,7 @@ export default async function OpportunitiesPage({
               <h1 className="text-3xl font-bold">Find your next event</h1>
               <p className="mt-2 text-gray-400">Pick an event on the map, join in one tap, and get your hours verified.</p>
             </div>
-            <Link href="/opportunities/new" className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+            <Link href="/opportunities/new" className="bg-emerald-700 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors">
               + Host an event
             </Link>
           </div>
@@ -57,7 +57,7 @@ export default async function OpportunitiesPage({
             <option value="">All causes</option>
             {OPPORTUNITY_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
           </select>
-          <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700">Go</button>
+          <button type="submit" className="bg-emerald-700 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-800">Go</button>
           {(params.q || params.category) && (
             <Link href="/opportunities" className="text-gray-500 px-2 py-2 text-sm">Clear</Link>
           )}
@@ -92,7 +92,7 @@ export default async function OpportunitiesPage({
         ) : (
           <div className="text-center py-16 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
             <p className="text-gray-600 dark:text-gray-400">No events found.</p>
-            <Link href="/opportunities/new" className="inline-block mt-4 text-emerald-600 font-semibold">Post the first one →</Link>
+            <Link href="/opportunities/new" className="inline-block mt-4 text-emerald-700 font-semibold">Post the first one →</Link>
           </div>
         )}
       </div>

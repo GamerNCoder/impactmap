@@ -24,12 +24,12 @@ export default function TermsCheckbox({
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700 focus:ring-emerald-500"
           required
         />
         <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           I agree to the{' '}
-          <Link href="/terms" target="_blank" className="text-emerald-600 hover:underline font-medium">
+          <Link href="/terms" target="_blank" className="text-emerald-700 hover:underline font-medium">
             Terms &amp; Conditions
           </Link>{' '}
           and acknowledge that ImpactMap may store and use my profile information to match me with

@@ -23,12 +23,12 @@ export default function ScanPage() {
         <QrScanLauncher label="Open scanner" className="w-full justify-center" />
         <div className="text-sm text-gray-500 space-y-2 pt-4 border-t border-gray-200 dark:border-gray-800">
           <p>
-            <Link href="/verify" className="text-emerald-600 hover:underline">
+            <Link href="/verify" className="text-emerald-700 hover:underline">
               Look up an IMP- code manually
             </Link>
           </p>
           <p>
-            <Link href="/dashboard" className="text-emerald-600 hover:underline">
+            <Link href="/dashboard" className="text-emerald-700 hover:underline">
               Back to Hub
             </Link>
           </p>

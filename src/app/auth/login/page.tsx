@@ -159,7 +159,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 motion-pressable"
+            className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
@@ -169,7 +169,7 @@ function LoginForm() {
         <FadeIn delay={4}>
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="font-medium text-emerald-600 hover:underline">
+          <Link href="/auth/signup" className="font-medium text-emerald-700 hover:underline">
             Sign up
           </Link>
         </p>

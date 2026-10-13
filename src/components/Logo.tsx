@@ -28,7 +28,7 @@ export default function Logo({ size = 'md', showText = true, onDark = false }: L
       {showText && (
         <span className={`font-bold tracking-tight ${s.text}`}>
           <span className={onDark ? 'text-white' : 'text-gray-900 dark:text-white'}>Impact</span>
-          <span className={onDark ? 'text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'}>Map</span>
+          <span className={onDark ? 'text-emerald-400' : 'text-emerald-700 dark:text-emerald-400'}>Map</span>
         </span>
       )}
     </Link>

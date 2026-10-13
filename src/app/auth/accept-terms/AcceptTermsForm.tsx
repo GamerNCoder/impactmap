@@ -83,7 +83,7 @@ export default function AcceptTermsForm() {
 
           <p className="text-xs text-gray-500">
             Read the full{' '}
-            <Link href="/terms" target="_blank" className="text-emerald-600 hover:underline">
+            <Link href="/terms" target="_blank" className="text-emerald-700 hover:underline">
               Terms &amp; Conditions
             </Link>
             .
@@ -92,7 +92,7 @@ export default function AcceptTermsForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50"
           >
             {loading ? 'Saving…' : 'Continue to ImpactMap'}
           </button>

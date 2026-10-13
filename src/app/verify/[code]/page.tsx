@@ -126,7 +126,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                   </div>
                   <div>
                     <dt className="text-gray-500">Estimated value</dt>
-                    <dd className="font-medium text-emerald-600">
+                    <dd className="font-medium text-emerald-700">
                       {formatImpactValue(Number(hourRecord.hours))}
                     </dd>
                   </div>
@@ -180,7 +180,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          <Link href="/" className="text-emerald-600 hover:underline">impactmap.vercel.app</Link>
+          <Link href="/" className="text-emerald-700 hover:underline">impactmap.vercel.app</Link>
         </p>
       </div>
     </div>

@@ -60,11 +60,11 @@ export default async function Home() {
             </div>
             <dl className="mt-10 flex gap-10 text-sm">
               <div>
-                <dt className="text-gray-500">Open events</dt>
+                <dt className="text-gray-600">Open events</dt>
                 <dd className="text-2xl font-bold">{eventCount ?? 0}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">Hour logs approved</dt>
+                <dt className="text-gray-600">Hour logs approved</dt>
                 <dd className="text-2xl font-bold">{approvedCount ?? 0}</dd>
               </div>
             </dl>
@@ -89,7 +89,7 @@ export default async function Home() {
           <ol className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {STEPS.map((s) => (
               <li key={s.n} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-                <span className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-emerald-600 text-white font-bold">{s.n}</span>
+                <span className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-emerald-700 text-white font-bold">{s.n}</span>
                 <h3 className="mt-4 font-semibold text-gray-900 dark:text-white">{s.title}</h3>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{s.body}</p>
               </li>

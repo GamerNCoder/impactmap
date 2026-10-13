@@ -106,7 +106,7 @@ export default function HoursGoal({
         aria-valuemax={100}
         aria-label="Progress toward hours goal"
       >
-        <div className={`h-full rounded-full ${light ? 'bg-emerald-600' : 'bg-white'}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full ${light ? 'bg-emerald-700' : 'bg-white'}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

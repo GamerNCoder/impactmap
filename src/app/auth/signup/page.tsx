@@ -162,7 +162,7 @@ export default function SignupPage() {
                 {errorText('guardianEmail')}
               </div>
               <label htmlFor="guardianConsent" className="flex items-start gap-3 cursor-pointer">
-                <input id="guardianConsent" type="checkbox" checked={guardianConsent} onChange={(e) => setGuardianConsent(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600" />
+                <input id="guardianConsent" type="checkbox" checked={guardianConsent} onChange={(e) => setGuardianConsent(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">My parent or guardian knows I&apos;m joining ImpactMap and agrees.</span>
               </label>
               {errorText('guardianConsent')}
@@ -182,7 +182,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 motion-pressable"
+            className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
@@ -193,7 +193,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium text-emerald-600 hover:underline">Sign in</Link>
+          <Link href="/auth/login" className="font-medium text-emerald-700 hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

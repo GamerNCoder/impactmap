@@ -58,7 +58,7 @@ function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
               onClick={() => setOpen(false)}
               className={`block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${
                 pathname.startsWith(item.href)
-                  ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+                  ? 'text-emerald-700 dark:text-emerald-400 font-medium'
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -145,7 +145,7 @@ function MobileMenu({
                 <Link href="/auth/login" onClick={() => setOpen(false)} className="flex-1 text-center py-2 rounded-lg text-sm border border-gray-200 dark:border-gray-700">
                   Sign in
                 </Link>
-                <Link href="/auth/signup" onClick={() => setOpen(false)} className="flex-1 text-center py-2 rounded-lg text-sm bg-emerald-600 text-white font-medium">
+                <Link href="/auth/signup" onClick={() => setOpen(false)} className="flex-1 text-center py-2 rounded-lg text-sm bg-emerald-700 text-white font-medium">
                   Get started
                 </Link>
               </div>
@@ -186,7 +186,7 @@ export default function Navbar() {
   const linkClass = (href: string) => {
     const active = pathname === href || (href !== '/' && !href.startsWith('/#') && pathname.startsWith(href))
     return active
-      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      ? 'text-emerald-700 dark:text-emerald-400 font-semibold'
       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
   }
 
@@ -233,7 +233,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/auth/signup"
-                className="hidden sm:inline-flex text-sm font-semibold bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="hidden sm:inline-flex text-sm font-semibold bg-emerald-700 text-white px-4 py-2 rounded-lg hover:bg-emerald-800 transition-colors"
               >
                 Get started
               </Link>

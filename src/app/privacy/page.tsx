@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <header className="bg-white dark:bg-gray-900 border-b">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <Logo size="sm" />
-          <Link href="/" className="text-sm text-emerald-600 hover:underline">Home</Link>
+          <Link href="/" className="text-sm text-emerald-700 hover:underline">Home</Link>
         </div>
       </header>
 

@@ -62,7 +62,7 @@ export default async function AdminOrganizationsPage() {
             {verified.map((org) => (
               <li key={org.id} className="text-sm text-gray-600 dark:text-gray-400 flex justify-between">
                 <span>{org.name}</span>
-                <span className="text-emerald-600">✓ Verified</span>
+                <span className="text-emerald-700">✓ Verified</span>
               </li>
             ))}
           </ul>

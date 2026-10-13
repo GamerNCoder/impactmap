@@ -102,7 +102,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="text-center py-6">
               <p className="text-gray-500 text-sm">You haven&apos;t joined an event yet.</p>
-              <Link href="/opportunities" className="inline-block mt-3 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700">
+              <Link href="/opportunities" className="inline-block mt-3 bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-800">
                 Find an event near you
               </Link>
             </div>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
           <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Events you&apos;re hosting</h2>
-              <Link href="/opportunities/new" className="text-sm font-semibold text-emerald-600">+ Post another</Link>
+              <Link href="/opportunities/new" className="text-sm font-semibold text-emerald-700">+ Post another</Link>
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
               {hostedEvents.map((event) => (
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   {event.organization_id && (
-                    <Link href={`/organizations/${event.organization_id}/manage`} className="text-sm font-semibold text-emerald-600">
+                    <Link href={`/organizations/${event.organization_id}/manage`} className="text-sm font-semibold text-emerald-700">
                       Approve hours →
                     </Link>
                   )}

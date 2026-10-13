@@ -140,7 +140,7 @@ export default function VerifyHoursForm({
         <button
           type="submit"
           disabled={loading}
-          className="bg-emerald-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50"
+          className="bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50"
         >
           {loading ? 'Approving…' : `Approve ${hours}h`}
         </button>

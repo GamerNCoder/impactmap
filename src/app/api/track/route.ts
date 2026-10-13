@@ -93,7 +93,7 @@ export async function POST(request: Request) {
   }
 
   if (!user) {
-    return NextResponse.json({ ok: false }, { status: 401 })
+    return new NextResponse(null, { status: 204 })
   }
 
   await trackAppEvent({

@@ -191,7 +191,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
               </div>
               <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
                 <p className="text-sm text-gray-500">Hours approved</p>
-                <p className="text-3xl font-bold text-emerald-600">{totalVerified.toFixed(1)}</p>
+                <p className="text-3xl font-bold text-emerald-700">{totalVerified.toFixed(1)}</p>
               </div>
             </div>
 

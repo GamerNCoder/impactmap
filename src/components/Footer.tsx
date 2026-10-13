@@ -13,7 +13,7 @@ export default function Footer() {
             </p>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-3 text-sm">Volunteers</h3>
+            <h2 className="text-white font-semibold mb-3 text-sm">Volunteers</h2>
             <ul className="space-y-2 text-sm">
               <li><Link href="/passport" className="hover:text-emerald-400 transition-colors">My hours</Link></li>
               <li><Link href="/verify" className="hover:text-emerald-400 transition-colors">Check a code</Link></li>
@@ -21,14 +21,14 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-3 text-sm">Organizations</h3>
+            <h2 className="text-white font-semibold mb-3 text-sm">Organizations</h2>
             <ul className="space-y-2 text-sm">
               <li><Link href="/organizations" className="hover:text-emerald-400 transition-colors">Directory</Link></li>
               <li><Link href="/opportunities/new" className="hover:text-emerald-400 transition-colors">Post an event</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-3 text-sm">Legal &amp; Trust</h3>
+            <h2 className="text-white font-semibold mb-3 text-sm">Legal &amp; Trust</h2>
             <ul className="space-y-2 text-sm">
               <li><Link href="/safety" className="hover:text-emerald-400 transition-colors">Student safety</Link></li>
               <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link></li>
@@ -37,7 +37,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-600">
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-400">
           © {new Date().getFullYear()} ImpactMap · Verified service hours for students, schools, and nonprofits
         </div>
       </div>
