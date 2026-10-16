@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 
+/** The owner's private profile row, as returned by the my_profile() RPC. */
+type PrivateProfile = {
+  terms_accepted_at: string | null
+  terms_version: string | null
+  date_of_birth: string | null
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -33,6 +40,7 @@ export async function middleware(request: NextRequest) {
     '/dashboard',
     '/profile',
     '/passport',
+    '/opportunities/new',
   ]
   const isOrgManagePath = /^\/organizations\/[^/]+\/manage/.test(pathname)
   const isProtectedPath =
@@ -45,19 +53,27 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isProtectedPath) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('terms_accepted_at, terms_version')
-      .eq('id', user.id)
-      .maybeSingle()
+    // authenticated is not granted SELECT on date_of_birth / terms columns beyond the public
+    // set, so read the owner's own row through the SECURITY DEFINER my_profile() RPC.
+    const { data } = await supabase.rpc('my_profile')
+    const profile = ((data as unknown as PrivateProfile[] | null) ?? [])[0] ?? null
 
-    const termsOk =
+    const termsOk = Boolean(
       profile?.terms_accepted_at && profile.terms_version === CURRENT_TERMS_VERSION
+    )
 
     if (!termsOk) {
       const termsUrl = new URL('/auth/accept-terms', request.url)
       termsUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(termsUrl)
+    }
+
+    // Age rule: accounts that never supplied a birthday (e.g. social sign-in) must do so
+    // before they can log hours, host an event, or open their record.
+    if (!profile?.date_of_birth) {
+      const profileUrl = new URL('/auth/complete-profile', request.url)
+      profileUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(profileUrl)
     }
   }
 
@@ -69,6 +85,7 @@ export const config = {
     '/dashboard/:path*',
     '/profile/:path*',
     '/passport/:path*',
+    '/opportunities/new/:path*',
     '/organizations/:id/manage/:path*',
     '/auth/callback',
   ],

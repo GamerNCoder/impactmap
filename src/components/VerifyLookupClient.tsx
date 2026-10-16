@@ -51,13 +51,33 @@ export default function VerifyLookupClient() {
     setPending(action)
   }, [router])
 
+  const selectMode = (next: 'form' | 'scan') => {
+    setMode(next)
+    setPending(null)
+    setError(null)
+  }
+
+  const onTabKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const next = mode === 'form' ? 'scan' : 'form'
+    selectMode(next)
+    document.getElementById(`verify-tab-${next}`)?.focus()
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+      <div role="tablist" aria-label="Look up a code" className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
         <button
           type="button"
-          onClick={() => { setMode('form'); setPending(null); setError(null) }}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable ${
+          role="tab"
+          id="verify-tab-form"
+          aria-selected={mode === 'form'}
+          aria-controls="verify-panel-form"
+          tabIndex={mode === 'form' ? 0 : -1}
+          onClick={() => selectMode('form')}
+          onKeyDown={onTabKeyDown}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable motion-focus-ring ${
             mode === 'form'
               ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400'
@@ -67,8 +87,14 @@ export default function VerifyLookupClient() {
         </button>
         <button
           type="button"
-          onClick={() => { setMode('scan'); setPending(null); setError(null) }}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable ${
+          role="tab"
+          id="verify-tab-scan"
+          aria-selected={mode === 'scan'}
+          aria-controls="verify-panel-scan"
+          tabIndex={mode === 'scan' ? 0 : -1}
+          onClick={() => selectMode('scan')}
+          onKeyDown={onTabKeyDown}
+          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable motion-focus-ring ${
             mode === 'scan'
               ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
               : 'text-gray-600 dark:text-gray-400'
@@ -81,6 +107,9 @@ export default function VerifyLookupClient() {
       {mode === 'form' ? (
         <form
           key="form"
+          id="verify-panel-form"
+          role="tabpanel"
+          aria-labelledby="verify-tab-form"
           onSubmit={(e) => {
             e.preventDefault()
             goToCode(code)
@@ -110,7 +139,7 @@ export default function VerifyLookupClient() {
           </button>
         </form>
       ) : (
-        <div key="scan" className="space-y-4 motion-fade-in-up">
+        <div key="scan" id="verify-panel-scan" role="tabpanel" aria-labelledby="verify-tab-scan" className="space-y-4 motion-fade-in-up">
           {!pending ? (
             <>
               <QrScanner onScan={handleScan} onError={setError} />

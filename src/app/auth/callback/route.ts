@@ -4,6 +4,13 @@ import { NextResponse } from 'next/server'
 import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 import { recordTermsAcceptance } from '@/lib/terms-server'
 
+/** The owner's private profile row, as returned by the my_profile() RPC. */
+type PrivateProfile = {
+  terms_accepted_at: string | null
+  terms_version: string | null
+  date_of_birth: string | null
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
@@ -61,6 +68,14 @@ export async function GET(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
 
+  const redirectWithCookies = (path: string) => {
+    const redirect = NextResponse.redirect(`${origin}${path}`)
+    responseCookies.forEach(({ name, value, options }) => {
+      redirect.cookies.set(name, value, options)
+    })
+    return redirect
+  }
+
   if (user) {
     const termsCookie = cookieStore.get('impactmap_terms_pending')?.value
     const decodedTerms = termsCookie ? decodeURIComponent(termsCookie) : null
@@ -78,29 +93,24 @@ export async function GET(request: Request) {
       }
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('terms_accepted_at, terms_version')
-      .eq('id', user.id)
-      .maybeSingle()
+    // date_of_birth and the terms columns are not directly selectable by authenticated,
+    // so read the owner's own row through the SECURITY DEFINER my_profile() RPC.
+    const { data: profileRows } = await supabase.rpc('my_profile')
+    const profile = ((profileRows as unknown as PrivateProfile[] | null) ?? [])[0] ?? null
 
-    const termsOk =
+    const termsOk = Boolean(
       profile?.terms_accepted_at && profile.terms_version === CURRENT_TERMS_VERSION
+    )
 
     if (!termsOk) {
-      const redirect = NextResponse.redirect(
-        `${origin}/auth/accept-terms?next=${encodeURIComponent(safeNext)}`
-      )
-      responseCookies.forEach(({ name, value, options }) => {
-        redirect.cookies.set(name, value, options)
-      })
-      return redirect
+      return redirectWithCookies(`/auth/accept-terms?next=${encodeURIComponent(safeNext)}`)
+    }
+
+    // Social sign-in never collects a birthday; the age and guardian-consent rules depend on it.
+    if (!profile?.date_of_birth) {
+      return redirectWithCookies(`/auth/complete-profile?next=${encodeURIComponent(safeNext)}`)
     }
   }
 
-  const redirect = NextResponse.redirect(`${origin}${safeNext}`)
-  responseCookies.forEach(({ name, value, options }) => {
-    redirect.cookies.set(name, value, options)
-  })
-  return redirect
+  return redirectWithCookies(safeNext)
 }
