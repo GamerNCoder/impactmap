@@ -1,16 +1,19 @@
 # ImpactMap
 
-A production-ready volunteering portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Connect volunteers with nonprofits, apply to opportunities, and track volunteer hours.
+A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, log their hours, and get them verified by the organizer.
 
 ## Features
 
-- **Browse opportunities** — search and filter by category, location, and remote availability
-- **Organization profiles** — explore verified nonprofits and their open roles
-- **Volunteer accounts** — email/password sign-up plus Google and GitHub OAuth
-- **Applications** — apply with cover letter, availability, and experience
-- **Dashboard** — track application status and log volunteer hours
-- **Profile management** — skills, bio, location, and contact info
-- **Row Level Security** — Supabase RLS policies protect user data
+- **Find events on a map** — Leaflet + OpenStreetMap pins, a "Near me" distance sort, plus category and text filters
+- **One-tap join** — no application form; join an event and it appears on your dashboard
+- **QR check-in** — each event has a check-in QR code volunteers can scan on arrival
+- **Log hours** — after the event, log your time; the organizer approves it with one tap
+- **Verification codes** — each approval issues an `IMP-` code a counselor can check at `/verify` with no account
+- **Counselor report** — a printable/PDF service record with a QR code per verified entry
+- **Hours goal** — set a target (for example 40 hours for NHS) and track progress
+- **Public record** — share a link to your organizer-approved hours
+- **Student safety** — 13+ only, guardian consent for 13–15, and date of birth/email are hidden from other users in the database itself
+- **Row Level Security** — Supabase RLS policies protect user data; students cannot approve their own hours
 
 ## Tech stack
 
@@ -100,11 +103,17 @@ In Supabase → **Authentication → URL Configuration**:
 
 ## Supabase project
 
-This repo is wired to Supabase project **impactmap** (`pgvasfubdwkgugoqqfjf`).
+This repo is wired to Supabase project **impactmap-cac**. The paused `impactmap`
+project from an earlier iteration still exists but is unused.
 
-- Schema applied via migration `impactmap_initial_schema`
-- Seed data: 4 organizations, 5 opportunities
-- Dashboard: [supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf](https://supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf)
+- Schema applied via the migrations in `supabase/migrations/`
+- Seed data: 5 Edison, NJ demo events
+- Dashboard: [supabase.com/dashboard](https://supabase.com/dashboard)
+
+## Tests
+
+- `npm run test:db` — 26 database and security checks (`tests/e2e-core-loop.mjs`)
+- `npm run test:ui` — Playwright walkthrough of the full student → organizer → counselor loop (`tests/ui-core-loop.mjs`); set `BASE_URL` to run it against a deployed site
 
 ## Project structure
 

@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 import { formatDate } from '@/lib/constants'
-import { formatImpactValue, HOUR_VALUATION_USD } from '@/lib/impact-passport'
 
 type PageProps = {
   params: Promise<{ code: string }>
@@ -80,13 +79,13 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
           <p className="text-sm text-gray-500">Impact Passport Verification</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-green-200 dark:border-green-900 overflow-hidden">
-          <div className="bg-green-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-900 overflow-hidden">
+          <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm">{credentialType}</p>
+              <p className="text-emerald-50 text-sm">{credentialType}</p>
               <p className="font-mono font-bold text-lg">{code}</p>
             </div>
-            <svg className="w-10 h-10 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <svg className="w-10 h-10 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -123,12 +122,6 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                   <div>
                     <dt className="text-gray-500">Hours verified</dt>
                     <dd className="font-medium text-gray-900 dark:text-white text-lg">{hourRecord.hours}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-500">Estimated value</dt>
-                    <dd className="font-medium text-emerald-700">
-                      {formatImpactValue(Number(hourRecord.hours))}
-                    </dd>
                   </div>
                 </>
               )}
@@ -172,8 +165,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
             )}
 
             <p className="text-xs text-gray-400 border-t border-gray-200 dark:border-gray-800 pt-4">
-              Issued by ImpactMap on behalf of a verified event coordinator.
-              {isHours && ` Hour valuation uses Independent Sector rate ($${HOUR_VALUATION_USD}/hr).`}
+              Issued by ImpactMap on behalf of a verified event organizer.
               {' '}Reference code {code}.
             </p>
           </div>

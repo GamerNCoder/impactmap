@@ -66,13 +66,13 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
-        Hours logged for <strong>{opportunityTitle}</strong>. Pending coordinator verification — check your{' '}
-        <a href="/passport" className="underline font-medium">Impact Passport</a> once approved.
+      <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-lg text-sm">
+        Hours logged for <strong>{opportunityTitle}</strong>. Pending organizer approval — check your{' '}
+        <a href="/passport" className="underline font-medium">hours page</a> once approved.
         <button
           type="button"
           onClick={() => setSuccess(false)}
-          className="ml-2 text-green-700 underline"
+          className="ml-2 text-emerald-700 dark:text-emerald-300 underline"
         >
           Log more
         </button>
@@ -83,15 +83,15 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-sm">
           {error}
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="date" className="block text-xs font-medium text-gray-700 mb-1">Date</label>
+          <label htmlFor={`date-${opportunityId}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
           <input
-            id="date"
+            id={`date-${opportunityId}`}
             type="date"
             required
             value={date}
@@ -100,9 +100,9 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
           />
         </div>
         <div>
-          <label htmlFor="hours" className="block text-xs font-medium text-gray-700 mb-1">Hours</label>
+          <label htmlFor={`hours-${opportunityId}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hours</label>
           <input
-            id="hours"
+            id={`hours-${opportunityId}`}
             type="number"
             step="0.5"
             min="0.5"
@@ -115,9 +115,9 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
         </div>
       </div>
       <div>
-        <label htmlFor="description" className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+        <label htmlFor={`description-${opportunityId}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
         <input
-          id="description"
+          id={`description-${opportunityId}`}
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -128,7 +128,7 @@ export default function LogHoursForm({ opportunityId, opportunityTitle }: LogHou
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-800 disabled:opacity-50"
       >
         {loading ? 'Saving...' : 'Log hours'}
       </button>

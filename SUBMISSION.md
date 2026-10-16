@@ -26,19 +26,22 @@ Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgr
 | 0:00 | Landing page | "Volunteer hours are tracked on paper. Forms get lost, and counselors can't tell what's real. ImpactMap fixes that." |
 | 0:15 | Sign up (student, birthday, guardian fields for 13–15) | "Students sign up in under a minute. Younger students need a guardian's consent." |
 | 0:35 | Events map, tap "📍 Near me" | "They find real events near them in Edison on a map." |
-| 0:50 | Open Roosevelt Park Fall Cleanup → Join | "One tap to join." |
-| 1:00 | Dashboard → Log hours | "After the event, they log their hours." |
-| 1:15 | Switch to organizer → Approve hours → "Approve 3h" | "The organizer approves with one tap. No signatures to chase." |
-| 1:30 | My hours: verified entry with IMP- code, 40h goal bar | "Each approval creates a verification code, and students see progress toward their goal." |
-| 1:45 | Counselor report (printable, QR per entry) | "They can print a counselor report with a QR code for every entry." |
-| 2:00 | Signed out → /verify → enter code | "A counselor scans it or types the code — no account needed — and sees it's real." |
-| 2:15 | Safety page | "Privacy is built into the database: no one sees a student's email or birthday." |
-| 2:30 | Landing page | "ImpactMap: find it, do it, prove it. Thank you." |
+| 0:50 | Sign in as the organizer → Host an event → post one at Roosevelt Park | "An organizer posts an event in about a minute. It lands on the map immediately — with its own check-in QR code." |
+| 1:05 | Back as the student, open that event → Join | "One tap to join." |
+| 1:15 | Dashboard → Log hours | "After the event, they log their hours." |
+| 1:25 | Switch to the organizer → Approve hours → "Approve 3h" | "The organizer approves with one tap. No signatures to chase." |
+| 1:40 | My hours: verified entry with IMP- code, 40h goal bar | "Each approval creates a verification code, and students see progress toward their goal." |
+| 1:55 | Counselor report (printable, QR per entry) | "They can print a counselor report with a QR code for every entry." |
+| 2:10 | Signed out → /verify → enter code | "A counselor scans it or types the code — no account needed — and sees it's real." |
+| 2:25 | Safety page | "Privacy is built into the database: no one sees a student's email or birthday." |
+| 2:35 | Landing page | "ImpactMap: find it, do it, prove it. Thank you." |
 
 Recording tips: use a fresh test account, Chrome device toolbar (iPhone size), hide bookmarks bar, record at 1080p. Delete the test accounts afterward.
 
+**Important:** the organizer in the video must post the event from their *own* account. The five seeded Edison events belong to demo organizations with no owner, so hours logged against them can never be approved — they are for showing the map, not for the approval step.
+
 ## Before submitting
-- [ ] Remove production test data (org "Austin Park Friends …", event "Saturday park cleanup", 2 `@example.com` users) — it shows on the public events list.
+- [ ] Remove production test data (org "Austin Park Friends …", event "Saturday park cleanup", 2 `@example.com` users) — it shows on the public events list. Needs Supabase dashboard access or approval to run deletes.
 - [ ] Confirm district (assumed NJ-6) on congressionalappchallenge.us.
 - [ ] Record + upload video (YouTube/Vimeo, unlisted is fine).
 - [ ] Paste AI-use disclosure.

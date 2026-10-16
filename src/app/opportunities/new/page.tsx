@@ -32,7 +32,7 @@ export default async function NewOpportunityPage() {
     <div className="bg-gray-50 min-h-full">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <Link href="/opportunities" className="text-indigo-600 text-sm hover:underline">
+          <Link href="/opportunities" className="text-emerald-700 text-sm hover:underline">
             ← Back to events
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-4">Post a volunteer event</h1>

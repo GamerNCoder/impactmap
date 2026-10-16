@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
 import { OPPORTUNITY_CATEGORIES } from '@/lib/constants'
-import { planLimits } from '@/lib/plan-tiers'
 
 type OrgOption = {
   id: string
@@ -53,34 +52,6 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
       } else {
         if (!organizationName.trim()) throw new Error('Organization name is required')
 
-        const { count: ownedCount } = await supabase
-          .from('organization_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('role', 'owner')
-
-        const { data: ownedMemberships } = await supabase
-          .from('organization_members')
-          .select('organizations(plan_tier)')
-          .eq('user_id', user.id)
-          .eq('role', 'owner')
-
-        const highestPlan = (ownedMemberships ?? []).reduce(
-          (best, row) => {
-            const tier = (row.organizations as unknown as { plan_tier: string | null } | null)?.plan_tier
-            if (tier === 'enterprise') return 'enterprise'
-            if (tier === 'growth' && best !== 'enterprise') return 'growth'
-            return best
-          },
-          'starter' as 'starter' | 'growth' | 'enterprise'
-        )
-        const limit = planLimits(highestPlan).maxOwnedOrgs
-        if ((ownedCount ?? 0) >= limit) {
-          throw new Error(
-            `Your ${highestPlan} plan allows ${limit} organization${limit === 1 ? '' : 's'}. Upgrade to create more.`
-          )
-        }
-
         const { data: org, error: orgError } = await supabase
           .from('organizations')
           .insert({
@@ -88,7 +59,6 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
             description: `Community events hosted by ${organizationName.trim()}`,
             location: remote ? null : location.trim() || null,
             verified: false,
-            plan_tier: 'starter',
           })
           .select('id')
           .single()
@@ -161,7 +131,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6 space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -310,7 +280,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full bg-emerald-700 text-white py-3 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
       >
         {loading ? 'Publishing…' : 'Publish event'}
       </button>

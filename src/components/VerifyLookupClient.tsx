@@ -23,9 +23,17 @@ export default function VerifyLookupClient() {
       setError('Enter or scan an IMP- verification code.')
       return
     }
-    const normalized = trimmed.toUpperCase().startsWith('IMP-')
-      ? trimmed.toUpperCase()
-      : `IMP-${trimmed.replace(/^IMP-?/i, '').toUpperCase()}`
+    // Accept a pasted link (…/verify/IMP-XXXX) or a bare code.
+    const extracted = trimmed.match(/\/verify\/([^/?#\s]+)/i)?.[1] ?? trimmed
+    const cleaned = decodeURIComponent(extracted).replace(/[\s/]+$/, '')
+    const normalized = cleaned.toUpperCase().startsWith('IMP-')
+      ? cleaned.toUpperCase()
+      : `IMP-${cleaned.replace(/^IMP-?/i, '').toUpperCase()}`
+    if (!/^IMP-[A-Z0-9]{6,}$/.test(normalized)) {
+      setError('That does not look like an IMP- code. Codes have 12 letters or digits after the dash.')
+      return
+    }
+    setError(null)
     router.push(`/verify/${encodeURIComponent(normalized)}`)
   }
 
@@ -93,7 +101,7 @@ export default function VerifyLookupClient() {
               spellCheck={false}
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <button
             type="submit"
             className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 motion-pressable"
@@ -106,7 +114,7 @@ export default function VerifyLookupClient() {
           {!pending ? (
             <>
               <QrScanner onScan={handleScan} onError={setError} />
-              {error && <p className="text-sm text-red-600 motion-shake">{error}</p>}
+              {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400 motion-shake">{error}</p>}
             </>
           ) : (
             <div className="space-y-4 motion-fade-in-scale">

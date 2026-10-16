@@ -18,6 +18,7 @@ const PRIMARY_NAV = [
 const GUEST_NAV = [
   { href: '/opportunities', label: 'Events' },
   { href: '/verify', label: 'Check a code' },
+  { href: '/#how-it-works', label: 'How it works' },
   { href: '/safety', label: 'Safety' },
 ]
 

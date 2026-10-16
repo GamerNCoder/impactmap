@@ -32,11 +32,7 @@ export async function middleware(request: NextRequest) {
   const protectedPaths = [
     '/dashboard',
     '/profile',
-    '/applications',
-    '/matches',
     '/passport',
-    '/onboarding',
-    '/admin',
   ]
   const isOrgManagePath = /^\/organizations\/[^/]+\/manage/.test(pathname)
   const isProtectedPath =
@@ -72,12 +68,8 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/profile/:path*',
-    '/applications/:path*',
-    '/matches/:path*',
     '/passport/:path*',
-    '/onboarding/:path*',
     '/organizations/:id/manage/:path*',
-    '/admin/:path*',
     '/auth/callback',
   ],
 }

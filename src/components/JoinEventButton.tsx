@@ -111,7 +111,7 @@ export default function JoinEventButton({
         {organizationId && (
           <Link
             href={`/organizations/${organizationId}/manage`}
-            className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
+            className="inline-block bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-800"
           >
             View sign-ups →
           </Link>
@@ -127,11 +127,11 @@ export default function JoinEventButton({
   if (joined) {
     return (
       <div className="space-y-3">
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-lg text-sm">
           You&apos;re signed up for <strong>{opportunityTitle}</strong>.
         </div>
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -153,12 +153,12 @@ export default function JoinEventButton({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-sm">
           {error}
         </div>
       )}
       {isFull ? (
-        <p className="text-amber-700 bg-amber-50 border border-amber-200 px-4 py-3 rounded-lg text-sm">
+        <p className="text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 px-4 py-3 rounded-lg text-sm">
           This event is full. Check back later for cancellations.
         </p>
       ) : (
@@ -166,7 +166,7 @@ export default function JoinEventButton({
           type="button"
           onClick={handleJoin}
           disabled={loading}
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 motion-pressable"
+          className="w-full bg-emerald-700 text-white py-3 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
         >
           {loading ? 'Joining…' : 'Join event'}
         </button>

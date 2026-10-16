@@ -90,11 +90,11 @@ export default function VerifyHoursForm({
 
   if (verificationCode) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm">
-        <p className="font-medium text-green-800">
+      <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 text-sm">
+        <p className="font-medium text-emerald-800 dark:text-emerald-200">
           Approved {hours}h for {volunteerName}
         </p>
-        <p className="text-green-700 mt-1">
+        <p className="text-emerald-700 dark:text-emerald-300 mt-1">
           Their code: <strong className="font-mono">{verificationCode}</strong>{' '}
           <a href={`/verify/${verificationCode}`} className="underline" target="_blank" rel="noopener noreferrer">
             view
@@ -122,7 +122,7 @@ export default function VerifyHoursForm({
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">{error}</div>
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-sm">{error}</div>
       )}
 
       <div className="flex flex-wrap items-end gap-3">

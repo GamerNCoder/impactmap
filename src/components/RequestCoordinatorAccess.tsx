@@ -57,7 +57,7 @@ export default function RequestCoordinatorAccess({
 
   if (submitted) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+      <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded-lg p-4 text-sm text-amber-900 dark:text-amber-200">
         Your coordinator access request for <strong>{organizationName}</strong> is pending approval from an existing coordinator.
       </div>
     )
@@ -91,7 +91,7 @@ export default function RequestCoordinatorAccess({
       <button
         type="submit"
         disabled={loading}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+        className="bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-800 disabled:opacity-50"
       >
         {loading ? 'Submitting…' : 'Request coordinator access'}
       </button>

@@ -29,7 +29,7 @@ export default function ScanPage() {
           </p>
           <p>
             <Link href="/dashboard" className="text-emerald-700 hover:underline">
-              Back to Hub
+              Back to Home
             </Link>
           </p>
         </div>

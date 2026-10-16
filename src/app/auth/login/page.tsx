@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AuthDivider, AuthOAuthSection } from '@/components/AuthOAuthSection'
 import TermsCheckbox, { setTermsPendingCookie } from '@/components/TermsCheckbox'
-import { getOAuthErrorMessage } from '@/lib/auth'
+import { getOAuthErrorMessage, hasEnabledOAuthProviders } from '@/lib/auth'
 import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
@@ -104,9 +104,9 @@ function LoginForm() {
           id="login-terms"
         />
 
-        {!termsAccepted && (
+        {hasEnabledOAuthProviders() && !termsAccepted && (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Accept the terms above before using Google, Apple, or Microsoft sign-in.
+            Accept the terms above before using a social sign-in provider.
           </p>
         )}
 

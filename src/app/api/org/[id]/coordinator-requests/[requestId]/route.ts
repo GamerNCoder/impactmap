@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { canManageOrg } from '@/lib/org-access'
-import { getOrgPlanContext } from '@/lib/org-plan-data'
 import { logSecurityEvent } from '@/lib/audit'
 import { trackAppEvent } from '@/lib/track-event'
 import { APP_EVENTS } from '@/lib/app-events'
@@ -42,16 +41,6 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   if (status === 'approved') {
-    const plan = await getOrgPlanContext(orgId)
-    if (!plan?.canAddCoordinator) {
-      return NextResponse.json(
-        {
-          error: `Coordinator seat limit reached (${plan?.coordinatorSeatLimit ?? 1}). Upgrade your plan for more seats.`,
-        },
-        { status: 403 }
-      )
-    }
-
     const { data: existing } = await supabase
       .from('organization_members')
       .select('id')

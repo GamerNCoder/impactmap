@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { canManageOrg } from '@/lib/org-access'
 import { logSecurityEvent } from '@/lib/audit'
-import { getOrgPlanContext } from '@/lib/org-plan-data'
 import { trackAppEvent } from '@/lib/track-event'
 import { APP_EVENTS } from '@/lib/app-events'
 
@@ -20,9 +19,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
   if (!(await canManageOrg(orgId, user.id))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
-
-  const plan = await getOrgPlanContext(orgId)
-  const hourRate = plan?.hourValuationUsd ?? 33.49
 
   const { data: organization } = await supabase
     .from('organizations')
@@ -90,7 +86,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
     'Category',
     'Date',
     'Hours',
-    'Estimated Value USD',
     'Verification Code',
     'Verified At',
     'Supervisor',
@@ -100,7 +95,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const hourRows = (hours ?? []).map((h) => {
     const profile = profileMap.get(h.user_id)
     const opp = oppMap.get(h.opportunity_id)
-    const value = (Number(h.hours) * hourRate).toFixed(2)
     return [
       'Service hours',
       profile?.full_name ?? '',
@@ -108,7 +102,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
       opp?.category ?? '',
       h.date,
       String(h.hours),
-      value,
       h.verification_code ?? '',
       h.verified_at ?? '',
       h.supervisor_name ?? '',
@@ -126,7 +119,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
       opp?.title ?? '',
       opp?.category ?? '',
       date,
-      '',
       '',
       c.verification_code ?? '',
       c.verified_at ?? '',

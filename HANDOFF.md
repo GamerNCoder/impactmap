@@ -21,7 +21,22 @@
   - Map tiles load and the Edison pins appear.
 - The full UI test was NOT rerun against production after the 2026-10-12 changes, to avoid creating more test data there. It did pass on production before those changes.
 
+## 2026-10-15 cleanup pass (done)
+- **Cut the uncut SaaS layer.** Deleted the plan tiers, org API keys, webhooks, org settings, ESG export, platform admin page and its `/api/admin/*` routes, the unused reverse-geocode route, and the dead `ai-context` / `commitment-*` / `competency-data` / `skills` / `plan-tiers` / `org-plan-data` / `org-api` / `platform-admin` libs (19 files).
+  - The free "starter" plan had been blocking things: creating a second organization threw "Upgrade to create more", and approving *any* coordinator request failed with "Coordinator seat limit reached". Both gates are gone.
+- **Removed the dollar "impact value"** from `/verify/[code]` and from the coordinator CSV — it was supposed to be cut in the 2026-10-12 simplification.
+- **Design coherence.** The event detail, post-event, organization, and join/log/approve components were still on the old indigo/violet palette; all now use the emerald system with dark-mode variants.
+- **Wrong verification codes** now get a dedicated page (`/verify/[code]/not-found.tsx`) with a retry link instead of the generic 404.
+- **Bug fixes:** duplicate DOM ids in `LogHoursForm` (one form per joined event) are now prefixed by opportunity id; `VerifyLookupClient` accepts a pasted `…/verify/IMP-…` URL; camera-permission errors are plain English; the landing page's dark-hero labels meet AA contrast; the org page's "Approve hours" link only shows to people who can actually manage the org.
+- **Legal pages** no longer claim phone numbers, government ID images, SkillMatch, or enterprise DPAs — they now match what the app actually collects.
+- **New `app/error.tsx`** so a database hiccup shows a real error instead of a misleading "no events yet".
+- Verified: `npx tsc --noEmit`, `eslint`, and `npm run build` all clean (23 routes).
+
+### Known limitation (affects the demo)
+The five seeded Edison events belong to organizations that have **no owner or coordinator**, so a student can join them and log hours but nobody can ever approve. For the approval step, the organizer must **post the event from their own account**. The demo script in `SUBMISSION.md` was updated accordingly.
+
 ## Blocking before judging (needs the user or their permission)
+
 1. **Delete the production test data:**
    - the org "Austin Park Friends <run>" and its event "Saturday park cleanup"
    - the 2 `@example.com` users

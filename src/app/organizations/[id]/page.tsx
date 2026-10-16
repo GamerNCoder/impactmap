@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import OpportunityCard from '@/components/OpportunityCard'
+import { canManageOrg } from '@/lib/org-access'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -30,6 +31,9 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
     notFound()
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+  const canManage = user ? await canManageOrg(id, user.id) : false
+
   const { data: opportunities } = await supabase
     .from('opportunities')
     .select('*')
@@ -40,7 +44,7 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
   return (
     <div className="bg-gray-50 min-h-full">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <Link href="/organizations" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+        <Link href="/organizations" className="text-emerald-700 hover:text-emerald-800 text-sm font-medium">
           ← Back to organizations
         </Link>
 
@@ -49,16 +53,18 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
             <h1 className="text-3xl font-bold text-gray-900">{organization.name}</h1>
             <div className="flex flex-col items-end gap-2 shrink-0">
               {organization.verified && (
-                <span className="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">
+                <span className="bg-emerald-100 text-emerald-700 text-sm font-medium px-3 py-1 rounded-full">
                   Verified
                 </span>
               )}
-              <Link
-                href={`/organizations/${id}/manage`}
-                className="text-sm text-indigo-600 font-medium hover:text-indigo-800"
-              >
-                Coordinator dashboard →
-              </Link>
+              {canManage && (
+                <Link
+                  href={`/organizations/${id}/manage`}
+                  className="text-sm text-emerald-700 font-medium hover:text-emerald-800"
+                >
+                  Approve hours →
+                </Link>
+              )}
             </div>
           </div>
 
@@ -77,7 +83,7 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
               <div>
                 <dt className="text-gray-500">Email</dt>
                 <dd className="font-medium text-gray-900">
-                  <a href={`mailto:${organization.email}`} className="text-indigo-600 hover:underline">
+                  <a href={`mailto:${organization.email}`} className="text-emerald-700 hover:underline">
                     {organization.email}
                   </a>
                 </dd>
@@ -91,7 +97,7 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
                     href={organization.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-indigo-600 hover:underline"
+                    className="text-emerald-700 hover:underline"
                   >
                     {organization.website}
                   </a>

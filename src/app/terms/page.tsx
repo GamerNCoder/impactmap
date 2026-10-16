@@ -26,7 +26,7 @@ export default function TermsPage() {
         <h2>1. Acceptance</h2>
         <p>
           By creating an account or signing in to ImpactMap, you agree to these Terms &amp; Conditions
-          and our use of the information you provide to operate the volunteer matching platform.
+          and to our use of the information you provide to operate the volunteer event platform.
         </p>
 
         <h2>2. Eligibility</h2>
@@ -36,24 +36,23 @@ export default function TermsPage() {
           for verifying volunteer eligibility for specific roles.
         </p>
 
-        <h2>3. Your account &amp; profile data</h2>
+        <h2>3. Your account</h2>
         <p>
-          You agree to provide accurate profile information, including your name, contact details,
-          location, skills, availability, and interests. ImpactMap uses this data to recommend events,
-          calculate SkillMatch scores, and display your Impact Passport to organizations you volunteer with.
+          You agree to provide accurate account information, including your name and a valid email. Your date of
+          birth is used only to apply our age rules and is never shown to other people or to organizations.
         </p>
 
         <h2>4. Volunteer participation</h2>
         <p>
           Joining an event through ImpactMap does not create an employment relationship. You are responsible
-          for your conduct at volunteer activities. Organizations may verify hours, confirm task completion,
-          and publish coordinator reviews that appear on your public passport when shared.
+          for your conduct at volunteer activities. An event organizer approves the hours you log for their event.
         </p>
 
-        <h2>5. Impact Passport &amp; verification</h2>
+        <h2>5. Verified hours</h2>
         <p>
-          Credentials and reviews are issued by organization coordinators, not ImpactMap directly.
-          Public verification links allow third parties to confirm credentials you choose to share.
+          Verification codes are issued by event organizers when they approve a volunteer&rsquo;s logged hours, not by
+          ImpactMap directly. Public verification pages let third parties confirm a code you choose to share.
+          Students cannot approve their own hours.
         </p>
 
         <h2>6. Acceptable use</h2>
@@ -64,8 +63,7 @@ export default function TermsPage() {
 
         <h2>7. Communications</h2>
         <p>
-          If you opt in to marketing communications, we may send product updates and volunteer opportunities.
-          You can withdraw consent at any time in your profile settings.
+          We send only account-related messages, such as confirming your email. We do not send marketing email.
         </p>
 
         <h2>8. Disclaimer</h2>

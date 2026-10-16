@@ -72,7 +72,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
         resourceId={id}
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <Link href="/opportunities" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+        <Link href="/opportunities" className="text-emerald-700 hover:text-emerald-800 text-sm font-medium">
           ← Back to opportunities
         </Link>
 
@@ -80,7 +80,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-8">
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">
+                <span className="bg-emerald-100 text-emerald-700 text-sm font-medium px-3 py-1 rounded-full">
                   {opportunity.category}
                 </span>
                 {opportunity.remote && (
@@ -98,7 +98,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
               {org && (
                 <Link
                   href={`/organizations/${org.id}`}
-                  className="text-indigo-600 hover:text-indigo-800 font-medium"
+                  className="text-emerald-700 hover:text-emerald-800 font-medium"
                 >
                   {org.name}
                 </Link>
@@ -192,7 +192,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                   <p className="text-gray-600 mb-4">Sign in to join this event.</p>
                   <Link
                     href={`/auth/login?next=/opportunities/${id}`}
-                    className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700"
+                    className="inline-block bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-800"
                   >
                     Sign in to join
                   </Link>

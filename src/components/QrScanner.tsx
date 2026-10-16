@@ -8,6 +8,22 @@ type QrScannerProps = {
   className?: string
 }
 
+function friendlyCameraError(err: unknown): string {
+  const name = err instanceof Error ? err.name : ''
+  switch (name) {
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return 'Camera access was blocked. Allow the camera in your browser settings, or type the code instead.'
+    case 'NotFoundError':
+    case 'OverconstrainedError':
+      return 'No camera was found on this device. Type the code instead.'
+    case 'NotReadableError':
+      return 'The camera is in use by another app. Close it and try again.'
+    default:
+      return 'Could not start the camera. Type the code instead.'
+  }
+}
+
 export default function QrScanner({ onScan, onError, className }: QrScannerProps) {
   const regionId = useId().replace(/:/g, '')
   const lastScan = useRef<string | null>(null)
@@ -48,10 +64,7 @@ export default function QrScanner({ onScan, onError, className }: QrScannerProps
 
         if (!cancelled) setStarting(false)
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : 'Could not access camera. Check permissions and try again.'
+        const message = friendlyCameraError(err)
         setCameraError(message)
         onErrorRef.current?.(message)
         setStarting(false)
@@ -74,10 +87,10 @@ export default function QrScanner({ onScan, onError, className }: QrScannerProps
         aria-label="QR code scanner camera view"
       />
       {starting && !cameraError && (
-        <p className="text-center text-sm text-gray-500 mt-3">Starting camera…</p>
+        <p role="status" aria-live="polite" className="text-center text-sm text-gray-500 mt-3">Starting camera…</p>
       )}
       {cameraError && (
-        <div className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+        <div role="alert" className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
           {cameraError}
         </div>
       )}

@@ -60,11 +60,11 @@ export default async function Home() {
             </div>
             <dl className="mt-10 flex gap-10 text-sm">
               <div>
-                <dt className="text-gray-600">Open events</dt>
+                <dt className="text-gray-400">Open events</dt>
                 <dd className="text-2xl font-bold">{eventCount ?? 0}</dd>
               </div>
               <div>
-                <dt className="text-gray-600">Hour logs approved</dt>
+                <dt className="text-gray-400">Hour logs approved</dt>
                 <dd className="text-2xl font-bold">{approvedCount ?? 0}</dd>
               </div>
             </dl>
@@ -78,7 +78,7 @@ export default async function Home() {
               <p className="text-sm text-gray-300 mt-1">Alex J. · 3 hours · Roosevelt Park Fall Cleanup</p>
               <p className="text-xs text-gray-400 mt-1">Approved by the event organizer</p>
             </div>
-            <p className="text-xs text-gray-500 mt-3">Example. Anyone can check a real code at /verify.</p>
+            <p className="text-xs text-gray-400 mt-3">Example. Anyone can check a real code at /verify.</p>
           </div>
         </div>
       </section>

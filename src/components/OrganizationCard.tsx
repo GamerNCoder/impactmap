@@ -22,7 +22,7 @@ export default function OrganizationCard({
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
         {verified && (
-          <span className="shrink-0 bg-indigo-100 text-indigo-700 text-xs font-medium px-2 py-1 rounded">
+          <span className="shrink-0 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-1 rounded">
             Verified
           </span>
         )}
@@ -32,11 +32,11 @@ export default function OrganizationCard({
       )}
       <div className="flex items-center justify-between text-sm text-gray-500">
         <span>{location || 'Multiple locations'}</span>
-        <span>{opportunityCount} open role{opportunityCount !== 1 ? 's' : ''}</span>
+        <span>{opportunityCount} open event{opportunityCount !== 1 ? 's' : ''}</span>
       </div>
       <Link
         href={`/organizations/${id}`}
-        className="inline-block mt-4 text-indigo-600 font-medium hover:text-indigo-800"
+        className="inline-block mt-4 text-emerald-700 font-medium hover:text-emerald-800"
       >
         View organization →
       </Link>
