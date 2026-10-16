@@ -90,6 +90,13 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     verified_at: string | null
   }> = []
 
+  let checkins: Array<{
+    id: string
+    opportunity_id: string
+    user_id: string
+    checked_in_at: string
+  }> = []
+
 
   if (oppIds.length > 0) {
     const { data: pending } = await supabase
@@ -106,13 +113,21 @@ export default async function OrganizationManagePage({ params }: PageProps) {
       .eq('verified', true)
       .order('verified_at', { ascending: false })
 
+    const { data: attendance } = await supabase
+      .from('event_checkins')
+      .select('id, opportunity_id, user_id, checked_in_at')
+      .in('opportunity_id', oppIds)
+      .order('checked_in_at', { ascending: false })
+
     pendingHours = pending ?? []
     verifiedHoursList = verified ?? []
+    checkins = attendance ?? []
   }
 
   const profileIds = [...new Set([
     ...pendingHours.map((h) => h.user_id),
     ...verifiedHoursList.map((h) => h.user_id),
+    ...checkins.map((c) => c.user_id),
   ])]
   const { data: profiles } = profileIds.length
     ? await supabase.from('profiles').select('id, full_name').in('id', profileIds)
@@ -124,6 +139,15 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     ? await supabase.from('opportunities').select('id, title').in('id', oppIds)
     : { data: [] }
   const oppMap = new Map((opps ?? []).map((o) => [o.id, o.title]))
+
+  const attendanceByOpp = [
+    ...checkins.reduce((groups, row) => {
+      const list = groups.get(row.opportunity_id) ?? []
+      list.push(row)
+      groups.set(row.opportunity_id, list)
+      return groups
+    }, new Map<string, typeof checkins>()),
+  ]
 
   const totalVerified = verifiedHoursList.reduce((s, h) => s + Number(h.hours), 0)
   const isCoordinator = await canManageOrg(id, user.id)
@@ -184,7 +208,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
               </section>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
                 <p className="text-sm text-gray-500">Waiting for you</p>
                 <p className="text-3xl font-bold text-amber-600">{pendingHours.length}</p>
@@ -193,7 +217,38 @@ export default async function OrganizationManagePage({ params }: PageProps) {
                 <p className="text-sm text-gray-500">Hours approved</p>
                 <p className="text-3xl font-bold text-emerald-700">{totalVerified.toFixed(1)}</p>
               </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <p className="text-sm text-gray-500">Checked in</p>
+                <p className="text-3xl font-bold text-emerald-700">{checkins.length}</p>
+              </div>
             </div>
+
+            <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Attendance</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Recorded when volunteers scan an event&rsquo;s check-in QR on arrival. Attendance is not
+                approval — you still approve the hours they log.
+              </p>
+              {attendanceByOpp.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No check-ins yet. Print the check-in QR on an event page and put it at the sign-in table.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {attendanceByOpp.map(([oppId, rows]) => (
+                    <li key={oppId} className="py-3 first:pt-0 last:pb-0">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {oppMap.get(oppId) ?? 'Event'}
+                        <span className="text-gray-500 font-normal"> · {rows.length} checked in</span>
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {rows.map((r) => profileMap.get(r.user_id) || 'Student').join(', ')}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
             <section>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hours to approve</h2>

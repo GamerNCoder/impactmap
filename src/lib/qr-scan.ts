@@ -2,6 +2,7 @@
 
 export type QrScanAction =
   | { type: 'verify'; code: string }
+  | { type: 'checkin'; opportunityId: string }
   | { type: 'opportunity'; opportunityId: string }
   | { type: 'volunteer'; volunteerId: string }
   | { type: 'manage'; organizationId: string; volunteerId?: string }
@@ -41,6 +42,11 @@ function parseUrlPath(pathname: string, searchParams: URLSearchParams): QrScanAc
   const verifyMatch = pathname.match(/^\/verify\/(.+)$/i)
   if (verifyMatch) {
     return { type: 'verify', code: normalizeCode(decodeURIComponent(verifyMatch[1])) }
+  }
+
+  const checkinMatch = pathname.match(/^\/checkin\/([^/]+)$/i)
+  if (checkinMatch && UUID.test(checkinMatch[1])) {
+    return { type: 'checkin', opportunityId: checkinMatch[1] }
   }
 
   const oppMatch = pathname.match(/^\/opportunities\/([^/]+)$/i)
@@ -90,7 +96,7 @@ export function parseQrScan(text: string): QrScanAction | null {
       return { type: 'verify', code: normalizeCode(json.code) }
     }
     if (action === 'checkin' && json.opportunityId && UUID.test(json.opportunityId)) {
-      return { type: 'opportunity', opportunityId: json.opportunityId }
+      return { type: 'checkin', opportunityId: json.opportunityId }
     }
     if (action === 'volunteer' && json.volunteerId && UUID.test(json.volunteerId)) {
       if (json.organizationId && UUID.test(json.organizationId)) {
@@ -139,6 +145,8 @@ export function routeForScanAction(action: QrScanAction): string {
   switch (action.type) {
     case 'verify':
       return `/verify/${encodeURIComponent(action.code)}`
+    case 'checkin':
+      return `/checkin/${action.opportunityId}`
     case 'opportunity':
       return `/opportunities/${action.opportunityId}`
     case 'volunteer':
@@ -160,16 +168,18 @@ export function describeScanAction(action: QrScanAction): string {
   switch (action.type) {
     case 'verify':
       return `Verify credential ${action.code}`
+    case 'checkin':
+      return 'Check in to this event'
     case 'opportunity':
       return 'Open event — join or log hours'
     case 'volunteer':
-      return 'Open volunteer passport'
+      return 'Open volunteer record'
     case 'manage':
       return action.volunteerId
-        ? 'Coordinator check-in — volunteer verification'
-        : 'Open coordinator dashboard'
+        ? 'Organizer check-in — review this volunteer'
+        : 'Open organizer dashboard'
     case 'dashboard':
-      return 'Open your hub — log hours'
+      return 'Open your home — log hours'
     case 'external':
       return 'Open link'
   }
