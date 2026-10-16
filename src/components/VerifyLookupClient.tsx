@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import QrScanner from '@/components/QrScanner'
+import BulkVerifyPanel from '@/components/BulkVerifyPanel'
 import {
   describeScanAction,
   parseQrScan,
@@ -10,9 +11,13 @@ import {
   type QrScanAction,
 } from '@/lib/qr-scan'
 
+type Mode = 'form' | 'scan' | 'list'
+
+const MODES: Mode[] = ['form', 'scan', 'list']
+
 export default function VerifyLookupClient() {
   const [code, setCode] = useState('')
-  const [mode, setMode] = useState<'form' | 'scan'>('form')
+  const [mode, setMode] = useState<Mode>('form')
   const [pending, setPending] = useState<QrScanAction | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -51,7 +56,7 @@ export default function VerifyLookupClient() {
     setPending(action)
   }, [router])
 
-  const selectMode = (next: 'form' | 'scan') => {
+  const selectMode = (next: Mode) => {
     setMode(next)
     setPending(null)
     setError(null)
@@ -60,10 +65,19 @@ export default function VerifyLookupClient() {
   const onTabKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
     e.preventDefault()
-    const next = mode === 'form' ? 'scan' : 'form'
+    const current = MODES.indexOf(mode)
+    const step = e.key === 'ArrowRight' ? 1 : -1
+    const next = MODES[(current + step + MODES.length) % MODES.length]
     selectMode(next)
     document.getElementById(`verify-tab-${next}`)?.focus()
   }
+
+  const tabClass = (target: Mode) =>
+    `flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable motion-focus-ring ${
+      mode === target
+        ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+        : 'text-gray-600 dark:text-gray-400'
+    }`
 
   return (
     <div className="space-y-6">
@@ -77,11 +91,7 @@ export default function VerifyLookupClient() {
           tabIndex={mode === 'form' ? 0 : -1}
           onClick={() => selectMode('form')}
           onKeyDown={onTabKeyDown}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable motion-focus-ring ${
-            mode === 'form'
-              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
+          className={tabClass('form')}
         >
           Enter code
         </button>
@@ -94,13 +104,22 @@ export default function VerifyLookupClient() {
           tabIndex={mode === 'scan' ? 0 : -1}
           onClick={() => selectMode('scan')}
           onKeyDown={onTabKeyDown}
-          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 motion-pressable motion-focus-ring ${
-            mode === 'scan'
-              ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400'
-          }`}
+          className={tabClass('scan')}
         >
           Scan QR
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="verify-tab-list"
+          aria-selected={mode === 'list'}
+          aria-controls="verify-panel-list"
+          tabIndex={mode === 'list' ? 0 : -1}
+          onClick={() => selectMode('list')}
+          onKeyDown={onTabKeyDown}
+          className={tabClass('list')}
+        >
+          Check a list
         </button>
       </div>
 
@@ -138,7 +157,7 @@ export default function VerifyLookupClient() {
             Look up credential
           </button>
         </form>
-      ) : (
+      ) : mode === 'scan' ? (
         <div key="scan" id="verify-panel-scan" role="tabpanel" aria-labelledby="verify-tab-scan" className="space-y-4 motion-fade-in-up">
           {!pending ? (
             <>
@@ -168,6 +187,10 @@ export default function VerifyLookupClient() {
               </button>
             </div>
           )}
+        </div>
+      ) : (
+        <div key="list" id="verify-panel-list" role="tabpanel" aria-labelledby="verify-tab-list" className="motion-fade-in-up">
+          <BulkVerifyPanel />
         </div>
       )}
     </div>
