@@ -31,8 +31,15 @@ function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
     const close = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', onKeyDown)
+    }
   }, [])
 
   const items = [{ href: '/profile', label: 'Profile' }]
@@ -42,16 +49,22 @@ function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 motion-focus-ring"
         aria-label="Account menu"
+        aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls="account-menu"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg z-50 motion-nav-dropdown">
+        <div
+          id="account-menu"
+          role="menu"
+          className="absolute right-0 top-full mt-1 w-44 py-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg z-50 motion-nav-dropdown"
+        >
           {items.map((item) => (
             <Link
               key={item.href}
@@ -91,6 +104,15 @@ function MobileMenu({
 }) {
   const [open, setOpen] = useState(false)
 
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
+
   const links = user
     ? [...PRIMARY_NAV, { href: '/verify', label: 'Check a code' }]
     : GUEST_NAV
@@ -100,9 +122,10 @@ function MobileMenu({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 motion-focus-ring"
         aria-label="Menu"
         aria-expanded={open}
+        aria-controls="mobile-menu"
       >
         {open ? (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +140,7 @@ function MobileMenu({
       {open && (
         <>
           <div className="fixed inset-0 top-14 bg-black/20 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 top-14 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50 px-4 py-3 space-y-1">
+          <div id="mobile-menu" className="absolute left-0 right-0 top-14 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50 px-4 py-3 space-y-1">
             {links.map((item) => (
               <Link
                 key={item.href}

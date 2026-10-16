@@ -17,18 +17,3 @@ export async function logSecurityEvent(
     metadata: metadata ?? {},
   })
 }
-
-export async function getDailyTransferTotalCents(userId: string): Promise<number> {
-  const supabase = await createClient()
-  const startOfDay = new Date()
-  startOfDay.setHours(0, 0, 0, 0)
-
-  const { data } = await supabase
-    .from('transfer_requests')
-    .select('amount_cents')
-    .eq('sender_id', userId)
-    .in('status', ['pending', 'accepted'])
-    .gte('created_at', startOfDay.toISOString())
-
-  return (data ?? []).reduce((sum, row) => sum + row.amount_cents, 0)
-}

@@ -26,11 +26,9 @@ export function AuthDivider({ label }: AuthDividerProps) {
 }
 
 export function AuthOAuthSection({
-  mode,
   next,
   onBeforeOAuth,
 }: {
-  mode: 'signin' | 'signup'
   next?: string
   onBeforeOAuth: () => boolean
 }) {
@@ -40,7 +38,6 @@ export function AuthOAuthSection({
 
   return (
     <OAuthButtons
-      mode={mode}
       next={next}
       onBeforeOAuth={onBeforeOAuth}
     />

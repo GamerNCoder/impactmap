@@ -111,7 +111,6 @@ function LoginForm() {
         )}
 
         <AuthOAuthSection
-          mode="signin"
           next={nextPath}
           onBeforeOAuth={guardTerms}
         />

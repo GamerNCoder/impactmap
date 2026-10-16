@@ -47,14 +47,12 @@ const ICONS: Record<OAuthProviderId, () => React.ReactNode> = {
 }
 
 type OAuthButtonsProps = {
-  mode?: 'signin' | 'signup'
   next?: string
   disabled?: boolean
   onBeforeOAuth?: () => boolean
 }
 
 export default function OAuthButtons({
-  mode = 'signin',
   next = '/dashboard',
   disabled = false,
   onBeforeOAuth,
@@ -129,8 +127,6 @@ export default function OAuthButtons({
     }
   }
 
-  const actionLabel = mode === 'signup' ? 'Sign up' : 'Continue'
-
   return (
     <div className="space-y-3">
       {error && (
@@ -153,7 +149,7 @@ export default function OAuthButtons({
             className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 motion-pressable motion-focus-ring"
           >
             <Icon />
-            <span>{isLoading ? 'Redirecting…' : `${actionLabel} with ${label}`}</span>
+            <span>{isLoading ? 'Redirecting…' : `Continue with ${label}`}</span>
           </button>
         )
       })}

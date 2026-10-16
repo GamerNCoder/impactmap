@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import QrScanner from '@/components/QrScanner'
 import {
@@ -20,6 +20,9 @@ type QrScanLauncherProps = {
   onResolved?: (action: QrScanAction) => void
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 export default function QrScanLauncher({
   label = 'Scan QR',
   variant = 'button',
@@ -30,6 +33,53 @@ export default function QrScanLauncher({
   const [pending, setPending] = useState<QrScanAction | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const panelRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const lastFocused = useRef<HTMLElement | null>(null)
+
+  const close = useCallback(() => {
+    setOpen(false)
+    setPending(null)
+    setError(null)
+  }, [])
+
+  // Modal behaviour: focus moves in, Tab is trapped, Escape closes, focus returns to the trigger.
+  useEffect(() => {
+    if (!open) return
+
+    lastFocused.current = document.activeElement as HTMLElement | null
+    closeButtonRef.current?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        close()
+        return
+      }
+      if (event.key !== 'Tab') return
+
+      const nodes = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE)
+      if (!nodes || nodes.length === 0) return
+      const list = Array.from(nodes)
+      const first = list[0]
+      const last = list[list.length - 1]
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      lastFocused.current?.focus?.()
+    }
+  }, [open, close])
 
   const handleScan = useCallback(
     (text: string) => {
@@ -53,8 +103,7 @@ export default function QrScanLauncher({
     } else {
       router.push(route)
     }
-    setOpen(false)
-    setPending(null)
+    close()
   }
 
   const trigger =
@@ -64,6 +113,7 @@ export default function QrScanLauncher({
         onClick={() => setOpen(true)}
         className={`p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 motion-pressable motion-focus-ring ${className}`}
         aria-label="Scan QR code"
+        aria-haspopup="dialog"
         title="Scan QR code"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -80,6 +130,7 @@ export default function QrScanLauncher({
         type="button"
         onClick={() => setOpen(true)}
         className={`text-sm font-medium text-emerald-700 hover:underline ${className}`}
+        aria-haspopup="dialog"
       >
         {label}
       </button>
@@ -88,6 +139,7 @@ export default function QrScanLauncher({
         type="button"
         onClick={() => setOpen(true)}
         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 motion-pressable motion-focus-ring ${className}`}
+        aria-haspopup="dialog"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path
@@ -112,26 +164,22 @@ export default function QrScanLauncher({
           aria-modal="true"
           aria-labelledby="qr-scan-title"
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setOpen(false)
-              setPending(null)
-              setError(null)
-            }
+            if (e.target === e.currentTarget) close()
           }}
         >
-          <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden motion-modal-panel">
+          <div
+            ref={panelRef}
+            className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden motion-modal-panel"
+          >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
               <h2 id="qr-scan-title" className="font-semibold text-gray-900 dark:text-white">
                 Scan QR code
               </h2>
               <button
+                ref={closeButtonRef}
                 type="button"
-                onClick={() => {
-                  setOpen(false)
-                  setPending(null)
-                  setError(null)
-                }}
-                className="text-gray-500 hover:text-gray-800 dark:hover:text-white p-1"
+                onClick={close}
+                className="text-gray-500 hover:text-gray-800 dark:hover:text-white p-1 motion-focus-ring"
                 aria-label="Close scanner"
               >
                 ✕
@@ -146,7 +194,7 @@ export default function QrScanLauncher({
                   </p>
                   <QrScanner onScan={handleScan} onError={setError} />
                   {error && (
-                    <p className="text-sm text-red-600 dark:text-red-400 motion-shake">{error}</p>
+                    <p role="alert" className="text-sm text-red-600 dark:text-red-400 motion-shake">{error}</p>
                   )}
                 </div>
               ) : (
@@ -163,14 +211,14 @@ export default function QrScanLauncher({
                     <button
                       type="button"
                       onClick={() => setPending(null)}
-                      className="flex-1 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-medium motion-pressable"
+                      className="flex-1 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-medium motion-pressable motion-focus-ring"
                     >
                       Scan again
                     </button>
                     <button
                       type="button"
                       onClick={confirmNavigate}
-                      className="flex-1 py-2.5 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 motion-pressable"
+                      className="flex-1 py-2.5 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 motion-pressable motion-focus-ring"
                     >
                       Continue
                     </button>

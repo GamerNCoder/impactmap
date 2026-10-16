@@ -44,6 +44,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
   const [me, setMe] = useState<Position | null>(null)
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState<string | null>(null)
+  const [announcement, setAnnouncement] = useState('')
 
   const pinned = useMemo(
     () => events.filter((e) => e.latitude != null && e.longitude != null),
@@ -108,11 +109,15 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
     }
     setLocating(true)
     setLocateError(null)
+    setAnnouncement('')
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const here = { lat: pos.coords.latitude, lng: pos.coords.longitude }
         setMe(here)
         setLocating(false)
+        setAnnouncement(
+          `Sorted ${events.length} event${events.length === 1 ? '' : 's'} by distance from you. Nearest first.`
+        )
         const L = await import('leaflet')
         meLayer.current?.clearLayers()
         if (meLayer.current) {
@@ -143,7 +148,8 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
           {locating ? 'Locating…' : me ? '✓ Sorted by distance' : '📍 Near me'}
         </button>
       </div>
-      {locateError && <p className="text-sm text-amber-700 dark:text-amber-400">{locateError}</p>}
+      {locateError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">{locateError}</p>}
+      <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sorted.map(({ event: e, distance }) => (
