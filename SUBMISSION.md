@@ -40,8 +40,10 @@ Recording tips: use a fresh test account, Chrome device toolbar (iPhone size), h
 
 **Important:** the organizer in the video must post the event from their *own* account. The five seeded Edison events belong to demo organizations with no owner, so hours logged against them can never be approved — they are for showing the map, not for the approval step.
 
+**Production data:** the live site carries those 5 sample events at real Edison locations so the map isn't empty when a judge clicks the link. They are demo listings: not marked verified, no placeholder contacts, and their join counts are honest zeros. Everything the video shows for the join → log → approve → verify loop is created live by the demo accounts.
+
 ## Before submitting
-- [ ] Remove production test data (org "Austin Park Friends …", event "Saturday park cleanup", 2 `@example.com` users) — it shows on the public events list. Needs Supabase dashboard access or approval to run deletes.
+- [x] Remove production test data (org "Austin Park Friends …", event "Saturday park cleanup", 2 `@example.com` users) — done 2026-10-15 via `supabase db query --linked`.
 - [ ] Confirm district (assumed NJ-6) on congressionalappchallenge.us.
 - [ ] Record + upload video (YouTube/Vimeo, unlisted is fine).
 - [ ] Paste AI-use disclosure.

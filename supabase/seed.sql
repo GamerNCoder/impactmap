@@ -1,14 +1,22 @@
--- Sample seed data for ImpactMap (run after schema.sql)
--- Safe to re-run: uses fixed UUIDs and ON CONFLICT
--- Demo listings for Edison, NJ (NJ-6). Organizers are fictional; locations are real public places.
+-- Sample data for ImpactMap — LOCAL DEVELOPMENT ONLY.
+-- Do NOT push this to production: deploy.sh runs migrations only, on purpose.
+--
+-- These are demo listings for Edison, NJ (NJ-6). The locations are real public
+-- places; the organizations are fictional and are deliberately NOT marked as
+-- verified, and they have no owner, so nobody can approve hours logged against
+-- them. Posting a real event from your own account is the way to exercise the
+-- full approve -> verify loop.
+--
+-- Safe to re-run: uses fixed UUIDs and ON CONFLICT.
 
 INSERT INTO organizations (id, name, description, website, email, location, verified) VALUES
-  ('11111111-1111-1111-1111-111111111101', 'Edison Student Food Drive', 'Students collecting and sorting food for Middlesex County families in need.', 'https://example.org/edison-food-drive', 'volunteer@example.org', 'Edison, NJ', true),
-  ('11111111-1111-1111-1111-111111111102', 'Edison Library Homework Helpers', 'High schoolers tutoring younger students after school.', 'https://example.org/homework-helpers', 'tutors@example.org', 'Edison Public Library', true),
-  ('11111111-1111-1111-1111-111111111103', 'Green Edison Youth', 'Teen-led park and trail cleanups across Edison.', 'https://example.org/green-edison', 'hello@example.org', 'Roosevelt Park', true),
-  ('11111111-1111-1111-1111-111111111104', 'Edison Senior Tech Buddies', 'Teens helping seniors use phones, email and video calls.', 'https://example.org/tech-buddies', 'buddies@example.org', 'Edison, NJ', true)
+  ('11111111-1111-1111-1111-111111111101', 'Edison Student Food Drive', 'Students collecting and sorting food for Middlesex County families in need.', NULL, NULL, 'Edison, NJ', false),
+  ('11111111-1111-1111-1111-111111111102', 'Edison Library Homework Helpers', 'High schoolers tutoring younger students after school.', NULL, NULL, 'Edison Public Library', false),
+  ('11111111-1111-1111-1111-111111111103', 'Green Edison Youth', 'Teen-led park and trail cleanups across Edison.', NULL, NULL, 'Roosevelt Park', false),
+  ('11111111-1111-1111-1111-111111111104', 'Edison Senior Tech Buddies', 'Teens helping seniors use phones, email and video calls.', NULL, NULL, 'Edison, NJ', false)
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description,
-  website = EXCLUDED.website, email = EXCLUDED.email, location = EXCLUDED.location;
+  website = EXCLUDED.website, email = EXCLUDED.email, location = EXCLUDED.location,
+  verified = EXCLUDED.verified;
 
 INSERT INTO opportunities (
   id, organization_id, title, description, category, skills_required,
@@ -27,7 +35,7 @@ INSERT INTO opportunities (
     '3 hours, Saturdays',
     CURRENT_DATE + INTERVAL '7 days',
     CURRENT_DATE + INTERVAL '60 days',
-    20, 5, 'open',
+    20, 0, 'open',
     'Ages 13+. Closed-toe shoes.',
     'Verified service hours, certificate.',
     40.5285, -74.3915
@@ -44,7 +52,7 @@ INSERT INTO opportunities (
     '2 hours/week',
     CURRENT_DATE + INTERVAL '14 days',
     CURRENT_DATE + INTERVAL '45 days',
-    15, 3, 'open',
+    15, 0, 'open',
     'Ages 14+. Weekly commitment for at least one month.',
     'Verified service hours, recommendation letter after 20 hours.',
     40.517465, -74.408179
@@ -61,7 +69,7 @@ INSERT INTO opportunities (
     'One-time, 3 hours',
     CURRENT_DATE + INTERVAL '10 days',
     CURRENT_DATE + INTERVAL '9 days',
-    40, 12, 'open',
+    40, 0, 'open',
     'Ages 13+. Gloves and bags provided.',
     'Verified service hours, group photo.',
     40.547088, -74.341672
@@ -78,7 +86,7 @@ INSERT INTO opportunities (
     'One-time, 4 hours',
     CURRENT_DATE + INTERVAL '21 days',
     CURRENT_DATE + INTERVAL '20 days',
-    25, 6, 'open',
+    25, 0, 'open',
     'Ages 14+. Long pants and boots recommended.',
     'Verified service hours, intro to local ecology.',
     40.558148, -74.401524
@@ -95,7 +103,7 @@ INSERT INTO opportunities (
     '1 hour/week',
     CURRENT_DATE,
     CURRENT_DATE + INTERVAL '90 days',
-    10, 2, 'open',
+    10, 0, 'open',
     'Ages 13+. Reliable internet connection.',
     'Verified service hours, remote volunteering experience.',
     NULL, NULL

@@ -7,7 +7,7 @@
 **User's standing asks:** keep answers concise; commit and push verified work automatically; never print or mention secrets; run Docker and local models on CLEAN, never the Mac; automate everything (only account, payment and trust steps go to the user); keep the app simple so users aren't overloaded; keep the site presentation-ready.
 
 ## LIVE: https://impactmap.vercel.app
-- It runs the latest code: commit 3d713e0 on branch `cac/core-loop`, pushed to GitHub.
+- It runs commit `e0638d2` on branch `cac/core-loop`, pushed to GitHub and deployed to production on 2026-10-15.
 - Supabase project `impactmap-cac` (ref zolvpddzpimegnkimszh). Deploy state lives in `.env.deploy.local` (gitignored; don't print it). The old paused `impactmap` project still exists and is unused.
 - All migrations are applied to production, including the 2026-10-12 pair.
 - To redeploy, run `./deploy.sh`. It is idempotent and does these steps:
@@ -32,17 +32,23 @@
 - **New `app/error.tsx`** so a database hiccup shows a real error instead of a misleading "no events yet".
 - Verified: `npx tsc --noEmit`, `eslint`, and `npm run build` all clean (23 routes).
 
+### Production data (decided 2026-10-15)
+Production carries the **5 sample events** at real Edison public places, so the map is never empty for a judge who clicks the link before watching the video. They are demo listings, and the misleading parts were removed:
+- the 4 sample organizations are **no longer marked `verified`** (they had been falsely showing a "✓ Verified organizer" badge)
+- their `example.org` website/email were cleared, so no placeholder contact shows on public org pages
+- `volunteers_count` was zeroed (it had fabricated "12 joined / 40 spots" with no real users on the platform)
+
+This was applied to production, and `supabase/seed.sql` now matches it. **`deploy.sh` no longer pushes the seed** — it ran `db push --include-seed`, which would have resurrected the fabricated rows on every future deploy. `seed.sql` is local-dev only now.
+
 ### Known limitation (affects the demo)
-The five seeded Edison events belong to organizations that have **no owner or coordinator**, so a student can join them and log hours but nobody can ever approve. For the approval step, the organizer must **post the event from their own account**. The demo script in `SUBMISSION.md` was updated accordingly.
+The 5 sample events belong to organizations with **no owner or coordinator**, so a student can join them and log hours but nobody can ever approve. For the approval step, the organizer must **post the event from their own account**. The demo script in `SUBMISSION.md` was updated accordingly.
+
+With the platform-admin verify route deleted, `organizations.verified` is now an operator-set flag (set it via SQL or the Supabase dashboard). A real pilot organization should be marked verified that way so the trust badge stays genuine.
 
 ## Blocking before judging (needs the user or their permission)
 
-1. **Delete the production test data:**
-   - the org "Austin Park Friends <run>" and its event "Saturday park cleanup"
-   - the 2 `@example.com` users
-
-   The user can do this in the Supabase dashboard (impactmap-cac → Table editor / Auth users), or allow me to run `supabase db query --linked` with deletes.
-2. **Demo video** (judged). Script idea: student signs up → map → joins the Edison event → checks in → logs hours → organizer taps Approve → counselor opens /verify/IMP-… → printable counselor report.
+1. ~~**Delete the production test data**~~ — **done 2026-10-15.** Removed the "Austin Park Friends" org, the "Saturday park cleanup" event, the 2 `@example.com` accounts, and 1 orphan verified hour. Production now holds no real users, only the honest sample events above.
+2. **Demo video** (judged). Script in `SUBMISSION.md`: student signs up → map → organizer posts an event → student joins → logs hours → organizer taps Approve → counselor opens /verify/IMP-… → printable counselor report.
 3. **AI-use disclosure** in the entry form.
 4. **Real pilot** (strongest win factor): one real group (NHS, Key Club, a library) using it, with a quote or numbers.
 5. **Guardian consent** is an attestation checkbox, not a verified email to the parent. That's a possible upgrade if asked.

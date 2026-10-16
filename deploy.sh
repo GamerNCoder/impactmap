@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command production deploy: hosted Supabase (schema + seed) + Vercel.
+# One-command production deploy: hosted Supabase (migrations) + Vercel.
 # Prereqs (once, interactive): `supabase login` and `npx vercel login`.
 # Re-runnable: reuses the project ref saved in .env.deploy.local.
 set -euo pipefail
@@ -28,7 +28,9 @@ fi
 export SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD:-$DB_PASSWORD}
 
 supabase link --project-ref "$SUPABASE_PROJECT_REF" -p "$SUPABASE_DB_PASSWORD"
-supabase db push --include-seed -p "$SUPABASE_DB_PASSWORD" --yes
+# Migrations only. supabase/seed.sql is local-dev sample data (fictional organizers) and is
+# deliberately NOT pushed to production — see HANDOFF.md.
+supabase db push -p "$SUPABASE_DB_PASSWORD" --yes
 
 SUPABASE_URL="https://$SUPABASE_PROJECT_REF.supabase.co"
 ANON_KEY=$(supabase projects api-keys --project-ref "$SUPABASE_PROJECT_REF" -o json \
