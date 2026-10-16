@@ -7,7 +7,7 @@
 **User's standing asks:** keep answers concise; commit and push verified work automatically; never print or mention secrets; run Docker and local models on CLEAN, never the Mac; automate everything (only account, payment and trust steps go to the user); keep the app simple so users aren't overloaded; keep the site presentation-ready.
 
 ## LIVE: https://impactmap.vercel.app
-- It runs commit `e0638d2` on branch `cac/core-loop`, pushed to GitHub and deployed to production on 2026-10-15.
+- It runs commit `4ff1d8c` on branch `cac/core-loop`, pushed to GitHub and deployed to production on 2026-10-15.
 - Supabase project `impactmap-cac` (ref zolvpddzpimegnkimszh). Deploy state lives in `.env.deploy.local` (gitignored; don't print it). The old paused `impactmap` project still exists and is unused.
 - All migrations are applied to production, including the 2026-10-12 pair.
 - To redeploy, run `./deploy.sh`. It is idempotent and does these steps:
@@ -31,6 +31,16 @@
 - **Legal pages** no longer claim phone numbers, government ID images, SkillMatch, or enterprise DPAs — they now match what the app actually collects.
 - **New `app/error.tsx`** so a database hiccup shows a real error instead of a misleading "no events yet".
 - Verified: `npx tsc --noEmit`, `eslint`, and `npm run build` all clean (23 routes).
+
+### Age gate was bypassable via OAuth (fixed 2026-10-15)
+The 13+ rule and guardian consent for 13–15 lived only in the email sign-up form. A social sign-in creates an account without ever asking for a birthday, so the rule could be skipped — a direct contradiction of the safety claim in `SUBMISSION.md`.
+- New `/auth/complete-profile` collects the birthday (and guardian fields for 13–15) for any account missing one. Under-13s are signed out and told they cannot use the app.
+- Enforced in `middleware.ts` for `/dashboard`, `/profile`, `/passport`, `/organizations/:id/manage` and `/opportunities/new`, and in the OAuth callback.
+- **Gotcha for future work:** `authenticated` has SELECT on `terms_accepted_at` but **not** on `date_of_birth` (see `20261012000000_map_goals_safety.sql`). A direct `.select('date_of_birth')` fails at runtime with a permission error. Read the owner's row through the `my_profile()` RPC instead — verified in production that it is `SECURITY DEFINER` and executable by `authenticated`.
+
+### Accessibility pass (2026-10-15)
+- `QrScanLauncher` modal: focus moves in on open, Tab is trapped, Escape closes, focus returns to the trigger. `VerifyLookupClient`'s toggle is a real tablist with arrow keys. Navbar menus close on Escape; the account menu is a `role="menu"`. Skip-to-content link added; footer heading outline fixed; the "Near me" re-sort is announced by a live region.
+- Deleted `src/lib/geocode.ts` (no importers once the reverse-geocode route went) and the unused `sanitizeUrl` / `hashForAudit` / `getDailyTransferTotalCents` / `TRANSFER_*` / `MESSAGE_MAX_LENGTH` / `POST_MAX_LENGTH` exports.
 
 ### Production data (decided 2026-10-15)
 Production carries the **5 sample events** at real Edison public places, so the map is never empty for a judge who clicks the link before watching the video. They are demo listings, and the misleading parts were removed:
