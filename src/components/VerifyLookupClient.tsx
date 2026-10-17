@@ -11,35 +11,92 @@ import {
   type QrScanAction,
 } from '@/lib/qr-scan'
 
-type Mode = 'form' | 'scan' | 'list'
+type Mode = 'codes' | 'scan'
 
-const MODES: Mode[] = ['form', 'scan', 'list']
+const MODES: Mode[] = ['codes', 'scan']
+
+const MAX_CODES = 200
+const CODE_PATTERN = /^IMP-[A-Z0-9]{6,}$/
+
+/**
+ * Normalize one pasted token into a bare IMP- code, or return null.
+ * Accepts a bare code (with or without the IMP- prefix) and pasted links of
+ * the form …/verify/IMP-XXXX.
+ */
+function normalizeToken(raw: string): string | null {
+  const token = raw.trim()
+  if (!token) return null
+
+  // Pull the code out of a pasted link (…/verify/IMP-XXXX) or use the token.
+  const extracted = token.match(/\/verify\/([^/?#\s]+)/i)?.[1] ?? token
+  let cleaned: string
+  try {
+    cleaned = decodeURIComponent(extracted)
+  } catch {
+    cleaned = extracted
+  }
+  cleaned = cleaned.replace(/[\s/]+$/, '').trim()
+  if (!cleaned) return null
+
+  const upper = cleaned.toUpperCase()
+  const normalized = upper.startsWith('IMP-')
+    ? upper
+    : `IMP-${upper.replace(/^IMP-?/, '')}`
+  return CODE_PATTERN.test(normalized) ? normalized : null
+}
+
+/** Split a pasted blob on whitespace, commas and semicolons, then normalize; de-dupe while keeping order. */
+function parseCodes(raw: string): string[] {
+  const seen = new Set<string>()
+  const codes: string[] = []
+  for (const token of raw.split(/[\s,;]+/)) {
+    const code = normalizeToken(token)
+    if (code && !seen.has(code)) {
+      seen.add(code)
+      codes.push(code)
+    }
+  }
+  return codes
+}
 
 export default function VerifyLookupClient() {
-  const [code, setCode] = useState('')
-  const [mode, setMode] = useState<Mode>('form')
+  const [input, setInput] = useState('')
+  const [mode, setMode] = useState<Mode>('codes')
   const [pending, setPending] = useState<QrScanAction | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [bulkCodes, setBulkCodes] = useState<string[]>([])
   const router = useRouter()
 
-  const goToCode = (raw: string) => {
-    const trimmed = raw.trim()
-    if (!trimmed) {
-      setError('Enter or scan an IMP- verification code.')
+  const detected = parseCodes(input)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setPending(null)
+
+    if (detected.length === 0) {
+      setBulkCodes([])
+      setError(
+        'No IMP- codes found. Paste a code like IMP-A4F92B1C2D3E, a list, or a …/verify/IMP-XXXX link.'
+      )
       return
     }
-    // Accept a pasted link (…/verify/IMP-XXXX) or a bare code.
-    const extracted = trimmed.match(/\/verify\/([^/?#\s]+)/i)?.[1] ?? trimmed
-    const cleaned = decodeURIComponent(extracted).replace(/[\s/]+$/, '')
-    const normalized = cleaned.toUpperCase().startsWith('IMP-')
-      ? cleaned.toUpperCase()
-      : `IMP-${cleaned.replace(/^IMP-?/i, '').toUpperCase()}`
-    if (!/^IMP-[A-Z0-9]{6,}$/.test(normalized)) {
-      setError('That does not look like an IMP- code. Codes have 12 letters or digits after the dash.')
+    if (detected.length > MAX_CODES) {
+      setBulkCodes([])
+      setError(`Please check at most ${MAX_CODES} codes at a time — you pasted ${detected.length}. Reduce to ${MAX_CODES} or fewer.`)
       return
     }
+
     setError(null)
-    router.push(`/verify/${encodeURIComponent(normalized)}`)
+
+    // Exactly one valid code → the full single-credential view.
+    if (detected.length === 1) {
+      setBulkCodes([])
+      router.push(`/verify/${encodeURIComponent(detected[0])}`)
+      return
+    }
+
+    // More than one → bulk table.
+    setBulkCodes(detected)
   }
 
   const handleScan = useCallback((text: string) => {
@@ -85,15 +142,15 @@ export default function VerifyLookupClient() {
         <button
           type="button"
           role="tab"
-          id="verify-tab-form"
-          aria-selected={mode === 'form'}
-          aria-controls="verify-panel-form"
-          tabIndex={mode === 'form' ? 0 : -1}
-          onClick={() => selectMode('form')}
+          id="verify-tab-codes"
+          aria-selected={mode === 'codes'}
+          aria-controls="verify-panel-codes"
+          tabIndex={mode === 'codes' ? 0 : -1}
+          onClick={() => selectMode('codes')}
           onKeyDown={onTabKeyDown}
-          className={tabClass('form')}
+          className={tabClass('codes')}
         >
-          Enter code
+          Check codes
         </button>
         <button
           type="button"
@@ -108,56 +165,66 @@ export default function VerifyLookupClient() {
         >
           Scan QR
         </button>
-        <button
-          type="button"
-          role="tab"
-          id="verify-tab-list"
-          aria-selected={mode === 'list'}
-          aria-controls="verify-panel-list"
-          tabIndex={mode === 'list' ? 0 : -1}
-          onClick={() => selectMode('list')}
-          onKeyDown={onTabKeyDown}
-          className={tabClass('list')}
-        >
-          Check a list
-        </button>
       </div>
 
-      {mode === 'form' ? (
-        <form
-          key="form"
-          id="verify-panel-form"
+      {mode === 'codes' ? (
+        <div
+          key="codes"
+          id="verify-panel-codes"
           role="tabpanel"
-          aria-labelledby="verify-tab-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            goToCode(code)
-          }}
-          className="space-y-4 motion-fade-in-up"
+          aria-labelledby="verify-tab-codes"
+          className="space-y-6 motion-fade-in-up"
         >
-          <div>
-            <label htmlFor="verify-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              IMP- verification code
-            </label>
-            <input
-              id="verify-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="IMP-A4F92B1C2D3E"
-              className="w-full font-mono rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3 dark:bg-gray-900"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </div>
-          {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 motion-pressable"
-          >
-            Look up credential
-          </button>
-        </form>
-      ) : mode === 'scan' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="verify-codes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                IMP- verification code{detected.length > 1 ? 's' : ''}
+              </label>
+              <textarea
+                id="verify-codes"
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value.toUpperCase())
+                  setError(null)
+                  setBulkCodes([])
+                }}
+                rows={detected.length > 1 ? 6 : 3}
+                spellCheck={false}
+                autoComplete="off"
+                placeholder={'IMP-A4F92B1C2D3E\n\nOr paste a whole class list — one code per line, or a …/verify/IMP-XXXX link.'}
+                className="w-full font-mono text-sm rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3 dark:bg-gray-900"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {detected.length === 0
+                  ? 'Paste one code or a whole list — we detect which and check accordingly.'
+                  : `${detected.length} code${detected.length === 1 ? '' : 's'} detected`}
+                {detected.length > MAX_CODES && ` — reduce to ${MAX_CODES} or fewer`}
+              </p>
+            </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400 motion-shake">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 motion-pressable"
+            >
+              {detected.length === 0
+                ? 'Check code'
+                : detected.length === 1
+                  ? 'Look up credential'
+                  : `Check ${detected.length} codes`}
+            </button>
+          </form>
+
+          {bulkCodes.length > 1 && (
+            <BulkVerifyPanel key={bulkCodes.join('\n')} codes={bulkCodes} />
+          )}
+        </div>
+      ) : (
         <div key="scan" id="verify-panel-scan" role="tabpanel" aria-labelledby="verify-tab-scan" className="space-y-4 motion-fade-in-up">
           {!pending ? (
             <>
@@ -187,10 +254,6 @@ export default function VerifyLookupClient() {
               </button>
             </div>
           )}
-        </div>
-      ) : (
-        <div key="list" id="verify-panel-list" role="tabpanel" aria-labelledby="verify-tab-list" className="motion-fade-in-up">
-          <BulkVerifyPanel />
         </div>
       )}
     </div>

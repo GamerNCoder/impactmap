@@ -1,0 +1,32 @@
+ImpactMap
+Copyright (c) 2026 ImpactMap
+
+This product includes software developed by third parties, used under the
+licences below. Full licence texts ship with each package under node_modules.
+
+Software libraries
+------------------
+Next.js 16.2.9                         MIT License
+React and React DOM 19.2.4             MIT License
+@supabase/supabase-js 2.108.2          MIT License
+@supabase/ssr 0.12.0                   MIT License
+Tailwind CSS 4.3.1                     MIT License
+@tailwindcss/postcss 4.3.1             MIT License
+Leaflet 1.9.4                          BSD 2-Clause "Simplified" License
+qrcode 1.5.4                           MIT License
+html5-qrcode 2.3.8                     Apache License 2.0
+
+Map data and geocoding
+----------------------
+Map data and geocoding results are (c) OpenStreetMap contributors, made
+available under the Open Database License (ODbL) 1.0.
+Map tiles are served by the OpenStreetMap Foundation tile servers.
+Geocoding uses the OpenStreetMap Foundation Nominatim service.
+
+Fonts
+-----
+Geist and Geist Mono, Copyright 2024 The Geist Project Authors
+(https://github.com/vercel/geist-font), used under the SIL Open Font
+License 1.1.
+
+See /attributions in the app for the full list and sources.

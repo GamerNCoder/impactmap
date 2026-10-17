@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import PrintButton from '@/components/PrintButton'
 
@@ -16,97 +16,82 @@ type Row = {
   type: 'hours' | 'completion' | null
 }
 
-const MAX_CODES = 200
-
-function parseCodes(raw: string): string[] {
-  return raw
-    .split(/[\s,;]+/)
-    .map((c) => c.trim())
-    .filter(Boolean)
+type Props = {
+  /** Normalized IMP- codes to check. An empty list clears the results. */
+  codes: string[]
 }
 
-export default function BulkVerifyPanel() {
-  const [raw, setRaw] = useState('')
+/**
+ * Results view for a batch of codes. The caller owns the merged input and
+ * decides single vs. batch; this component only renders the summary, the
+ * explicit not-verified list, the table and the print button.
+ */
+export default function BulkVerifyPanel({ codes }: Props) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [summary, setSummary] = useState<{ checked: number; verified: number } | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const codes = parseCodes(raw)
+  // A stable key so a new list re-runs the request, but a re-render does not.
+  // The caller mounts a fresh panel per batch (keyed), so the effect only
+  // needs to run the request — never to clear state synchronously.
+  const codesKey = codes.join('\n')
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+  useEffect(() => {
+    const list = codesKey.split('\n')
+    const controller = new AbortController()
+    let cancelled = false
 
-    if (codes.length === 0) {
-      setError('Paste at least one IMP- code.')
-      return
-    }
-    if (codes.length > MAX_CODES) {
-      setError(`Please check at most ${MAX_CODES} codes at a time — you pasted ${codes.length}.`)
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await fetch('/api/verify/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codes }),
-      })
-      const data = (await res.json()) as {
-        results?: Row[]
-        summary?: { checked: number; verified: number }
-        error?: string
+    const run = async () => {
+      try {
+        const res = await fetch('/api/verify/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codes: list }),
+          signal: controller.signal,
+        })
+        const data = (await res.json()) as {
+          results?: Row[]
+          summary?: { checked: number; verified: number }
+          error?: string
+        }
+        if (cancelled) return
+        if (!res.ok) throw new Error(data.error ?? 'Lookup failed')
+        setRows(data.results ?? [])
+        setSummary(data.summary ?? null)
+      } catch (err: unknown) {
+        if (cancelled || (err instanceof DOMException && err.name === 'AbortError')) return
+        setRows(null)
+        setSummary(null)
+        setError(err instanceof Error ? err.message : 'Lookup failed')
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      if (!res.ok) throw new Error(data.error ?? 'Lookup failed')
-      setRows(data.results ?? [])
-      setSummary(data.summary ?? null)
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Lookup failed')
-    } finally {
-      setLoading(false)
     }
-  }
+
+    void run()
+
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
+  }, [codesKey])
 
   const unknown = (rows ?? []).filter((r) => r.status !== 'verified')
 
   return (
     <div className="space-y-6">
-      <form onSubmit={submit} className="space-y-4">
-        <div>
-          <label htmlFor="bulk-codes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            IMP- verification codes
-          </label>
-          <textarea
-            id="bulk-codes"
-            value={raw}
-            onChange={(e) => setRaw(e.target.value)}
-            rows={6}
-            spellCheck={false}
-            placeholder={'IMP-A4F92B1C2D3E\nIMP-7C41A9E2B0D3\n\nPaste a whole class list, one per line.'}
-            className="w-full font-mono text-sm rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3 dark:bg-gray-900"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            {codes.length} code{codes.length === 1 ? '' : 's'} detected
-            {codes.length > MAX_CODES && ` — reduce to ${MAX_CODES} or fewer`}
-          </p>
-        </div>
+      {loading && (
+        <p role="status" aria-live="polite" className="text-sm text-gray-600 dark:text-gray-400">
+          Checking {codes.length} code{codes.length === 1 ? '' : 's'}…
+        </p>
+      )}
 
-        {error && (
-          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
-        >
-          {loading ? 'Checking…' : codes.length > 0 ? `Check ${codes.length} code${codes.length === 1 ? '' : 's'}` : 'Check codes'}
-        </button>
-      </form>
+      {error && (
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
 
       {summary && rows && (
         <section className="space-y-4 motion-fade-in-up">
