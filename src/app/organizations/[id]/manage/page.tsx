@@ -6,6 +6,8 @@ import VerifyHoursForm from '@/components/VerifyHoursForm'
 import ManageVolunteerFocus from '@/components/ManageVolunteerFocus'
 import RequestCoordinatorAccess from '@/components/RequestCoordinatorAccess'
 import CoordinatorRequestActions from '@/components/CoordinatorRequestActions'
+import OrgStats from '@/components/OrgStats'
+import HoursTrend from '@/components/HoursTrend'
 import { formatDate } from '@/lib/constants'
 import { canManageOrg } from '@/lib/org-access'
 
@@ -208,20 +210,16 @@ export default async function OrganizationManagePage({ params }: PageProps) {
               </section>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-                <p className="text-sm text-gray-500">Waiting for you</p>
-                <p className="text-3xl font-bold text-amber-600">{pendingHours.length}</p>
-              </div>
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-                <p className="text-sm text-gray-500">Hours approved</p>
-                <p className="text-3xl font-bold text-emerald-700">{totalVerified.toFixed(1)}</p>
-              </div>
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-                <p className="text-sm text-gray-500">Checked in</p>
-                <p className="text-3xl font-bold text-emerald-700">{checkins.length}</p>
-              </div>
-            </div>
+            <OrgStats
+              pendingHours={pendingHours}
+              verifiedHoursList={verifiedHoursList}
+              checkins={checkins}
+              totalVerified={totalVerified}
+              profileMap={profileMap}
+              oppMap={oppMap}
+            />
+
+            <HoursTrend verifiedHoursList={verifiedHoursList} />
 
             <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Attendance</h2>
