@@ -40,3 +40,11 @@ Also: **bulk code check for a counselor** (`/api/verify/bulk`, 200-cap, rate-lim
 
 ## Guardrails
 Never print secrets. Deploy only via `./deploy.sh`. Don't delete prod data without approval. Emerald design system with `dark:` variants everywhere. Commit with the `Co-authored-by: CommandCodeBot <noreply@commandcode.ai>` trailer. Preserve other agents' edits: agents share one working tree, so keep file scopes disjoint.
+
+## Automatic token guard (installed 2026-10-17)
+`~/.commandcode/settings.json` wires two user-scope hooks (they apply to every project, not just this repo):
+- `PostToolUse` → `~/.commandcode/hooks/token-guard.sh`: reads the transcript size, stays completely silent under 1.2 MB, injects an instruction to update HANDOFF.md at 1.2 MB (debounced 5 min), and at 2.8 MB halts the session with `continue: false`. Calibrated against a real spike (this project's long session measured 2,292,839 bytes). Override via `TOKEN_GUARD_WARN_BYTES` / `TOKEN_GUARD_HALT_BYTES` / `TOKEN_GUARD_DEBOUNCE_S`.
+- `SessionStart` → `~/.commandcode/hooks/session-context.sh`: injects a pointer to this file plus branch and dirty-file count, so a fresh session reads one file instead of exploring.
+Both were tested against fake payloads (small/warn/debounced/halt/loop-guard/resume) before install. **Hooks load at startup — they need a `cmd` restart to take effect.** It requests a handoff and halts rather than compacting in place, because HANDOFF.md + `/clear` is the durable state carrier here.
+
+Note: `tokeff` (`python3 tokeff/onboard.py --available-tokens N --task '…'`) is NOT wired in — it needs the client's remaining context, which a hook payload does not carry, and running a Python BPE count on every tool call would blow the <1 s hook budget. It is complementary (pre-read planning), not a substitute. Its `bpe_count.js` also defaults to `cl100k_base`, contradicting its own `AGENTS.md`, which claims `o200k_base`.
