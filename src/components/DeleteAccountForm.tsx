@@ -75,8 +75,9 @@ export default function DeleteAccountForm() {
       >
         <p className="font-semibold">Your account has been deleted.</p>
         <p className="mt-1">
-          Your profile, applications, logged hours and event check-ins are gone, and you are signed out. We keep one
-          anonymous note that a deletion happened, with nothing that identifies you.
+          Your profile, applications, logged hours and event check-ins are gone, and you are signed out. A copy may
+          remain in routine backups until they rotate, and we keep one anonymous note that a deletion happened, with
+          nothing that identifies you.
         </p>
         <p className="mt-1">Taking you back to the home page&hellip;</p>
       </div>
