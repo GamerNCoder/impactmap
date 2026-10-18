@@ -66,47 +66,60 @@ export async function GET(req: NextRequest) {
     `node(around:${RADIUS_M},${lat},${lng})[railway=station];` +
     `);out body 30;`
 
-  for (const endpoint of ENDPOINTS) {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 7000)
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'User-Agent': 'ImpactMap/1.0 (student project; https://impactmap.vercel.app)',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({ data: query }).toString(),
-        signal: controller.signal,
-        cache: 'no-store',
-      })
-      if (!res.ok) continue
+  // Ask every mirror at once and take the first non-empty answer. Sequentially this was slow and
+  // flaky — one dead mirror could burn the whole budget — whereas in parallel the response time is
+  // the fastest mirror's, and a single instance hiccup no longer empties the card.
+  const attempts = ENDPOINTS.map((endpoint) => queryMirror(endpoint, query, lat, lng))
+  const settled = await Promise.allSettled(attempts)
+  const places = settled.find((r) => r.status === 'fulfilled' && r.value.length > 0)
 
-      const json = (await res.json()) as {
-        elements?: { lat?: number; lon?: number; tags?: Record<string, string> }[]
-      }
-      const places: Place[] = []
-      for (const el of json.elements ?? []) {
-        if (el.lat == null || el.lon == null) continue
-        const category = categoryFor(el.tags)
-        if (!category) continue
-        places.push({
-          name: el.tags?.name || category,
-          category,
-          distanceMi: milesBetween(lat, lng, el.lat, el.lon),
-        })
-      }
-      places.sort((a, b) => a.distanceMi - b.distanceMi)
-      const trimmed = places.slice(0, 8)
-      // Only cache a real answer, so an empty mirror response is retried next time.
-      if (trimmed.length > 0) cache.set(key, { at: Date.now(), places: trimmed })
-      return NextResponse.json({ places: trimmed })
-    } catch {
-      // fall through to the next mirror
-    } finally {
-      clearTimeout(timer)
+  const result = places?.status === 'fulfilled' ? places.value.slice(0, 8) : []
+  // Only cache a real answer, so an empty result is retried next time.
+  if (result.length > 0) cache.set(key, { at: Date.now(), places: result })
+
+  return NextResponse.json({ places: result })
+}
+
+async function queryMirror(
+  endpoint: string,
+  query: string,
+  lat: number,
+  lng: number
+): Promise<Place[]> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 7000)
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'User-Agent': 'ImpactMap/1.0 (student project; https://impactmap.vercel.app)',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ data: query }).toString(),
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+    if (!res.ok) return []
+
+    const json = (await res.json()) as {
+      elements?: { lat?: number; lon?: number; tags?: Record<string, string> }[]
     }
+    const places: Place[] = []
+    for (const el of json.elements ?? []) {
+      if (el.lat == null || el.lon == null) continue
+      const category = categoryFor(el.tags)
+      if (!category) continue
+      places.push({
+        name: el.tags?.name || category,
+        category,
+        distanceMi: milesBetween(lat, lng, el.lat, el.lon),
+      })
+    }
+    places.sort((a, b) => a.distanceMi - b.distanceMi)
+    return places
+  } catch {
+    return []
+  } finally {
+    clearTimeout(timer)
   }
-
-  return NextResponse.json({ places: [] })
 }
