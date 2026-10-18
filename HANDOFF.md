@@ -30,8 +30,8 @@ privacy/attributions surface, PWA, CI. Added this session:
 - **Near the event + declared facilities**: organizer-declared `opportunities.facilities` on the
   post-event form; `NearTheEvent` queries the Overpass API **from the browser** (public mirrors
   osm.ch → kumi.systems → private.coffee, session cache) for cafés / food / transit within 800 m.
-  Client-side because the Overpass instances 406/empty Vercel's egress but send CORS. Both degrade
-  silently; neither blocks the page.
+  Client-side because the Overpass instances 406/empty Vercel's egress but send CORS — so the three
+  hosts are in the CSP `connect-src` (`next.config.ts`). Both degrade silently; neither blocks the page.
 - **Reachable without a car**: a "Within 3 mi" filter in `EventsExplorer`, shown once "Near me" is
   set (straight-line distance — no routing engine).
 - `/about`, `/privacy` and `/attributions` updated to match (bio/skills/location no longer shared;
