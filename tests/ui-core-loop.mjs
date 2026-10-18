@@ -72,7 +72,7 @@ await step(student, 'student: log hours', async () => {
   await student.getByPlaceholder('2.5').first().fill('3')
   await student.getByPlaceholder('What did you work on?').first().fill('Collected 4 bags of litter')
   await student.getByRole('button', { name: 'Log hours' }).first().click()
-  await student.getByText(/Pending coordinator verification/).first().waitFor({ timeout: 10000 })
+  await student.getByText(/Pending organizer approval/).first().waitFor({ timeout: 10000 })
 })
 await student.screenshot({ path: `${shots}/02-student-logged.png`, fullPage: true })
 
@@ -112,7 +112,9 @@ const counselor = await anonCtx.newPage()
 await step(counselor, 'counselor (signed out): verify code', async () => {
   await counselor.goto(`${BASE}/verify`)
   await counselor.getByPlaceholder('IMP-A4F92B1C2D3E').fill(code)
-  await counselor.keyboard.press('Enter')
+  // The field is a textarea (it also accepts a pasted list), so Enter inserts a newline
+  // rather than submitting — use the button.
+  await counselor.getByRole('button', { name: /Look up credential/ }).click()
   await counselor.waitForURL(new RegExp(code), { timeout: 10000 })
   await counselor.getByText('Test student').first().waitFor({ timeout: 10000 })
   await counselor.getByText('Hours verified').waitFor({ timeout: 5000 })
