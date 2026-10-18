@@ -28,8 +28,9 @@ privacy/attributions surface, PWA, CI. Added this session:
 - **Weather flag**: `src/lib/weather.ts` (Open-Meteo, keyless, 1 h revalidate) → amber outlook card
   on the event page, for in-person events with coordinates + a date only.
 - **Near the event + declared facilities**: organizer-declared `opportunities.facilities` on the
-  post-event form; `/api/nearby` (Overpass — `overpass-api.de` then the `kumi.systems` mirror, 6 h
-  in-memory cache) renders `NearTheEvent` (cafés / food / transit within 800 m). Both degrade
+  post-event form; `NearTheEvent` queries the Overpass API **from the browser** (public mirrors
+  osm.ch → kumi.systems → private.coffee, session cache) for cafés / food / transit within 800 m.
+  Client-side because the Overpass instances 406/empty Vercel's egress but send CORS. Both degrade
   silently; neither blocks the page.
 - **Reachable without a car**: a "Within 3 mi" filter in `EventsExplorer`, shown once "Near me" is
   set (straight-line distance — no routing engine).

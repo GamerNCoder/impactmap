@@ -54,10 +54,10 @@ export default function AttributionsPage() {
         </p>
         <p>
           The &quot;near the event&quot; card lists nearby cafés, restaurants and transit stops using the{' '}
-          <strong>Overpass API</strong> (overpass-api.de and the kumi.systems mirror), queried within 800&nbsp;m
-          of an event&rsquo;s coordinates. Those results are OpenStreetMap data, so they are likewise &copy;
-          OpenStreetMap contributors under the ODbL. Only named points near the event are returned; no user
-          location is sent to Overpass.
+          <strong>Overpass API</strong> (public mirrors such as overpass.osm.ch, kumi.systems and
+          private.coffee), queried within 800&nbsp;m of an event&rsquo;s coordinates from your own browser.
+          Those results are OpenStreetMap data, so they are likewise &copy; OpenStreetMap contributors under
+          the ODbL. Only the event&rsquo;s coordinates are sent &mdash; never your location.
         </p>
 
         <h2>3. Weather data</h2>
