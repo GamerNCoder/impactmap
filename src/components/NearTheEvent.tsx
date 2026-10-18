@@ -10,10 +10,13 @@ import { useEffect, useState } from 'react'
 // directly. We try a short list of mirrors and give up quietly — the card renders nothing on
 // failure or when there is nothing nearby, so the event page never waits on it.
 
+// Global coverage matters: overpass.osm.ch answers but only holds Swiss data (0 places in New
+// Jersey). maps.mail.ru's Overpass instance is global and sends CORS; the others are fallbacks.
 const ENDPOINTS = [
-  'https://overpass.osm.ch/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.osm.ch/api/interpreter',
 ]
 const RADIUS_M = 800
 

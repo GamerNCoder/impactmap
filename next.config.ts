@@ -13,9 +13,10 @@ const supabaseWs = supabaseOrigin.replace(/^http/, "ws");
 // The "near the event" card queries the Overpass API from the visitor's browser, so those hosts
 // must be in connect-src. (Weather is fetched server-side and needs no CSP entry.)
 const OVERPASS_HOSTS = [
-  "https://overpass.osm.ch",
+  "https://maps.mail.ru",
   "https://overpass.kumi.systems",
   "https://overpass.private.coffee",
+  "https://overpass.osm.ch",
 ].join(" ");
 
 const securityHeaders = [
