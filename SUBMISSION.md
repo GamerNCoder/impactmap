@@ -9,11 +9,12 @@ ImpactMap helps high school students find local volunteer events on a map, check
 Volunteer hours are tracked on paper forms that get lost, forged, or never signed. Students waste time finding events and chasing signatures; counselors have no easy way to confirm hours are real.
 
 ## Tech used
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgres with row-level security, auth), Leaflet + OpenStreetMap for the map, Nominatim for address lookup, the `qrcode` library, Vercel hosting. Tested with Playwright (full student → organizer → counselor walkthrough) and 26 database security checks.
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgres with row-level security, auth), Leaflet + OpenStreetMap for the map, Nominatim for address lookup, the Overpass API (OpenStreetMap) for the "near the event" card, Open-Meteo for the event weather outlook, the `qrcode` library, Vercel hosting. Tested with Playwright (full student → organizer → counselor walkthrough) and a database security suite.
 
 ## Safety and privacy
 - Students under 13 can't sign up; ages 13–15 need a guardian's name, email and consent.
-- Other users can't see a student's email or birthday (enforced in the database, not just the UI).
+- Other users can't see a student's email, birthday, bio, skills or town (enforced in the database, not just the UI).
+- A student's availability is visible only to the student themselves.
 - Students can't approve their own hours; only the event's organizer can.
 - Counselors verify codes without an account and see only name, event, date and hours.
 

@@ -59,6 +59,7 @@ const { data: event, error: eventErr } = await coord.client
     description: 'Pick up litter',
     category: 'Environment',
     volunteers_needed: 1,
+    facilities: ['Restrooms', 'Drinking water'],
     status: 'open',
   })
   .select('id')
@@ -77,8 +78,9 @@ const { data: again } = await student.client.rpc('join_opportunity', { p_opportu
 check('double join reports already_joined', again?.error === 'already_joined')
 const { data: full } = await intruder.client.rpc('join_opportunity', { p_opportunity_id: event.id })
 check('capacity enforced', full?.error === 'full', JSON.stringify(full))
-const { data: opp } = await anon.from('opportunities').select('volunteers_count').eq('id', event.id).single()
+const { data: opp } = await anon.from('opportunities').select('volunteers_count, facilities').eq('id', event.id).single()
 check('volunteers_count synced', opp?.volunteers_count === 1, String(opp?.volunteers_count))
+check('organizer-declared facilities are public', (opp?.facilities ?? []).length === 2, JSON.stringify(opp?.facilities))
 
 // Student logs hours; cannot self-verify.
 const { data: hour, error: hourErr } = await student.client
@@ -159,6 +161,9 @@ const { error: anonSkillsErr } = await anon.from('profiles').select('skills').eq
 check('public cannot read student skills', Boolean(anonSkillsErr))
 const { error: anonAdminErr } = await anon.from('profiles').select('is_platform_admin').eq('id', student.user.id).single()
 check('public cannot read platform-admin flag', Boolean(anonAdminErr))
+// Availability is owner-only: it must never leak to anon or to other signed-in accounts.
+const { error: anonAvailErr } = await anon.from('profiles').select('volunteer_availability').eq('id', student.user.id).single()
+check('public cannot read student availability', Boolean(anonAvailErr))
 
 const { data: adminTry } = await student.client
   .from('profiles')
@@ -177,8 +182,16 @@ const { error: peerLocErr } = await intruder.client.from('profiles').select('loc
 check('signed-in users cannot read student location', Boolean(peerLocErr))
 const { error: peerBioErr } = await intruder.client.from('profiles').select('bio').eq('id', student.user.id).single()
 check('signed-in users cannot read student bio', Boolean(peerBioErr))
+const { error: peerAvailErr } = await intruder.client.from('profiles').select('volunteer_availability').eq('id', student.user.id).single()
+check('signed-in users cannot read student availability', Boolean(peerAvailErr))
+const { error: setAvailErr } = await student.client
+  .from('profiles')
+  .update({ volunteer_availability: ['Mon-morning', 'Sat-afternoon'] })
+  .eq('id', student.user.id)
+check('student sets own availability', !setAvailErr, setAvailErr?.message)
 const { data: mine } = await student.client.rpc('my_profile').single()
 check('student reads own private profile', mine?.email === `student-${run}@example.com`)
+check('student reads own availability', (mine?.volunteer_availability ?? []).length === 2)
 const { data: goal } = await student.client
   .from('profiles').update({ hours_goal: 40 }).eq('id', student.user.id).select('hours_goal').single()
 check('student sets hours goal', goal?.hours_goal === 40)

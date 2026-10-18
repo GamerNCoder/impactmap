@@ -25,6 +25,10 @@ type Position = { lat: number; lng: number }
 // Default view: Edison, NJ (NJ-6).
 const DEFAULT_CENTER: [number, number] = [40.5187, -74.3876]
 
+// Straight-line radius for the "reachable without a car" filter — a walkable/bikeable distance,
+// not a transit itinerary (that would need a routing engine).
+const WALK_MI = 3
+
 function milesBetween(a: Position, b: Position): number {
   const rad = (d: number) => (d * Math.PI) / 180
   const dLat = rad(b.lat - a.lat)
@@ -45,6 +49,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
+  const [walkOnly, setWalkOnly] = useState(false)
 
   const pinned = useMemo(
     () => events.filter((e) => e.latitude != null && e.longitude != null),
@@ -63,6 +68,24 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
     // Nearest first; online events after in-person ones.
     return withDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity))
   }, [events, me])
+
+  const visible = useMemo(
+    () => (walkOnly && me ? sorted.filter((s) => s.distance != null && s.distance <= WALK_MI) : sorted),
+    [sorted, walkOnly, me]
+  )
+
+  const toggleWalkOnly = () => {
+    const next = !walkOnly
+    const nextCount = next
+      ? sorted.filter((s) => s.distance != null && s.distance <= WALK_MI).length
+      : events.length
+    setWalkOnly(next)
+    setAnnouncement(
+      next
+        ? `Showing ${nextCount} event${nextCount === 1 ? '' : 's'} within ${WALK_MI} miles of you.`
+        : `Showing all ${events.length} events.`
+    )
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -139,20 +162,39 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
     <div className="space-y-6">
       <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
         <div ref={mapEl} className="h-64 sm:h-80 w-full bg-gray-100 dark:bg-gray-900 z-0" aria-label="Map of volunteer events" role="region" />
-        <button
-          type="button"
-          onClick={locate}
-          disabled={locating}
-          className="absolute top-3 right-3 z-[1000] bg-white text-gray-900 shadow-md px-3 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-50 disabled:opacity-60"
-        >
-          {locating ? 'Locating…' : me ? '✓ Sorted by distance' : '📍 Near me'}
-        </button>
+        <div className="absolute top-3 right-3 z-[1000] flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            onClick={locate}
+            disabled={locating}
+            className="bg-white text-gray-900 shadow-md px-3 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-50 disabled:opacity-60"
+          >
+            {locating ? 'Locating…' : me ? '✓ Sorted by distance' : '📍 Near me'}
+          </button>
+          {me && (
+            <button
+              type="button"
+              onClick={toggleWalkOnly}
+              aria-pressed={walkOnly}
+              className={`shadow-md px-3 py-2 rounded-xl text-sm font-semibold ${
+                walkOnly ? 'bg-emerald-700 text-white' : 'bg-white text-gray-900 hover:bg-emerald-50'
+              }`}
+            >
+              {walkOnly ? `✓ Within ${WALK_MI} mi` : `🚶 Within ${WALK_MI} mi`}
+            </button>
+          )}
+        </div>
       </div>
       {locateError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">{locateError}</p>}
+      {walkOnly && me && visible.length === 0 && (
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Nothing within {WALK_MI} miles of you. Turn the filter off to see every event.
+        </p>
+      )}
       <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sorted.map(({ event: e, distance }) => (
+        {visible.map(({ event: e, distance }) => (
           <EventCard
             key={e.id}
             id={e.id}

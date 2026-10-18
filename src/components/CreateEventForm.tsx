@@ -28,6 +28,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
   const [startDate, setStartDate] = useState('')
   const [volunteersNeeded, setVolunteersNeeded] = useState('10')
   const [timeCommitment, setTimeCommitment] = useState('')
+  const [facilities, setFacilities] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -104,6 +105,7 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
           volunteers_needed: parsedCapacity,
           volunteers_count: 0,
           time_commitment: timeCommitment.trim() || null,
+          facilities: facilities.split(',').map((f) => f.trim()).filter(Boolean),
           status: 'open',
           latitude: coords?.latitude ?? null,
           longitude: coords?.longitude ?? null,
@@ -275,6 +277,20 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
           className="w-full rounded-lg border border-gray-300 px-3 py-2"
           placeholder="e.g. 3 hours, one-time"
         />
+      </div>
+
+      <div>
+        <label htmlFor="facilities" className="block text-sm font-medium text-gray-700 mb-1">On-site facilities (optional)</label>
+        <input
+          id="facilities"
+          value={facilities}
+          onChange={(e) => setFacilities(e.target.value)}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          placeholder="Restrooms, drinking water, accessible entrance"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Comma-separated. Shown on the event page for volunteers who need to know.
+        </p>
       </div>
 
       <button

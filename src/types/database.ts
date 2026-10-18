@@ -117,6 +117,7 @@ export type Database = {
           deadline: string | null
           description: string
           end_date: string | null
+          facilities: string[] | null
           id: string
           image_url: string | null
           latitude: number | null
@@ -142,6 +143,7 @@ export type Database = {
           deadline?: string | null
           description: string
           end_date?: string | null
+          facilities?: string[] | null
           id?: string
           image_url?: string | null
           latitude?: number | null
@@ -167,6 +169,7 @@ export type Database = {
           deadline?: string | null
           description?: string
           end_date?: string | null
+          facilities?: string[] | null
           id?: string
           image_url?: string | null
           latitude?: number | null

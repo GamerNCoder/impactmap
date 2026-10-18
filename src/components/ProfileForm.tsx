@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
+import { AVAILABILITY_DAYS, AVAILABILITY_SLOTS, availabilityKey, toggleAvailability } from '@/lib/availability'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -16,6 +17,7 @@ type ProfileFormProps = {
 
 export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
   const [fullName, setFullName] = useState(profile?.full_name || '')
+  const [availability, setAvailability] = useState<string[]>(profile?.volunteer_availability ?? [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -36,7 +38,7 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
       if (!user) throw new Error('You must be signed in')
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ full_name: fullName.trim() })
+        .update({ full_name: fullName.trim(), volunteer_availability: availability })
         .eq('id', user.id)
       if (updateError) throw updateError
       trackClientEvent(APP_EVENTS.PROFILE_UPDATE)
@@ -74,6 +76,52 @@ export default function ProfileForm({ profile, userEmail }: ProfileFormProps) {
           {profile.guardian_email && ` · ${profile.guardian_email}`}
         </div>
       )}
+
+      <fieldset>
+        <legend className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          When can you usually volunteer?
+        </legend>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          Only you can see this. Organizers never see your schedule — it just helps you spot events
+          that fit.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="text-sm">
+            <thead>
+              <tr>
+                <th className="sr-only">Day</th>
+                {AVAILABILITY_SLOTS.map((slot) => (
+                  <th key={slot} scope="col" className="px-2 py-1 font-medium text-gray-500 capitalize">
+                    {slot}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {AVAILABILITY_DAYS.map((day) => (
+                <tr key={day}>
+                  <th scope="row" className="pr-3 py-1 text-left font-medium text-gray-700 dark:text-gray-300">
+                    {day}
+                  </th>
+                  {AVAILABILITY_SLOTS.map((slot) => {
+                    const key = availabilityKey(day, slot)
+                    return (
+                      <td key={slot} className="px-2 py-1 text-center">
+                        <input
+                          type="checkbox"
+                          checked={availability.includes(key)}
+                          onChange={() => setAvailability((prev) => toggleAvailability(prev, key))}
+                          aria-label={`${day} ${slot}`}
+                        />
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </fieldset>
 
       <button
         type="submit"

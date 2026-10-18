@@ -6,6 +6,8 @@ import EventCheckInQr from '@/components/EventCheckInQr'
 import TrackOnce from '@/components/TrackOnce'
 import { APP_EVENTS } from '@/lib/app-events'
 import { formatDate } from '@/lib/constants'
+import { getEventWeather } from '@/lib/weather'
+import NearTheEvent from '@/components/NearTheEvent'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -62,6 +64,10 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const isFull =
     opportunity.volunteers_needed != null &&
     opportunity.volunteers_count >= opportunity.volunteers_needed
+
+  const weather = opportunity.remote
+    ? null
+    : await getEventWeather(opportunity.latitude, opportunity.longitude, opportunity.start_date)
 
   return (
     <div className="bg-gray-50 min-h-full">
@@ -183,7 +189,57 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                   </div>
                 )}
               </dl>
+
+              {opportunity.facilities && opportunity.facilities.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">On-site facilities</h3>
+                  <ul className="flex flex-wrap gap-2">
+                    {opportunity.facilities.map((facility: string) => (
+                      <li
+                        key={facility}
+                        className="bg-emerald-50 text-emerald-800 text-xs font-medium px-2.5 py-1 rounded-full"
+                      >
+                        {facility}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
+
+            {weather && weather.risks.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-amber-400">
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">Weather outlook</h2>
+                <p className="text-xs text-gray-500 mb-3">
+                  {formatDate(weather.date)} · Open-Meteo forecast
+                </p>
+                <ul className="space-y-3">
+                  {weather.risks.map((risk) => (
+                    <li key={risk.label} className="flex items-start gap-3">
+                      <span
+                        aria-hidden
+                        className={`mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-bold ${
+                          risk.level === 'warn' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        !
+                      </span>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">{risk.label}</p>
+                        <p className="text-sm text-gray-600">{risk.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-gray-400 mt-3">
+                  Informational only — check a local forecast before the event.
+                </p>
+              </div>
+            )}
+
+            {!opportunity.remote && opportunity.latitude != null && opportunity.longitude != null && (
+              <NearTheEvent latitude={opportunity.latitude} longitude={opportunity.longitude} />
+            )}
 
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Join this event</h2>

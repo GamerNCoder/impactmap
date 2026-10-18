@@ -6,6 +6,7 @@ import LogHoursForm from '@/components/LogHoursForm'
 import DashboardQrFocus from '@/components/DashboardQrFocus'
 import HoursGoal from '@/components/HoursGoal'
 import { formatDate } from '@/lib/constants'
+import { formatAvailability } from '@/lib/availability'
 
 export const metadata = {
   title: 'Home | ImpactMap',
@@ -20,11 +21,13 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, hours_goal')
-    .eq('id', user.id)
-    .single()
+  // Private fields, including availability, are owner-only: read them through my_profile().
+  const { data: profileRows } = await supabase.rpc('my_profile' as never)
+  const profile = ((profileRows as unknown as {
+    full_name: string | null
+    hours_goal: number | null
+    volunteer_availability: string[] | null
+  }[] | null) ?? [])[0] ?? null
 
   const { data: applications } = await supabase
     .from('applications')
@@ -70,6 +73,15 @@ export default async function DashboardPage() {
           <div className="mt-5">
             <HoursGoal userId={user.id} verifiedHours={verifiedHours} goal={profile?.hours_goal ?? null} />
           </div>
+          <p className="mt-3 text-sm text-emerald-100">
+            {profile?.volunteer_availability?.length
+              ? `Available ${formatAvailability(profile.volunteer_availability)}`
+              : 'Set when you can usually volunteer'}
+            {' · '}
+            <Link href="/profile" className="font-semibold underline underline-offset-4">
+              Profile
+            </Link>
+          </p>
           <Link href="/passport" className="inline-block mt-5 text-sm font-semibold underline underline-offset-4">
             My hours &amp; counselor report →
           </Link>

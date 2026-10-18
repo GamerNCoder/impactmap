@@ -82,6 +82,21 @@ const DOES = [
     body:
       'Students set the target their school asks for — 40 hours for NHS, for example — and watch it fill as hours are approved.',
   },
+  {
+    title: 'Reachable without a car',
+    body:
+      'Tap “Near me” and filter to events within a short walk, so a student without a ride can pick something they can actually get to.',
+  },
+  {
+    title: 'A weather flag and what is nearby',
+    body:
+      'Each in-person event shows a rain, wind or heat flag for its date, the cafés and transit stops within an 800 m walk, and the facilities the organizer declares — restrooms, drinking water and the like.',
+  },
+  {
+    title: 'Your availability, kept private',
+    body:
+      'Mark the days and parts of the day you can usually volunteer. Only you can see it — it is never shown to organizers or other students.',
+  },
 ]
 
 const DOES_NOT = [

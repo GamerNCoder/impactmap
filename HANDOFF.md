@@ -1,50 +1,73 @@
-# ImpactMap — handoff (2026-10-17)
+# ImpactMap — handoff (2026-10-18)
 
-Earlier detail is in git history (this file was rewritten to cut token cost; see `git log -p HANDOFF.md`).
+Earlier detail is in git history (`git log -p HANDOFF.md`).
 
 ## State
-- **Deployed and current:** commit `60d10bc` on `cac/core-loop`. Live: https://impactmap.vercel.app
-- Production verified this session: `/about`, `/accessibility`, `/security` → 200; RPCs `check_in_event` and `delete_my_account` both present.
-- Supabase project `impactmap-cac` (ref `zolvpddzpimegnkimzh`). Redeploy: `./deploy.sh` (pushes migrations, then Vercel). Migrations-only — it no longer pushes the seed.
-- `.env.local` points at the LOCAL Supabase (`127.0.0.1:54321`), so local dev needs the CLEAN tunnel via `scripts/clean-db.sh up`.
+- **Live:** https://impactmap.vercel.app · branch `cac/core-loop`.
+- **Privacy fixed and deployed this session.** Migration `20261018120000_profiles_field_privacy.sql`:
+  `anon` lost the `profiles` column grants for `location`, `bio`, `skills` (verified on prod:
+  `select=location|bio|skills` went **200 → 401**; `id`, `full_name`, `hours_goal` still 200).
+  `authenticated` lost them too, so organizers/peers see a name only.
+- Migration `20261018130000_event_facilities.sql` adds `opportunities.facilities TEXT[]`.
+- Supabase project `impactmap-cac` (ref `zolvpddzpimegnkimzh`). Redeploy: `./deploy.sh`.
+- `.env.local` points at the LOCAL Supabase (`127.0.0.1:54321`); local dev needs the CLEAN
+  tunnel: `scripts/clean-db.sh up` (tunnel is its own ssh; `clean-db.sh tunnel` re-establishes it).
 
 ## Goal
-Win the Congressional App Challenge (deadline Oct 26 2026, district assumed NJ-6). Judged on idea, implementation, video. AI use must be disclosed in the entry.
+Win the Congressional App Challenge (deadline Oct 26 2026, district assumed NJ-6). Judged on
+idea, implementation, video. AI use must be disclosed in the entry.
 
-## What exists (all verified by tsc + eslint + next build; 30 routes)
-Core loop: map of events → one-tap join → **QR check-in that records attendance** (`event_checkins`, `/checkin/[id]`) → log hours → organizer one-tap approval → `IMP-` code → `/verify/[code]` with no account → printable counselor report with QR per entry → hours goal → public record.
-Also: **bulk code check for a counselor** (`/api/verify/bulk`, 200-cap, rate-limited) merged with single lookup into ONE auto-detecting field; organizer dashboard (attendance, turnout, hours trend, honest zero-states); PWA + offline check-in queue; `/about` for judges with **cited** sources; a11y pass (modal focus trap, Escape handling, skip link, tablist); self-serve **account deletion + JSON data export**; legal surface (`LICENSE` MIT, `/accessibility`, `/attributions`, `/security`, hardened privacy/terms); CI (`.github/workflows/ci.yml`). 19 files of unreachable SaaS cruft were deleted earlier.
+## What exists
+Core loop (verified: `tsc` + `eslint` + `next build` = 37 routes; `npm run test:db` = 37 checks
+pass): map of events → one-tap join → QR check-in → log hours → organizer one-tap approval →
+`IMP-` code → `/verify/[code]` with no account → printable counselor report → hours goal → the
+privacy/attributions surface, PWA, CI. Added this session:
+- **Availability** (`profiles.volunteer_availability`, owner-only): day × morning/afternoon/evening
+  grid on `/profile`, summary on `/dashboard`; private fields read via the `my_profile()` RPC, so
+  it is never exposed to anon or to other signed-in users.
+- **Weather flag**: `src/lib/weather.ts` (Open-Meteo, keyless, 1 h revalidate) → amber outlook card
+  on the event page, for in-person events with coordinates + a date only.
+- **Near the event + declared facilities**: organizer-declared `opportunities.facilities` on the
+  post-event form; `/api/nearby` (Overpass — `overpass-api.de` then the `kumi.systems` mirror, 6 h
+  in-memory cache) renders `NearTheEvent` (cafés / food / transit within 800 m). Both degrade
+  silently; neither blocks the page.
+- **Reachable without a car**: a "Within 3 mi" filter in `EventsExplorer`, shown once "Near me" is
+  set (straight-line distance — no routing engine).
+- `/about`, `/privacy` and `/attributions` updated to match (bio/skills/location no longer shared;
+  availability is private; Overpass and Open-Meteo credited).
 
 ## Open items
-1. **Privacy defect, live and unfixed.** `anon` holds column grants on `profiles` `id, full_name, location, bio, skills` and the policy is `USING (true)` — so any anonymous visitor can enumerate every student's town, bio and skills (verified: `select=id,location` → 200 from the REST API; `[]` only because no students exist yet). DOB/email/guardian are correctly locked down; location/bio/skills are not. Fix before anyone signs up.
-2. **OAuth (Google/Apple/Microsoft) — requested, unfinished.** Mechanism established: `[auth.external.*]` in `supabase/config.toml` with `secret = "env(VAR)"`, applied by `supabase config push`. `deploy.sh` currently sets `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS` to empty, which *hides* the buttons. Needs the user's provider credentials. Apple needs a **paid** developer account and a client secret that **expires every 6 months**; Azure needs the `email` scope and consideration of the `xms_edov` claim. Users signing in via OAuth land on `/auth/complete-profile` for the birthday/guardian gate — that path is NOT end-to-end tested.
-3. Seeded sample orgs have **no owner**, so hours logged on them can never be approved. The demo must post its own event. Sample orgs are already stripped of the false "verified" badge and fake join counts.
-4. **User-only:** demo video, AI-use disclosure, district confirmation, a real pilot (the single strongest win factor).
-5. Research agent `bg-21` is writing `notes/monetization.md`.
-6. Repo ingest: requested, **not done** (both attempts were aborted). Facts: kit registry has 28 repos, **17 are DGX-only**, local ones are multi-GB (`wisprflow` 4.3G, `CaaS` 2.9G, `HumanTyper` 864M). Kit's `knowledge.db` is 0 bytes. Plan was a one-page repo map per local repo.
-7. Legal archive: `notes/legal/` has 11 primary sources + `MANIFEST.tsv`. **3 fetches failed** and need retry with other URLs: 2 FTC pages (404) and California CCPA (403).
-
-## Recommended but unbuilt (each verified feasible)
-- **Availability** — `profiles.volunteer_availability TEXT[]` already exists and is dead. Must be **owner-only** (via `my_profile()`); never expose minors' availability to organizers. Keep to day-of-week + coarse slots — no clock times, avoids DST.
-- **Weather risk flag** — Open-Meteo verified **keyless**, live call returned 7-day data for the Edison coords. Informational flag only; **no notifications** (no email/push provider exists).
-- **"Near the event" card** — Overpass verified working but requires **POST + a User-Agent** (GET → 406). Near Roosevelt Park it returned cafes/restaurants/bus stop but **0 toilets and 0 drinking water**, so restrooms must come from **organizer-declared facilities**, not OSM.
-- **Travel** — straight-line distance already computed; **transit itineraries are out of scope** (needs a routing engine). Strongest framing: "reachable without a car" filter.
+1. ~~Privacy defect~~ **fixed + deployed** (see State).
+2. **OAuth (Google/Apple/Microsoft)** — mechanism in place, **needs the user's provider
+   credentials**. `deploy.sh` sets `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=""`, which hides the
+   buttons. `/auth/complete-profile` for OAuth sign-ins is still not end-to-end tested.
+3. Seeded sample orgs have **no owner**, so hours logged on them can never be approved — the demo
+   must post its own event (already honest: no false "verified" badge, zero joins).
+4. **User-only:** demo video, AI-use disclosure, district confirmation, a real pilot (strongest win
+   factor).
+5. ~~Repo ingest~~ **done** — 48 one-page maps in `/Users/togi/notes/repo-map/` (this session added
+   `automation.md`, `utm.md`; `flutter.md` is a one-line "SDK copy").
+6. ~~Legal archive~~ **done** — all 14 sources retrieved. The three failures were re-fetched from
+   the Wayback Machine (the FTC slugs moved; CA `leginfo` is Cloudflare-gated). See
+   `notes/legal/MANIFEST.tsv` for the exact URLs and byte counts.
 
 ## Hard-won gotchas
-- `authenticated` **cannot** `SELECT date_of_birth` (column revoked) — read it via the `my_profile()` RPC or it errors at runtime.
-- `volunteer_hours.verified_by` has **no delete rule**; any account-deletion RPC must clear dependents first.
-- The agent tool's `model` param takes **plain ids only** — `deepseek/deepseek-v4.1-flash:high` is rejected as unknown. Verified working: `deepseek/deepseek-v4.1-flash`, `gpt-6-luna` (both Go tier). `claude-opus-5-5` needs **Max** and errored instantly. Reasoning effort is **not** settable via the tool (only custom-agent-file `reasoningEffort`), so sub-agents run at the session's `/effort`.
-- Each sub-agent launch costs **~18k tokens of fixed overhead** regardless of prompt size — batch questions, and have agents write to files instead of returning long reports.
-- **Never run `npm run build` while other agents are editing** — they share one `.next/` and corrupt it.
-- Do not create test users in production. Verify with real command output; unverified claims compound.
+- `authenticated` **cannot** `SELECT date_of_birth` (column revoked) — use the `my_profile()` RPC.
+- `profiles` SELECT is column-granted, not table-granted: a new column is **invisible** to
+  `anon`/`authenticated` until you `GRANT` it (this is what keeps availability private).
+- `volunteer_hours.verified_by` has no delete rule; account deletion clears dependents first.
+- Never run `npm run build` while another agent edits — one shared `.next/`.
+- The agent tool's `model` param takes plain ids only; reasoning effort is not settable per call.
+- Verify with real command output; unverified claims compound.
 
 ## Guardrails
-Never print secrets. Deploy only via `./deploy.sh`. Don't delete prod data without approval. Emerald design system with `dark:` variants everywhere. Commit with the `Co-authored-by: CommandCodeBot <noreply@commandcode.ai>` trailer. Preserve other agents' edits: agents share one working tree, so keep file scopes disjoint.
+Never print secrets. Deploy only via `./deploy.sh` (migrations, then Vercel). Don't delete prod data
+without approval. Emerald design system with `dark:` variants. Commit with the
+`Co-authored-by: CommandCodeBot <noreply@commandcode.ai>` trailer. Keep file scopes disjoint — agents
+share one working tree.
 
 ## Automatic token guard (installed 2026-10-17)
-`~/.commandcode/settings.json` wires two user-scope hooks (they apply to every project, not just this repo):
-- `PostToolUse` → `~/.commandcode/hooks/token-guard.sh`: reads the transcript size, stays completely silent under 1.2 MB, injects an instruction to update HANDOFF.md at 1.2 MB (debounced 5 min), and at 2.8 MB halts the session with `continue: false`. Calibrated against a real spike (this project's long session measured 2,292,839 bytes). Override via `TOKEN_GUARD_WARN_BYTES` / `TOKEN_GUARD_HALT_BYTES` / `TOKEN_GUARD_DEBOUNCE_S`.
-- `SessionStart` → `~/.commandcode/hooks/session-context.sh`: injects a pointer to this file plus branch and dirty-file count, so a fresh session reads one file instead of exploring.
-Both were tested against fake payloads (small/warn/debounced/halt/loop-guard/resume) before install. **Hooks load at startup — they need a `cmd` restart to take effect.** It requests a handoff and halts rather than compacting in place, because HANDOFF.md + `/clear` is the durable state carrier here.
-
-Note: `tokeff` (`python3 tokeff/onboard.py --available-tokens N --task '…'`) is NOT wired in — it needs the client's remaining context, which a hook payload does not carry, and running a Python BPE count on every tool call would blow the <1 s hook budget. It is complementary (pre-read planning), not a substitute. Its `bpe_count.js` also defaults to `cl100k_base`, contradicting its own `AGENTS.md`, which claims `o200k_base`.
+`~/.commandcode/settings.json` wires user-scope hooks: `PostToolUse` → `~/.commandcode/hooks/token-guard.sh`
+(silent under 1.2 MB, requests a HANDOFF update at 1.2 MB, halts at 2.8 MB) and `SessionStart` →
+`~/.commandcode/hooks/session-context.sh` (injects this file's pointer + branch + dirty count).
+Hooks load at startup — they need a `cmd` restart to take effect.

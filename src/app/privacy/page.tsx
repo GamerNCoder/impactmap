@@ -52,6 +52,11 @@ export default function PrivacyPage() {
             record your attendance, organizer approvals, and any completed-task (completion) records.
           </li>
           <li>
+            <strong>Volunteer availability (optional):</strong> the days and coarse parts of the day you mark
+            as available. It exists only to help you spot events that fit; it is visible only to you and is
+            never shown to organizers or other users.
+          </li>
+          <li>
             <strong>Organization data:</strong> for coordinators and organizations, the organization name and
             the contact details you enter for it.
           </li>
@@ -95,9 +100,10 @@ export default function PrivacyPage() {
         </p>
         <ul>
           <li>
-            <strong>Other volunteers and the public</strong> who are signed in can see only your public
-            profile fields &mdash; your name, avatar, bio, skills, general location, and your hours goal. They
-            cannot see your email address, date of birth, or guardian details.
+            <strong>Other volunteers and the public</strong> can see only your name (and, where hours were
+            approved, your verified-hours total). They cannot see your email address, date of birth, guardian
+            details, or your bio, skills or general location &mdash; those columns are not readable by anyone
+            but you. Your availability is visible only to you.
           </li>
           <li>
             <strong>Organizers</strong> whose events you join can see your name and the hours you logged for
@@ -110,8 +116,9 @@ export default function PrivacyPage() {
           <p className="text-sm text-emerald-900 dark:text-emerald-100">
             <strong>This is enforced by the database, not just the screen.</strong> Our platform stores
             profiles in a Postgres database with row-level security and column-level permissions. Reading
-            another user&rsquo;s email, date of birth, or guardian name and email is blocked at the database
-            level: those columns are simply not granted to other users or to organizers. Even a crafted query
+            another user&rsquo;s email, date of birth, guardian name and email, bio, skills, general location
+            or availability is blocked at the database level: those columns are simply not granted to other
+            users, to organizers, or to anonymous visitors. Even a crafted query
             sent straight to the database cannot return them. The owner reads their own private fields through
             a dedicated function that is scoped to their own account.
           </p>

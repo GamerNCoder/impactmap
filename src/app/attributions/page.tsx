@@ -19,7 +19,7 @@ export default function AttributionsPage() {
 
       <article className="max-w-3xl mx-auto px-4 py-10 prose prose-gray dark:prose-invert">
         <h1>Attributions</h1>
-        <p className="text-sm text-gray-500 not-prose">Last updated: October 15, 2026</p>
+        <p className="text-sm text-gray-500 not-prose">Last updated: October 18, 2026</p>
 
         <p>
           ImpactMap stands on a lot of other people&rsquo;s work. This page credits the third-party software,
@@ -52,8 +52,23 @@ export default function AttributionsPage() {
           Tiles are fetched from the OpenStreetMap Foundation&rsquo;s tile servers (tile.openstreetmap.org).
           Use of those servers is subject to the OpenStreetMap Foundation&rsquo;s tile usage policy.
         </p>
+        <p>
+          The &quot;near the event&quot; card lists nearby cafés, restaurants and transit stops using the{' '}
+          <strong>Overpass API</strong> (overpass-api.de and the kumi.systems mirror), queried within 800&nbsp;m
+          of an event&rsquo;s coordinates. Those results are OpenStreetMap data, so they are likewise &copy;
+          OpenStreetMap contributors under the ODbL. Only named points near the event are returned; no user
+          location is sent to Overpass.
+        </p>
 
-        <h2>3. Geocoding</h2>
+        <h2>3. Weather data</h2>
+        <p>
+          The event page&rsquo;s weather outlook is fetched from <strong>Open-Meteo</strong>{' '}
+          (api.open-meteo.com) using the event&rsquo;s coordinates and date. Open-Meteo publishes its data under
+          the <strong>Creative Commons Attribution 4.0 (CC BY 4.0)</strong> licence. The request contains only
+          the event&rsquo;s coordinates and date &mdash; no information about who is viewing the page.
+        </p>
+
+        <h2>4. Geocoding</h2>
         <p>
           When an organizer posts an event, the address is turned into coordinates using the{' '}
           <strong>Nominatim</strong> search service operated by the OpenStreetMap Foundation
@@ -62,14 +77,14 @@ export default function AttributionsPage() {
           identifying user agent and are kept low-volume in line with the published Nominatim usage policy.
         </p>
 
-        <h2>4. Fonts</h2>
+        <h2>5. Fonts</h2>
         <p>
           The interface uses <strong>Geist</strong> and <strong>Geist Mono</strong>, loaded through Next.js
           Google Fonts. Both are published under the <strong>SIL Open Font License 1.1</strong>. Copyright
           2024 The Geist Project Authors (github.com/vercel/geist-font).
         </p>
 
-        <h2>5. What we could not confirm</h2>
+        <h2>6. What we could not confirm</h2>
         <p>
           If a component&rsquo;s licence could not be read from the source of truth, it is not listed here
           rather than guessed. Only the projects named above are bundled or loaded directly; they retain the
@@ -77,7 +92,7 @@ export default function AttributionsPage() {
           <code>node_modules</code>.
         </p>
 
-        <h2>6. ImpactMap&rsquo;s own licence</h2>
+        <h2>7. ImpactMap&rsquo;s own licence</h2>
         <p>
           ImpactMap&rsquo;s own source code is released under the MIT License. See the{' '}
           <code>LICENSE</code> file in the repository and the short summary in <code>NOTICE</code>.
