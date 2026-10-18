@@ -149,6 +149,16 @@ const { data: publicName } = await anon.from('profiles').select('full_name').eq(
 check('public sees student name', publicName?.full_name === 'Test student')
 const { error: emailErr } = await anon.from('profiles').select('email').eq('id', student.user.id).single()
 check('public cannot read student email', Boolean(emailErr))
+// Regression: anon once held column grants for location/bio/skills (policy USING (true)),
+// so any visitor could enumerate every student's town, bio and skills.
+const { error: anonLocErr } = await anon.from('profiles').select('location').eq('id', student.user.id).single()
+check('public cannot read student location', Boolean(anonLocErr))
+const { error: anonBioErr } = await anon.from('profiles').select('bio').eq('id', student.user.id).single()
+check('public cannot read student bio', Boolean(anonBioErr))
+const { error: anonSkillsErr } = await anon.from('profiles').select('skills').eq('id', student.user.id).single()
+check('public cannot read student skills', Boolean(anonSkillsErr))
+const { error: anonAdminErr } = await anon.from('profiles').select('is_platform_admin').eq('id', student.user.id).single()
+check('public cannot read platform-admin flag', Boolean(anonAdminErr))
 
 const { data: adminTry } = await student.client
   .from('profiles')
@@ -163,6 +173,10 @@ const { error: peerEmailErr } = await intruder.client.from('profiles').select('e
 check('signed-in users cannot read student email', Boolean(peerEmailErr))
 const { error: peerDobErr } = await intruder.client.from('profiles').select('date_of_birth').eq('id', student.user.id).single()
 check('signed-in users cannot read student birthday', Boolean(peerDobErr))
+const { error: peerLocErr } = await intruder.client.from('profiles').select('location').eq('id', student.user.id).single()
+check('signed-in users cannot read student location', Boolean(peerLocErr))
+const { error: peerBioErr } = await intruder.client.from('profiles').select('bio').eq('id', student.user.id).single()
+check('signed-in users cannot read student bio', Boolean(peerBioErr))
 const { data: mine } = await student.client.rpc('my_profile').single()
 check('student reads own private profile', mine?.email === `student-${run}@example.com`)
 const { data: goal } = await student.client
