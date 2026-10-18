@@ -3,7 +3,7 @@
 Earlier detail is in git history (`git log -p HANDOFF.md`).
 
 ## State
-- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed `0de91a2` (2026-10-18).
+- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed `cca78d7` (2026-10-18).
 - **Privacy fixed and deployed this session.** Migration `20261018120000_profiles_field_privacy.sql`:
   `anon` lost the `profiles` column grants for `location`, `bio`, `skills` (verified on prod:
   `select=location|bio|skills` went **200 → 401**; `id`, `full_name`, `hours_goal` still 200).
