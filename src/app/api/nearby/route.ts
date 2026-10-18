@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server'
 // Note: overpass.osm.ch answers but is a Switzerland-only extract, so it is not used here.
 
 export const dynamic = 'force-dynamic'
+// Overpass mirrors can take several seconds; give the function room for one slow round trip.
+export const maxDuration = 30
 
 const ENDPOINTS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
@@ -87,7 +89,7 @@ async function queryMirror(
   lng: number
 ): Promise<Place[]> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 7000)
+  const timer = setTimeout(() => controller.abort(), 12000)
   try {
     const res = await fetch(endpoint, {
       method: 'POST',

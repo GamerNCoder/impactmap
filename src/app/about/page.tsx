@@ -90,7 +90,7 @@ const DOES = [
   {
     title: 'A weather flag and what is nearby',
     body:
-      'Each in-person event shows a rain, wind or heat flag for its date, the cafés and transit stops within an 800 m walk, and the facilities the organizer declares — restrooms, drinking water and the like.',
+      'Each in-person event shows the facilities the organizer declares — restrooms, drinking water and the like — a rain, wind or heat flag for its date, and (when OpenStreetMap has them) the cafés and transit stops within an 800 m walk.',
   },
   {
     title: 'Your availability, kept private',
