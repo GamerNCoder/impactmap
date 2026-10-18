@@ -28,11 +28,11 @@ privacy/attributions surface, PWA, CI. Added this session:
 - **Weather flag**: `src/lib/weather.ts` (Open-Meteo, keyless, 1 h revalidate) → amber outlook card
   on the event page, for in-person events with coordinates + a date only.
 - **Near the event + declared facilities**: organizer-declared `opportunities.facilities` on the
-  post-event form; `NearTheEvent` queries the Overpass API **from the browser** (mirrors, tried in
-  turn: maps.mail.ru → kumi.systems → private.coffee → osm.ch; session cache) for cafés / food /
-  transit within 800 m. Client-side because the Overpass instances 406/empty Vercel's egress but send
-  CORS — so those hosts are in the CSP `connect-src` (`next.config.ts`). `overpass.osm.ch` is a
-  **Swiss-only** extract, so it is last. Both degrade silently; neither blocks the page.
+  post-event form; `NearTheEvent` fetches `/api/nearby`, which proxies the Overpass API
+  **server-side** (mirrors tried in turn: maps.mail.ru → openstreetmap.ru → overpass-api.de → kumi
+  → private.coffee; only non-empty answers cached 6 h) for cafés / food / transit within 800 m.
+  Server-side because the mirrors are inconsistent about CORS and `overpass.osm.ch` (which does send
+  CORS) is a **Swiss-only** extract. Both degrade silently; neither blocks the page.
 - **Reachable without a car**: a "Within 3 mi" filter in `EventsExplorer`, shown once "Near me" is
   set (straight-line distance — no routing engine).
 - `/about`, `/privacy` and `/attributions` updated to match (bio/skills/location no longer shared;
