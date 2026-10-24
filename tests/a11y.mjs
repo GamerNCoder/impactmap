@@ -39,7 +39,7 @@ async function runAxe(page, label) {
   }
 }
 
-const publicPaths = ['/', '/impact', '/demo', '/verify', '/opportunities', '/safety', '/pilot', '/pilot/guide']
+const publicPaths = ['/', '/impact', '/demo', '/verify', '/verify/IMP-DEMO2026ABCD', '/opportunities', '/about', '/privacy', '/accessibility', '/terms', '/attributions', '/security', '/safety', '/pilot', '/pilot/guide']
 const publicContext = await browser.newContext({ viewport: { width: 1280, height: 900 } })
 const publicPage = await publicContext.newPage()
 for (const path of publicPaths) {

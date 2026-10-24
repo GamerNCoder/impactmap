@@ -150,6 +150,10 @@ const events = [
     benefits: 'Verified service hours, group photo.',
     latitude: 40.547088,
     longitude: -74.341672,
+    wheelchair_accessible: true,
+    accessible_restroom: true,
+    sensory_friendly: false,
+    substance_free: true,
   },
   {
     id: EVENT_2,
@@ -172,6 +176,10 @@ const events = [
     benefits: 'Verified service hours, recommendation letter after 20 hours.',
     latitude: 40.517465,
     longitude: -74.408179,
+    wheelchair_accessible: true,
+    accessible_restroom: true,
+    sensory_friendly: true,
+    substance_free: true,
   },
   {
     id: EVENT_3,
@@ -194,6 +202,10 @@ const events = [
     benefits: 'Verified service hours, remote volunteering experience.',
     latitude: null,
     longitude: null,
+    wheelchair_accessible: false,
+    accessible_restroom: false,
+    sensory_friendly: true,
+    substance_free: true,
   },
 ]
 

@@ -16,6 +16,17 @@ export const dynamic = 'force-dynamic'
  * reaches the browser.
  */
 export async function POST(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  if (origin) {
+    try {
+      if (new URL(origin).host !== request.headers.get('host')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    } catch {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
+
   if (!demoEnabled()) {
     return NextResponse.json({ error: 'Demo is not configured.' }, { status: 503 })
   }

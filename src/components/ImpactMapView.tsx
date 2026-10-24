@@ -83,11 +83,20 @@ export default function ImpactMapView({ points }: { points: ImpactPoint[] }) {
   }
 
   return (
-    <div
-      ref={mapEl}
-      className="h-80 w-full rounded-2xl"
-      role="region"
-      aria-label="Map of verified service hours by event"
-    />
+    <div>
+      <div
+        ref={mapEl}
+        className="h-80 w-full rounded-2xl"
+        role="region"
+        aria-label="Map of verified service hours by event"
+      />
+      <ul className="sr-only">
+        {points.map((point) => (
+          <li key={point.id}>
+            {point.title} — {point.category}, {point.hours} verified hour{point.hours === 1 ? '' : 's'}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

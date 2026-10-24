@@ -18,7 +18,7 @@ type Summary = {
   totals: {
     hours: number
     records: number
-    students: number
+    students: number | null
     events: number
     organizations: number
   }
@@ -96,7 +96,9 @@ export default async function ImpactPage() {
             </div>
             <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
               <dt className="text-sm text-gray-400">Students</dt>
-              <dd className="mt-1 text-3xl font-bold">{Number(totals.students).toLocaleString('en-US')}</dd>
+                            <dd className="mt-1 text-3xl font-bold">
+                {totals.students == null ? '—' : Number(totals.students).toLocaleString('en-US')}
+              </dd>
             </div>
             <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
               <dt className="text-sm text-gray-400">Events</dt>
@@ -132,7 +134,7 @@ export default async function ImpactPage() {
             <p className="text-sm text-gray-500 mt-1">Approved hours grouped by event category.</p>
             {byCategory.length === 0 ? (
               <p className="mt-6 text-sm text-gray-500">
-                No verified hours yet. The first approved log starts this chart.
+                No group has 3 or more distinct volunteers yet. Smaller groups are suppressed to protect privacy.
               </p>
             ) : (
               <ul className="mt-6 space-y-4">
@@ -170,7 +172,7 @@ export default async function ImpactPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Hours by month</h2>
             <p className="text-sm text-gray-500 mt-1">Approved hours over time.</p>
             {byMonth.length === 0 ? (
-              <p className="mt-6 text-sm text-gray-500">Nothing approved yet.</p>
+              <p className="mt-6 text-sm text-gray-500">No group has 3 or more distinct volunteers yet.</p>
             ) : (
               <ul className="mt-6 flex items-end gap-3 h-40" aria-label="Verified hours by month">
                 {byMonth.map((row) => (
@@ -193,7 +195,7 @@ export default async function ImpactPage() {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Organizations behind the hours</h2>
           <p className="text-sm text-gray-500 mt-1">Only organizer-approved logs are counted.</p>
           {byOrganization.length === 0 ? (
-            <p className="mt-6 text-sm text-gray-500">No organizations with approved hours yet.</p>
+            <p className="mt-6 text-sm text-gray-500">No organization has 3 or more distinct volunteers yet.</p>
           ) : (
             <ul className="mt-6 divide-y divide-gray-100 dark:divide-gray-800">
               {byOrganization.map((row) => (
@@ -231,6 +233,10 @@ export default async function ImpactPage() {
           Aggregates only. ImpactMap never publishes a student&rsquo;s name alongside their hours on
           this page, and the public record shows only what an organizer approved. While the shared
           demo records exist, they are included in these totals.
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Privacy threshold: groups with fewer than 3 distinct volunteers are suppressed, and a total
+          student count below 5 is shown as &ldquo;&mdash;&rdquo;. Hours and record totals remain public.
         </p>
       </div>
     </div>

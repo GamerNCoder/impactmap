@@ -97,6 +97,18 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                 <span className="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full capitalize">
                   {opportunity.status}
                 </span>
+                {opportunity.wheelchair_accessible && (
+                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">Wheelchair accessible</span>
+                )}
+                {opportunity.accessible_restroom && (
+                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">Accessible restroom</span>
+                )}
+                {opportunity.sensory_friendly && (
+                  <span className="bg-violet-100 text-violet-800 text-sm font-medium px-3 py-1 rounded-full">Sensory-friendly</span>
+                )}
+                {opportunity.substance_free && (
+                  <span className="bg-emerald-100 text-emerald-800 text-sm font-medium px-3 py-1 rounded-full">Alcohol- and smoke-free</span>
+                )}
               </div>
 
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{opportunity.title}</h1>

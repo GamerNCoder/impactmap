@@ -11,6 +11,7 @@ import { CURRENT_TERMS_VERSION } from '@/lib/terms'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
 import { FadeIn } from '@/components/motion'
+import { safeNext } from '@/lib/safe-next'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -62,7 +63,7 @@ function LoginForm() {
           .eq('id', data.user.id)
       }
 
-      const destination = nextPath.startsWith('/') ? nextPath : '/dashboard'
+      const destination = safeNext(nextPath)
       trackClientEvent(APP_EVENTS.AUTH_LOGIN)
       router.push(destination)
     } catch (err: unknown) {

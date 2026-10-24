@@ -15,6 +15,10 @@ type EventCardProps = {
   startDate?: string | null
   verified?: boolean
   distanceMi?: number | null
+  wheelchairAccessible?: boolean
+  accessibleRestroom?: boolean
+  sensoryFriendly?: boolean
+  substanceFree?: boolean
 }
 
 export default function EventCard({
@@ -29,6 +33,10 @@ export default function EventCard({
   startDate,
   verified = false,
   distanceMi = null,
+  wheelchairAccessible = false,
+  accessibleRestroom = false,
+  sensoryFriendly = false,
+  substanceFree = false,
 }: EventCardProps) {
   const cat = getCategoryStyle(category)
   const capacity = volunteersNeeded ?? 0
@@ -55,6 +63,15 @@ export default function EventCard({
         <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
           {title}
         </h2>
+        {(wheelchairAccessible || accessibleRestroom || sensoryFriendly || substanceFree) && (
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {wheelchairAccessible && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">Wheelchair accessible</span>}
+            {accessibleRestroom && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">Accessible restroom</span>}
+            {sensoryFriendly && <span className="rounded-full bg-violet-50 text-violet-800 px-2 py-0.5 text-xs font-medium">Sensory-friendly</span>}
+            {substanceFree && <span className="rounded-full bg-emerald-50 text-emerald-800 px-2 py-0.5 text-xs font-medium">Alcohol- and smoke-free</span>}
+          </div>
+        )}
+
         {organizationName && (
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {organizationName}

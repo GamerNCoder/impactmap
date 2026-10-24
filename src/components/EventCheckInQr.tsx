@@ -23,6 +23,9 @@ export default function EventCheckInQr({ opportunityId, title }: EventCheckInQrP
         and they can log hours straight afterwards.
       </p>
       <QrCodeImage value={url} label={`Check in to ${title}`} size={140} />
+      <p className="mt-2 text-xs text-gray-500 break-all">
+        Or open <a href={url} className="underline">{url}</a> on a phone.
+      </p>
     </div>
   )
 }

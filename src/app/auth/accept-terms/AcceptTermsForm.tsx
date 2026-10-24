@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import TermsCheckbox, { clearTermsPendingCookie } from '@/components/TermsCheckbox'
 import { CURRENT_TERMS_VERSION } from '@/lib/terms'
+import { safeNext } from '@/lib/safe-next'
 
 export default function AcceptTermsForm() {
   const [accepted, setAccepted] = useState(false)
@@ -47,7 +48,7 @@ export default function AcceptTermsForm() {
 
       clearTermsPendingCookie()
       // Full navigation avoids a prefetched gated response from before terms were accepted.
-      window.location.assign(nextPath.startsWith('/') ? nextPath : '/dashboard')
+      window.location.assign(safeNext(nextPath))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not save acceptance')
     } finally {

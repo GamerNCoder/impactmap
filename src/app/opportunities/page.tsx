@@ -8,7 +8,7 @@ export const metadata = {
   description: 'Discover and join volunteer events.',
 }
 
-type SearchParams = Promise<{ category?: string; q?: string }>
+type SearchParams = Promise<{ category?: string; q?: string; wheelchair?: string; substance?: string }>
 
 export default async function OpportunitiesPage({
   searchParams,
@@ -25,6 +25,8 @@ export default async function OpportunitiesPage({
     .order('start_date', { ascending: true, nullsFirst: false })
 
   if (params.category) query = query.eq('category', params.category)
+  if (params.wheelchair === '1') query = query.eq('wheelchair_accessible', true)
+  if (params.substance === '1') query = query.eq('substance_free', true)
   // Strip PostgREST filter syntax characters from free-text search.
   const q = params.q?.replace(/[,()*%\\]/g, ' ').trim()
   if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`)
@@ -57,6 +59,14 @@ export default async function OpportunitiesPage({
             <option value="">All causes</option>
             {OPPORTUNITY_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
           </select>
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 px-2">
+            <input type="checkbox" name="wheelchair" value="1" defaultChecked={params.wheelchair === '1'} />
+            Wheelchair accessible
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 px-2">
+            <input type="checkbox" name="substance" value="1" defaultChecked={params.substance === '1'} />
+            Alcohol- and smoke-free
+          </label>
           <button type="submit" className="bg-emerald-700 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-800">Go</button>
           {(params.q || params.category) && (
             <Link href="/opportunities" className="text-gray-500 px-2 py-2 text-sm">Clear</Link>
@@ -86,6 +96,10 @@ export default async function OpportunitiesPage({
                 startDate: opp.start_date,
                 latitude: opp.latitude,
                 longitude: opp.longitude,
+                wheelchairAccessible: Boolean(opp.wheelchair_accessible),
+                accessibleRestroom: Boolean(opp.accessible_restroom),
+                sensoryFriendly: Boolean(opp.sensory_friendly),
+                substanceFree: Boolean(opp.substance_free),
               }
             })}
           />

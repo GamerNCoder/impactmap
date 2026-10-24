@@ -19,6 +19,10 @@ export type ExplorerEvent = {
   startDate: string | null
   latitude: number | null
   longitude: number | null
+  wheelchairAccessible?: boolean
+  accessibleRestroom?: boolean
+  sensoryFriendly?: boolean
+  substanceFree?: boolean
 }
 
 type Position = { lat: number; lng: number }
@@ -189,6 +193,9 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
         </div>
       </div>
       {locateError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">{locateError}</p>}
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        The map is visual. Every mapped event is also listed as a card below.
+      </p>
       {walkOnly && me && visible.length === 0 && (
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Nothing within {WALK_MI} miles of you. Turn the filter off to see every event.
@@ -211,6 +218,10 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
             volunteersCount={e.volunteersCount}
             startDate={e.startDate}
             distanceMi={distance}
+            wheelchairAccessible={e.wheelchairAccessible}
+            accessibleRestroom={e.accessibleRestroom}
+            sensoryFriendly={e.sensoryFriendly}
+            substanceFree={e.substanceFree}
           />
         ))}
       </div>

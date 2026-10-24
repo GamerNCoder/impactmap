@@ -53,7 +53,7 @@ ANON_KEY=$(supabase projects api-keys --project-ref "$SUPABASE_PROJECT_REF" -o j
 
 # 2. Vercel project + env + deploy
 $VERCEL link --yes --project impactmap >/dev/null
-for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS NEXT_PUBLIC_DEMO_ENABLED DEMO_STUDENT_EMAIL DEMO_STUDENT_PASSWORD DEMO_ORGANIZER_EMAIL DEMO_ORGANIZER_PASSWORD; do
+for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS NEXT_PUBLIC_DEMO_ENABLED DEMO_STUDENT_EMAIL DEMO_STUDENT_PASSWORD DEMO_ORGANIZER_EMAIL DEMO_ORGANIZER_PASSWORD SUPABASE_SERVICE_ROLE_KEY; do
   $VERCEL env rm "$name" production --yes >/dev/null 2>&1 || true
 done
 # Public-by-design values (the anon key is gated by RLS), so store as plain config without prompts.
@@ -84,6 +84,7 @@ mv /tmp/impactmap-config.toml.bak supabase/config.toml; rm -f supabase/config.to
 # 4. Seed the shared demo accounts (idempotent). The service key stays in the child process.
 SERVICE_ROLE_KEY=$(supabase projects api-keys --project-ref "$SUPABASE_PROJECT_REF" -o json \
   | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).find(k=>k.name==="service_role").api_key))')
+printf '%s' "$SERVICE_ROLE_KEY" | $VERCEL $ADD_SECRET SUPABASE_SERVICE_ROLE_KEY production >/dev/null
 echo "Seeding demo accounts…"
 SUPABASE_URL="$SUPABASE_URL" NEXT_PUBLIC_SUPABASE_URL="$SUPABASE_URL" \
   SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \

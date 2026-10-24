@@ -86,14 +86,18 @@ the brief matches the app.
 
 ## Current state (2026-10-23)
 
-In the working tree, not yet committed: the self-approval DB trigger, unverified-organizer
-warning on `/verify`, bulk `organizer_verified` field, k-anonymous `impact_summary`, demo reset
-route/button, demo seed date correction, self-dealing and 3-volunteer e2e tests, and OpenStreetMap
-maps with a client-side dark filter (CARTO's keyless tiles retired).
+Implemented and building: self-approval DB trigger; unverified-organizer warning on `/verify`;
+bulk `organizer_verified` warning; k-anonymous `impact_summary` with matching `/impact` copy;
+demo reset with origin check, confirmation, and deploy service key; safe `next` paths; CSV formula
+neutralization; check-in requires an accepted application; wheelchair/accessible-restroom/
+sensory/substance fields, filters, cards and detail badges; map/QR text alternatives; broader a11y
+route gate; OpenStreetMap maps with a dark filter (CARTO keyless tiles retired); self-dealing and
+3-volunteer e2e tests.
 
-Open: `/impact` UI suppression copy, bulk-verify organizer warning UI, second-account/coordinator
-self-dealing, public `volunteer_hours` grants, open redirects, CSV injection, a11y map/QR/paths,
-language switcher + Spanish core, wheelchair/substance flags, commit/push + migration apply.
+Still open: apply the new migrations to production; second-account/coordinator self-dealing (label
+is present, gate is not); public `volunteer_hours` column grants; organization billing and profile
+admin-column grants; audit-log integrity; language switcher + Spanish core; full offline; the demo
+video/submission; run `test:db`/`test:a11y` against a migrated database and confirm GitHub CI.
 
 ## Decision log
 

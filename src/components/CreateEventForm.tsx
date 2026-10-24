@@ -29,6 +29,10 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
   const [volunteersNeeded, setVolunteersNeeded] = useState('10')
   const [timeCommitment, setTimeCommitment] = useState('')
   const [facilities, setFacilities] = useState('')
+  const [wheelchairAccessible, setWheelchairAccessible] = useState(false)
+  const [accessibleRestroom, setAccessibleRestroom] = useState(false)
+  const [sensoryFriendly, setSensoryFriendly] = useState(false)
+  const [substanceFree, setSubstanceFree] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -106,6 +110,10 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
           volunteers_count: 0,
           time_commitment: timeCommitment.trim() || null,
           facilities: facilities.split(',').map((f) => f.trim()).filter(Boolean),
+          wheelchair_accessible: wheelchairAccessible,
+          accessible_restroom: accessibleRestroom,
+          sensory_friendly: sensoryFriendly,
+          substance_free: substanceFree,
           status: 'open',
           latitude: coords?.latitude ?? null,
           longitude: coords?.longitude ?? null,
@@ -292,6 +300,29 @@ export default function CreateEventForm({ memberOrgs }: CreateEventFormProps) {
           Comma-separated. Shown on the event page for volunteers who need to know.
         </p>
       </div>
+
+      <fieldset className="rounded-xl border border-gray-200 p-4 space-y-3">
+        <legend className="px-1 text-sm font-semibold text-gray-900">Access and environment</legend>
+        <p className="text-xs text-gray-500">
+          Organizer-declared. ImpactMap does not verify these claims; label them honestly.
+        </p>
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input type="checkbox" checked={wheelchairAccessible} onChange={(e) => setWheelchairAccessible(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700" />
+          Wheelchair accessible
+        </label>
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input type="checkbox" checked={accessibleRestroom} onChange={(e) => setAccessibleRestroom(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700" />
+          Accessible restroom
+        </label>
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input type="checkbox" checked={sensoryFriendly} onChange={(e) => setSensoryFriendly(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700" />
+          Sensory-friendly / quiet space
+        </label>
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input type="checkbox" checked={substanceFree} onChange={(e) => setSubstanceFree(e.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-700" />
+          Alcohol- and smoke-free
+        </label>
+      </fieldset>
 
       <button
         type="submit"

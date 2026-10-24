@@ -10,6 +10,7 @@ type Row = {
   name: string | null
   event: string | null
   organization: string | null
+  organizer_verified: boolean | null
   date: string | null
   hours: number | null
   approver: string | null
@@ -78,6 +79,7 @@ export default function BulkVerifyPanel({ codes }: Props) {
   }, [codesKey])
 
   const unknown = (rows ?? []).filter((r) => r.status !== 'verified')
+  const unverifiedOrganizers = (rows ?? []).filter((r) => r.status === 'verified' && r.organizer_verified === false)
 
   return (
     <div className="space-y-6">
@@ -108,6 +110,17 @@ export default function BulkVerifyPanel({ codes }: Props) {
               students cannot create or edit them.
             </p>
           </div>
+
+          {unverifiedOrganizers.length > 0 && (
+            <div className="rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 p-4">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                {unverifiedOrganizers.length} verified row{unverifiedOrganizers.length === 1 ? '' : 's'} came from an unverified organizer
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-1">
+                The code records the organizer&rsquo;s attestation. ImpactMap has not verified that organization.
+              </p>
+            </div>
+          )}
 
           {unknown.length > 0 && (
             <div className="rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 p-4">
@@ -151,7 +164,12 @@ export default function BulkVerifyPanel({ codes }: Props) {
                     <td className="py-2 pr-3 text-gray-900 dark:text-white">
                       {r.event ?? '—'}
                       {r.organization && (
-                        <span className="block text-gray-500 text-xs">{r.organization}</span>
+                        <span className="block text-gray-500 text-xs">
+                          {r.organization}
+                          {r.organizer_verified === false && (
+                            <span className="ml-1 text-amber-700 dark:text-amber-400 font-medium">· unverified organizer</span>
+                          )}
+                        </span>
                       )}
                     </td>
                     <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{r.date ?? '—'}</td>

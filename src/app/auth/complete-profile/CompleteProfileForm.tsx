@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { safeNext } from '@/lib/safe-next'
 
 const GUARDIAN_AGE = 16
 
@@ -104,7 +105,7 @@ export default function CompleteProfileForm() {
 
       // Full navigation: the client router can reuse a prefetched /dashboard response from
       // before the birthday existed, which would bounce straight back to this page.
-      window.location.assign(nextPath.startsWith('/') ? nextPath : '/dashboard')
+      window.location.assign(safeNext(nextPath))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not save your details')
     } finally {

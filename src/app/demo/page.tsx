@@ -16,11 +16,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 }
 
 type PageProps = {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; reset?: string }>
 }
 
 export default async function DemoPage({ searchParams }: PageProps) {
-  const { error } = await searchParams
+  const { error, reset } = await searchParams
   const enabled = demoEnabled()
 
   return (
@@ -36,6 +36,15 @@ export default async function DemoPage({ searchParams }: PageProps) {
           Pick a role. The student view already has verified hours, a pending log and a counselor
           report; the organizer view has that log waiting for one-tap approval.
         </p>
+
+        {reset === '1' && (
+          <div
+            role="status"
+            className="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200"
+          >
+            Demo restored. The pending 2-hour log is ready to approve again.
+          </div>
+        )}
 
         {error && (
           <div

@@ -5,6 +5,16 @@ import { logSecurityEvent } from '@/lib/audit'
 import { trackAppEvent } from '@/lib/track-event'
 import { APP_EVENTS } from '@/lib/app-events'
 
+function csvCell(value: unknown): string {
+  const text = String(value ?? '')
+  const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text
+  return `"${guarded.replace(/"/g, '""')}"`
+}
+
+function safeFilename(value: string): string {
+  return value.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'org'
+}
+
 type RouteParams = { params: Promise<{ id: string }> }
 
 export async function GET(_request: Request, { params }: RouteParams) {
@@ -129,11 +139,11 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   const rows = [...hourRows, ...completionRows]
   const csv = [
-    header.join(','),
-    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    header.map(csvCell).join(','),
+    ...rows.map((row) => row.map(csvCell).join(',')),
   ].join('\n')
 
-  const filename = `${(organization?.name ?? 'org').replace(/\s+/g, '-').toLowerCase()}-impact-report.csv`
+  const filename = `${safeFilename(organization?.name ?? 'org')}-impact-report.csv`
 
   await logSecurityEvent(user.id, 'org.export', 'organizations', orgId, {
     row_count: rows.length,
