@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/constants'
 import { canManageOrg } from '@/lib/org-access'
 import DemoNotice from '@/components/DemoNotice'
 import RequestVerification from '@/components/RequestVerification'
+import ImportEvents from '@/components/ImportEvents'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -229,6 +230,8 @@ export default async function OrganizationManagePage({ params }: PageProps) {
                 </ul>
               </section>
             )}
+
+            <ImportEvents organizationId={id} />
 
             <section>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hours to approve</h2>
