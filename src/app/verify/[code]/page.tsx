@@ -55,7 +55,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
   const supervisorNotes = record.supervisor_notes
   const verifiedAt = record.verified_at
 
-  const credentialType = isHours ? 'Verified service hours' : 'Verified task completion'
+  const credentialType = isHours ? 'Organizer-approved service hours' : 'Organizer-approved task completion'
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4">
@@ -180,7 +180,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
             )}
 
             <p className="text-xs text-gray-600 border-t border-gray-200 dark:border-gray-800 pt-4">
-              Issued by ImpactMap on behalf of the event organizer who approved this record.
+              The event organizer approved this record in ImpactMap. ImpactMap did not independently verify identity or attendance.
               {' '}Reference code {code}.
             </p>
           </div>
@@ -188,6 +188,8 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           <Link href="/" className="text-emerald-700 hover:underline">impactmap.vercel.app</Link>
+          {' · '}
+          <Link href="/trust" className="text-emerald-700 hover:underline">What this means</Link>
         </p>
       </div>
     </div>

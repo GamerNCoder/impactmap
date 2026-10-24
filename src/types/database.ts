@@ -489,6 +489,9 @@ isOneToOne: false
 "is_platform_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"reset_demo":
+{ Args: { "p_student_email": string }; Returns: Json
+                           },
 "join_opportunity":
 { Args: { "p_opportunity_id": string }; Returns: Json
                            },
