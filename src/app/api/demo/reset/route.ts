@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
-  DEMO_STUDENT_EMAIL,
   demoEnabled,
 } from '@/lib/demo'
 
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createClient()
-  const { data, error } = await supabase.rpc('reset_demo', { p_student_email: DEMO_STUDENT_EMAIL })
+  const { data, error } = await supabase.rpc('reset_demo')
 
   if (error || !(data as { ok?: boolean } | null)?.ok) {
     return NextResponse.json({ error: 'Could not reset the demo.' }, { status: 500 })

@@ -490,7 +490,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "reset_demo":
-{ Args: { "p_student_email": string }; Returns: Json
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "join_opportunity":
 { Args: { "p_opportunity_id": string }; Returns: Json
