@@ -29,10 +29,13 @@ Earlier detail is in git history (`git log -p HANDOFF.md`).
   selectable; `audit:defenses` fails if anon reads bio/location/skills/availability or if the
   impact RPC stops answering; the unused `hasAcceptedTerms()` (which selected the revoked terms
   columns) was deleted.
-- **Verified locally on Node 22:** `test:db` **83/83** on a freshly reset database (run
+- **Verified locally on Node 22:** `test:db` **86/86** on a freshly reset database (run
   `scripts/clean-db.sh reset` first), `test:a11y` 10/10, `test:ui` full loop, `test:theme`,
   `tsc`, `eslint` and `next build` clean. A reset wipes the demo users — rerun
   `npm run seed:demo` before the browser tests.
+- **Audit integrity:** `20261024000700_audit_rows_must_be_attributed.sql` requires
+  `user_id = auth.uid()` on client audit inserts; unattributed rows are rejected (three new e2e
+  checks). Trigger and account-deletion writes run as the table owner.
 - **Gotcha:** `REVOKE SELECT ON <table>` also clears that table's column ACLs; table and column
   grants are separate ACLs, so a least-privilege migration must rebuild the column set.
 - **Production audit caught a second regression:** `POST /api/demo/reset` returned 200 with no

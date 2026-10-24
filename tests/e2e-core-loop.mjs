@@ -327,6 +327,20 @@ await student.client
 const { data: adminNow } = await student.client.rpc('is_platform_admin')
 check('student cannot make self admin', adminNow === false)
 
+// Audit integrity: a row must belong to its author; an unattributed entry is rejected.
+const { error: nullAuditErr } = await student.client
+  .from('security_audit_log')
+  .insert({ user_id: null, action: 'probe.unattributed' })
+check('signed-in users cannot write unattributed audit rows', Boolean(nullAuditErr), nullAuditErr?.message)
+const { error: ownAuditErr } = await student.client
+  .from('security_audit_log')
+  .insert({ user_id: student.user.id, action: 'probe.own' })
+check('signed-in users can write their own audit row', !ownAuditErr, ownAuditErr?.message)
+const { error: anonAuditErr } = await anon
+  .from('security_audit_log')
+  .insert({ user_id: null, action: 'probe.anon' })
+check('public cannot write audit rows', Boolean(anonAuditErr), anonAuditErr?.message)
+
 // Minor privacy: other signed-in users (e.g. adult organizers) see names, not contact details.
 const { error: peerEmailErr } = await intruder.client.from('profiles').select('email').eq('id', student.user.id).single()
 check('signed-in users cannot read student email', Boolean(peerEmailErr))

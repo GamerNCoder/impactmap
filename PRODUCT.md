@@ -110,20 +110,25 @@ Least privilege is restored on top of the defense-in-depth revoke: `anon` reads 
 id/full_name/hours_goal; `authenticated` reads only public profile columns (no email, birthday,
 location, bio, availability, terms or admin flag) and organizations reads exclude billing
 columns, while writes stay table-level and RLS-scoped; `impact_summary()` runs `SECURITY DEFINER`
-with a pinned `search_path` so `anon` needs no `volunteer_hours` grant. `npm run audit:defenses`
+with a pinned `search_path` so `anon` needs no `volunteer_hours` grant. Audit rows must be
+attributed: the INSERT policy rejects a null `user_id`, so a signed-in account cannot forge an
+anonymous entry (definer functions still write unattributed rows). `npm run audit:defenses`
 fails if anon can read private profile fields or if the impact RPC stops answering. The demo
 reset route fails closed on a missing Origin as well as a cross-site one.
 
 CI runs on Node 22 because `@supabase/supabase-js` requires native WebSocket; the DB suite is
-83 checks against a freshly reset database. Local 2026-10-24: `test:db` 83/83, `test:a11y` 10/10
+86 checks against a freshly reset database. Local 2026-10-24: `test:db` 86/86, `test:a11y` 10/10
 pages, `test:ui` full loop, `test:theme`, `tsc`, `eslint` and `next build` clean.
 
-Still open: audit-log integrity (authenticated inserts with a null `user_id` are still accepted);
-user-only demo video, AI-use disclosure and submission; OAuth provider credentials; a real pilot;
-and the live deploy/verification of the 2026-10-24 security migration. Full offline is a non-goal.
+Still open: user-only demo video, AI-use disclosure and submission; OAuth provider credentials; a
+real pilot; and the live deploy/verification of the 2026-10-24 security migration. Full offline is
+a non-goal.
 
 ## Decision log
 
+- **2026-10-24** — Audit rows must be attributable: the INSERT policy requires
+  `user_id = auth.uid()`; a null author is rejected. Trigger and account-deletion writes run as
+  the table owner and are unaffected.
 - **2026-10-24** — Demo reset is fail-closed: a missing `Origin` is rejected (403), not silently
   allowed. The reset form is a same-origin POST, so every browser flow still passes.
 - **2026-10-24** — CI runs Node 22: supabase-js needs native WebSocket, so the Node 20 DB job
