@@ -111,7 +111,8 @@ id/full_name/hours_goal; `authenticated` reads only public profile columns (no e
 location, bio, availability, terms or admin flag) and organizations reads exclude billing
 columns, while writes stay table-level and RLS-scoped; `impact_summary()` runs `SECURITY DEFINER`
 with a pinned `search_path` so `anon` needs no `volunteer_hours` grant. `npm run audit:defenses`
-fails if anon can read private profile fields or if the impact RPC stops answering.
+fails if anon can read private profile fields or if the impact RPC stops answering. The demo
+reset route fails closed on a missing Origin as well as a cross-site one.
 
 CI runs on Node 22 because `@supabase/supabase-js` requires native WebSocket; the DB suite is
 83 checks against a freshly reset database. Local 2026-10-24: `test:db` 83/83, `test:a11y` 10/10
@@ -123,6 +124,8 @@ and the live deploy/verification of the 2026-10-24 security migration. Full offl
 
 ## Decision log
 
+- **2026-10-24** — Demo reset is fail-closed: a missing `Origin` is rejected (403), not silently
+  allowed. The reset form is a same-origin POST, so every browser flow still passes.
 - **2026-10-24** — CI runs Node 22: supabase-js needs native WebSocket, so the Node 20 DB job
   failed before the first assertion.
 - **2026-10-24** — Column grants are the backup to RLS, not a formality: `REVOKE SELECT` on a

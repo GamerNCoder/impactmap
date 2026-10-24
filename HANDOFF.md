@@ -35,12 +35,19 @@ Earlier detail is in git history (`git log -p HANDOFF.md`).
   `npm run seed:demo` before the browser tests.
 - **Gotcha:** `REVOKE SELECT ON <table>` also clears that table's column ACLs; table and column
   grants are separate ACLs, so a least-privilege migration must rebuild the column set.
+- **Production audit caught a second regression:** `POST /api/demo/reset` returned 200 with no
+  `Origin` header — the guard was `if (origin)`, so a missing header skipped the check. The route
+  now fails closed: no origin → 403, cross-site → 403, same-origin → 307. Live after deploy: anon
+  `profiles?select=bio|email` and `organization_members` → 401; `impact_summary` → 200 (36 h, 12
+  records, 10 students); `/`, `/impact`, `/demo`, `/verify/IMP-DEMO2026ABCD`, `/trust`, `/offline`,
+  `/robots.txt`, `/sitemap.xml` all 200; a11y 10/10 against production.
 
 ## State
-- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed **2026-10-22 from
-  the working tree** (last commit `4d31a36`; all 2026-10-21/22 changes are uncommitted).
+- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed **2026-10-24** via
+  `./deploy.sh`; the working tree is committed and pushed, and GitHub CI is green.
 - Supabase project `impactmap-cac` (ref `zolvpddzpimegnkimszh`). Migrations through
-  `20261022000300_protect_demo_accounts.sql` are applied to production. Redeploy: `./deploy.sh`.
+  `20261024000600_restore_least_privilege_grants.sql` are applied to production.
+  Redeploy: `./deploy.sh`.
 - **Demo is live:** https://impactmap.vercel.app/demo (student/organizer one-click; 9 verified
   demo hours + 1 pending log; code `IMP-DEMO2026ABCD`). Demo env vars are on Vercel and in
   `.env.deploy.local`; `deploy.sh` reseeds after each deploy.

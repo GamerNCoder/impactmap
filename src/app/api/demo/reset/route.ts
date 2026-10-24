@@ -13,14 +13,18 @@ export const dynamic = 'force-dynamic'
  */
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin')
-  if (origin) {
-    try {
-      if (new URL(origin).host !== request.headers.get('host')) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      }
-    } catch {
+  const host = request.headers.get('host')
+  // Fail closed: a browser form POST always sends Origin, so a missing header means the caller
+  // is not a same-origin page. Previously a missing Origin skipped the check entirely.
+  if (!origin || !host) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  try {
+    if (new URL(origin).host !== host) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   if (!demoEnabled()) {
