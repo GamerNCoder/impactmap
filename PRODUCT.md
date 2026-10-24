@@ -120,9 +120,9 @@ CI runs on Node 22 because `@supabase/supabase-js` requires native WebSocket; th
 86 checks against a freshly reset database. Local 2026-10-24: `test:db` 86/86, `test:a11y` 10/10
 pages, `test:ui` full loop, `test:theme`, `tsc`, `eslint` and `next build` clean.
 
-Still open: user-only demo video, AI-use disclosure and submission; OAuth provider credentials; a
-real pilot; and the live deploy/verification of the 2026-10-24 security migration. Full offline is
-a non-goal.
+Still open: user-only demo video, AI-use disclosure and submission; OAuth provider credentials; and
+a real pilot. The 2026-10-24 security migrations are deployed and the production defense audit
+passes. Full offline is a non-goal.
 
 ## Decision log
 

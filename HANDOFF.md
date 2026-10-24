@@ -43,7 +43,8 @@ Earlier detail is in git history (`git log -p HANDOFF.md`).
   now fails closed: no origin → 403, cross-site → 403, same-origin → 307. Live after deploy: anon
   `profiles?select=bio|email` and `organization_members` → 401; `impact_summary` → 200 (36 h, 12
   records, 10 students); `/`, `/impact`, `/demo`, `/verify/IMP-DEMO2026ABCD`, `/trust`, `/offline`,
-  `/robots.txt`, `/sitemap.xml` all 200; a11y 10/10 against production.
+  `/robots.txt`, `/sitemap.xml` all 200; a11y 10/10 against production. `DEFENSE-AUDIT.md` holds the
+  2026-10-24 production evidence (11/11, all pass).
 
 ## State
 - **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed **2026-10-24** via
