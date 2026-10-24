@@ -144,7 +144,7 @@ await step(counselor, 'counselor (signed out): verify code', async () => {
   // rather than submitting — use the button.
   await counselor.getByRole('button', { name: /Look up credential/ }).click()
   await counselor.waitForURL(new RegExp(code), { timeout: 10000 })
-  await counselor.getByText('Test student').first().waitFor({ timeout: 10000 })
+  await counselor.getByText('Test s.').first().waitFor({ timeout: 10000 })
   await counselor.getByText('Hours verified').waitFor({ timeout: 5000 })
 })
 await step(counselor, 'counselor (signed out): bulk verify endpoint', async () => {
