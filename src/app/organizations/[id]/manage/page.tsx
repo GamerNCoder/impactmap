@@ -11,6 +11,7 @@ import HoursTrend from '@/components/HoursTrend'
 import { formatDate } from '@/lib/constants'
 import { canManageOrg } from '@/lib/org-access'
 import DemoNotice from '@/components/DemoNotice'
+import RequestVerification from '@/components/RequestVerification'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -179,6 +180,13 @@ export default async function OrganizationManagePage({ params }: PageProps) {
             ← {organization.name}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mt-3">Approve hours</h1>
+          {!organization.verified && (
+            <div className="mt-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 p-4">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">This organization is not verified yet.</p>
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">You can still approve hours; verification adds a visible trust badge for counselors.</p>
+              <div className="mt-3"><RequestVerification organizationId={id} /></div>
+            </div>
+          )}
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Students log hours after your event. Approve them here, and each student gets a code their counselor can check.
           </p>
@@ -313,6 +321,9 @@ export default async function OrganizationManagePage({ params }: PageProps) {
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Approved</h2>
                   <a href={`/api/org/${id}/export`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
                     Download CSV
+                  </a>
+                  <a href={`/api/org/${id}/export?format=json`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+                    JSON
                   </a>
                 </div>
                 <ul className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">

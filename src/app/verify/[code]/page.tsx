@@ -36,6 +36,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
     supervisor_notes: string | null
     description: string | null
     verified_at: string | null
+    verification_expires_at: string | null
     status: string | null
   } | null
 
@@ -141,6 +142,12 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                   </dd>
                 </div>
               )}
+              <div>
+                <dt className="text-gray-500">Valid until</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">
+                  {record.verification_expires_at ? formatDate(record.verification_expires_at.split('T')[0]) : 'No expiry'}
+                </dd>
+              </div>
               <div>
                 <dt className="text-gray-500">Verified on</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">

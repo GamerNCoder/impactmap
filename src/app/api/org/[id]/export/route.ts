@@ -17,7 +17,8 @@ function safeFilename(value: string): string {
 
 type RouteParams = { params: Promise<{ id: string }> }
 
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams) {
+  const format = new URL(request.url).searchParams.get('format')
   const { id: orgId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -144,6 +145,14 @@ export async function GET(_request: Request, { params }: RouteParams) {
   ].join('\n')
 
   const filename = `${safeFilename(organization?.name ?? 'org')}-impact-report.csv`
+
+  if (format === 'json') {
+    return NextResponse.json({
+      organization: organization?.name ?? null,
+      generated_at: new Date().toISOString(),
+      rows,
+    }, { headers: { 'Cache-Control': 'no-store' } })
+  }
 
   await logSecurityEvent(user.id, 'org.export', 'organizations', orgId, {
     row_count: rows.length,

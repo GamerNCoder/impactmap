@@ -56,6 +56,7 @@ export default function VerifyHoursForm({
           verified_by: user.id,
           verified_at: new Date().toISOString(),
           verification_code: code,
+          verification_expires_at: new Date(Date.now() + 30 * 864e5).toISOString(),
           supervisor_name: approverName,
           supervisor_title: approverTitle.trim() || 'Event organizer',
           supervisor_email: approverEmail,
@@ -96,6 +97,7 @@ export default function VerifyHoursForm({
         </p>
         <p className="text-emerald-700 dark:text-emerald-300 mt-1">
           Their code: <strong className="font-mono">{verificationCode}</strong>{' '}
+          <span className="text-xs">(expires in 30 days)</span>{' '}
           <a href={`/verify/${verificationCode}`} className="underline" target="_blank" rel="noopener noreferrer">
             view
           </a>

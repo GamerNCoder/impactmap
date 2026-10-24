@@ -1,4 +1,15 @@
+---
+handoff-index: false
+product: impactmap
+repo: /Users/togi/Projects/impactmap
+signatures: impactmap, congressional app challenge, cac, volunteer hours, vercel, supabase, demo, pilot, nj-6, event check-in
+updated: 2026-10-24T16:06-04:00
+---
 # ImpactMap — handoff (2026-10-22)
+
+Current repo facts, 2026-10-24: branch `cac/core-loop` @ `ced5b9a`
+("Add live break report"), **35 dirty paths**; the live deploy is still from the
+working tree, so commit before a public repo. Live: https://impactmap.vercel.app.
 
 Earlier detail is in git history (`git log -p HANDOFF.md`).
 

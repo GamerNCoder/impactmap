@@ -193,6 +193,15 @@ export default function EventsExplorer({ events, dict }: { events: ExplorerEvent
       <p className="text-xs text-gray-500 dark:text-gray-400">
         {dict.events.mapNote}
       </p>
+      <ul className="sr-only">
+        {pinned.map((e) => (
+          <li key={e.id}>
+            <a href={`/opportunities/${e.id}`}>{e.title}</a>
+            {e.location ? ` — ${e.location}` : ''}
+            {e.organizationName ? ` (${e.organizationName})` : ''}
+          </li>
+        ))}
+      </ul>
       {walkOnly && me && visible.length === 0 && (
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {dict.events.noNearby}

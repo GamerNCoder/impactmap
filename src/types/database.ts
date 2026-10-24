@@ -33,14 +33,14 @@ isOneToOne: false
                   ]
                 },"applications": {
                   Row: {
-                    "availability": string | null,"completed_at": string | null,"cover_letter": string | null,"created_at": string | null,"experience": string | null,"id": string,"no_show": boolean | null,"opportunity_id": string | null,"status": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"updated_at": string | null,"user_id": string | null,"verification_code": string | null,"verified_at": string | null,"verified_by": string | null
+                    "availability": string | null,"completed_at": string | null,"cover_letter": string | null,"created_at": string | null,"experience": string | null,"id": string,"no_show": boolean | null,"opportunity_id": string | null,"status": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"updated_at": string | null,"user_id": string | null,"verification_code": string | null,"verification_expires_at": string | null,"verified_at": string | null,"verified_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "availability"?: string | null,"completed_at"?: string | null,"cover_letter"?: string | null,"created_at"?: string | null,"experience"?: string | null,"id"?: string,"no_show"?: boolean | null,"opportunity_id"?: string | null,"status"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"updated_at"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "availability"?: string | null,"completed_at"?: string | null,"cover_letter"?: string | null,"created_at"?: string | null,"experience"?: string | null,"id"?: string,"no_show"?: boolean | null,"opportunity_id"?: string | null,"status"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"updated_at"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Update: {
-                    "availability"?: string | null,"completed_at"?: string | null,"cover_letter"?: string | null,"created_at"?: string | null,"experience"?: string | null,"id"?: string,"no_show"?: boolean | null,"opportunity_id"?: string | null,"status"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"updated_at"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "availability"?: string | null,"completed_at"?: string | null,"cover_letter"?: string | null,"created_at"?: string | null,"experience"?: string | null,"id"?: string,"no_show"?: boolean | null,"opportunity_id"?: string | null,"status"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"updated_at"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -371,14 +371,14 @@ isOneToOne: false
                   ]
                 },"volunteer_hours": {
                   Row: {
-                    "created_at": string | null,"date": string,"description": string | null,"hours": number,"id": string,"opportunity_id": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"user_id": string | null,"verification_code": string | null,"verified": boolean | null,"verified_at": string | null,"verified_by": string | null
+                    "created_at": string | null,"date": string,"description": string | null,"hours": number,"id": string,"opportunity_id": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"user_id": string | null,"verification_code": string | null,"verification_expires_at": string | null,"verified": boolean | null,"verified_at": string | null,"verified_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string | null,"date": string,"description"?: string | null,"hours": number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "created_at"?: string | null,"date": string,"description"?: string | null,"hours": number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string | null,"date"?: string,"description"?: string | null,"hours"?: number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "created_at"?: string | null,"date"?: string,"description"?: string | null,"hours"?: number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -386,6 +386,38 @@ isOneToOne: false
       columns: ["opportunity_id"]
 isOneToOne: false
       referencedRelation: "opportunities"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"verification_requests": {
+                  Row: {
+                    "created_at": string | null,"id": string,"message": string | null,"organization_id": string,"requested_by": string,"reviewed_at": string | null,"reviewed_by": string | null,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string | null,"id"?: string,"message"?: string | null,"organization_id": string,"requested_by": string,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"id"?: string,"message"?: string | null,"organization_id"?: string,"requested_by"?: string,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "verification_requests_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verification_requests_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verification_requests_reviewed_by_fkey"
+      columns: ["reviewed_by"]
+isOneToOne: false
+      referencedRelation: "users"
       referencedColumns: ["id"]
     }
                   ]
