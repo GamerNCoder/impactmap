@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import LayoutShell from "@/components/LayoutShell";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { getLocale } from "@/lib/locale";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,11 +21,17 @@ export const metadata: Metadata = {
   title: "ImpactMap - Verified Service Hours for Students",
   description: "Find local volunteer events, get your service hours approved by the organizer, and share one verified record with your school.",
   applicationName: "ImpactMap",
+  metadataBase: new URL("https://impactmap.vercel.app"),
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "ImpactMap",
     statusBarStyle: "default",
+  },
+  openGraph: {
+    title: "ImpactMap — Verified Service Hours for Students",
+    description: "Find local volunteer events, get hours approved by the organizer, and share one verified record with your school.",
+    type: "website",
   },
   icons: {
     // Kept explicit so the file-based favicon.ico is not replaced by the PWA icons.
@@ -66,6 +73,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col transition-colors duration-200">
         <ThemeProvider>
+          <OfflineBanner />
           <LayoutShell locale={locale}>{children}</LayoutShell>
           <ServiceWorkerRegister />
         </ThemeProvider>

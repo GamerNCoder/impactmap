@@ -289,6 +289,12 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
             </div>
 
             <EventCheckInQr opportunityId={id} title={opportunity.title} dict={t} />
+            <a
+              href={`/api/opportunities/${id}/calendar`}
+              className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              <span aria-hidden>📅</span> Add to calendar
+            </a>
           </div>
         </div>
       </div>
