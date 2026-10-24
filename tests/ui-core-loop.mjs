@@ -158,7 +158,7 @@ await step(counselor, 'counselor (signed out): bulk verify endpoint', async () =
   if (json.summary?.checked !== 3) throw new Error(`checked=${json.summary?.checked}`)
   if (json.summary?.verified !== 1) throw new Error(`verified=${json.summary?.verified}`)
   const verified = json.results?.find((r) => r.code === code)
-  if (verified?.status !== 'verified' || verified?.name !== 'Test student') throw new Error(JSON.stringify(verified))
+  if (verified?.status !== 'verified' || verified?.name !== 'Test s.') throw new Error(JSON.stringify(verified))
   if (!json.results?.some((r) => r.status === 'invalid')) throw new Error('expected an invalid row')
 })
 await counselor.screenshot({ path: `${shots}/05-verify.png`, fullPage: true })
