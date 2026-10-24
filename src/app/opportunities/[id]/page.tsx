@@ -8,6 +8,8 @@ import { APP_EVENTS } from '@/lib/app-events'
 import { formatDate } from '@/lib/constants'
 import { getEventWeather } from '@/lib/weather'
 import NearTheEvent from '@/components/NearTheEvent'
+import { getLocale } from '@/lib/locale'
+import { getDictionary } from '@/lib/i18n'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -15,6 +17,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data } = await supabase.from('opportunities').select('title').eq('id', id).single()
   return {
@@ -24,11 +27,12 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function OpportunityDetailPage({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
 
   const { data: opportunity, error } = await supabase
     .from('opportunities')
-    .select('*, organizations(*)')
+    .select('*, organizations(id, name, description, website, verified)')
     .eq('id', id)
     .single()
 
@@ -275,6 +279,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                     isFull={isFull}
                     isOpen={opportunity.status === 'open'}
                     isHost={isHost}
+                    dict={t}
                   />
                   {existingApplication && existingApplication.status === 'rejected' && (
                     <p className="mt-3 text-sm text-red-600">Your previous sign-up was not accepted.</p>
@@ -283,7 +288,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            <EventCheckInQr opportunityId={id} title={opportunity.title} />
+            <EventCheckInQr opportunityId={id} title={opportunity.title} dict={t} />
           </div>
         </div>
       </div>

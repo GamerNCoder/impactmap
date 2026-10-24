@@ -3,6 +3,8 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import CheckInLocation from '@/components/CheckInLocation'
 import { formatDate } from '@/lib/constants'
+import { getLocale } from '@/lib/locale'
+import { getDictionary } from '@/lib/i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +14,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data } = await supabase.from('opportunities').select('title').eq('id', id).maybeSingle()
   return {
@@ -22,6 +25,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CheckInPage({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -83,7 +87,7 @@ export default async function CheckInPage({ params }: PageProps) {
             )}
 
             {!opportunity.remote && outcome.ok && (
-              <CheckInLocation opportunityId={id} />
+              <CheckInLocation opportunityId={id} dict={t} />
             )}
 
             <dl className="grid grid-cols-2 gap-4 text-sm">

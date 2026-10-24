@@ -2,6 +2,7 @@ import Link from 'next/link'
 import EventLocation from '@/components/EventLocation'
 import { formatDate } from '@/lib/constants'
 import { getCategoryStyle } from '@/lib/categories'
+import type { Dictionary } from '@/lib/i18n'
 
 type EventCardProps = {
   id: string
@@ -19,6 +20,7 @@ type EventCardProps = {
   accessibleRestroom?: boolean
   sensoryFriendly?: boolean
   substanceFree?: boolean
+  dict: Dictionary
 }
 
 export default function EventCard({
@@ -37,6 +39,7 @@ export default function EventCard({
   accessibleRestroom = false,
   sensoryFriendly = false,
   substanceFree = false,
+  dict,
 }: EventCardProps) {
   const cat = getCategoryStyle(category)
   const capacity = volunteersNeeded ?? 0
@@ -99,9 +102,9 @@ export default function EventCard({
         {capacity > 0 && (
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-gray-500">{filled} joined</span>
+              <span className="text-gray-500">{dict.common.joined.replace('{filled}', String(filled))}</span>
               <span className={isFull ? 'text-amber-700 dark:text-amber-400 font-medium' : 'text-gray-500'}>
-                {isFull ? 'Full' : `${spotsLeft} spots left`}
+                {isFull ? dict.common.full : dict.common.spots.replace('{count}', String(spotsLeft))}
               </span>
             </div>
             <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -117,7 +120,7 @@ export default function EventCard({
           href={`/opportunities/${id}`}
           className="mt-auto inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold hover:bg-emerald-600 dark:hover:bg-emerald-400 dark:hover:text-white motion-pressable"
         >
-          {isFull ? 'View event' : 'Join event'}
+          {isFull ? dict.common.view : dict.common.join}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>

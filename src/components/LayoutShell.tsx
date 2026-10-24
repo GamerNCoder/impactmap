@@ -4,10 +4,11 @@ import { usePathname } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TrackPageView from '@/components/TrackPageView'
+import type { Locale } from '@/lib/i18n'
 
 const MINIMAL_ROUTES = ['/auth', '/onboarding', '/passport/report', '/pilot/guide']
 
-export default function LayoutShell({ children }: { children: React.ReactNode }) {
+export default function LayoutShell({ children, locale }: { children: React.ReactNode; locale: Locale }) {
   const pathname = usePathname()
   const isMinimal = MINIMAL_ROUTES.some((route) => pathname.startsWith(route))
 
@@ -24,7 +25,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
         Skip to content
       </a>
       <TrackPageView />
-      <Navbar />
+      <Navbar locale={locale} />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
       </main>

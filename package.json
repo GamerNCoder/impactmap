@@ -11,7 +11,9 @@
     "test:ui": "node tests/ui-core-loop.mjs",
     "test:a11y": "node tests/a11y.mjs",
     "test:theme": "node tests/theme.mjs",
-    "seed:demo": "node --env-file=.env.local supabase/seed-demo.mjs"
+    "seed:demo": "node --env-file=.env.local supabase/seed-demo.mjs",
+    "audit:languages": "node scripts/audit-languages.mjs",
+    "audit:defenses": "node scripts/audit-defenses.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

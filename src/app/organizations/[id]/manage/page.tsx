@@ -34,7 +34,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
   const { data: organization } = await supabase
     .from('organizations')
-    .select('*')
+    .select('id, name, description, website, location, verified, created_at')
     .eq('id', id)
     .single()
 

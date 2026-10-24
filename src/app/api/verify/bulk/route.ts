@@ -110,70 +110,29 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
-  const [{ data: hours }, { data: completions }] = await Promise.all([
-    supabase
-      .from('volunteer_hours')
-      .select(
-        'verification_code, hours, date, verified_at, supervisor_name, user_id, opportunities(title, organizations(name, verified))'
-      )
-      .in('verification_code', codes)
-      .eq('verified', true),
-    supabase
-      .from('applications')
-      .select(
-        'verification_code, completed_at, verified_at, supervisor_name, user_id, opportunities(title, organizations(name, verified))'
-      )
-      .in('verification_code', codes)
-      .eq('status', 'completed'),
-  ])
+  const { data: found, error: lookupError } = await supabase.rpc('verify_codes', {
+    p_codes: codes,
+  })
 
-  const userIds = [
-    ...new Set([
-      ...(hours ?? []).map((h) => h.user_id as string),
-      ...(completions ?? []).map((c) => c.user_id as string),
-    ]),
-  ].filter(Boolean)
-
-  const { data: profiles } = userIds.length
-    ? await supabase.from('profiles').select('id, full_name').in('id', userIds)
-    : { data: [] }
-
-  const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name]))
-
-  const rowsByCode = new Map<string, Row>()
-
-  for (const h of hours ?? []) {
-    const record = h.opportunities as unknown as { title?: string; organizations?: Batch | null } | null
-    const code = h.verification_code as string
-    rowsByCode.set(code, {
-      code,
-      status: 'verified',
-      name: (nameById.get(h.user_id as string) as string) ?? null,
-      event: record?.title ?? null,
-      organization: record?.organizations?.name ?? null,
-      organizer_verified: record?.organizations?.verified ?? null,
-      date: (h.date as string) ?? null,
-      hours: h.hours == null ? null : Number(h.hours),
-      approver: (h.supervisor_name as string) ?? null,
-      type: 'hours',
-    })
+  if (lookupError) {
+    return NextResponse.json({ error: 'Lookup failed.' }, { status: 500 })
   }
 
-  for (const c of completions ?? []) {
-    const code = c.verification_code as string
-    if (rowsByCode.has(code)) continue
-    const record = c.opportunities as unknown as { title?: string; organizations?: Batch | null } | null
+  const rowsByCode = new Map<string, Row>()
+  for (const raw of (found ?? []) as Array<Record<string, unknown>>) {
+    const code = String(raw.code ?? '')
+    if (!code) continue
     rowsByCode.set(code, {
       code,
       status: 'verified',
-      name: (nameById.get(c.user_id as string) as string) ?? null,
-      event: record?.title ?? null,
-      organization: record?.organizations?.name ?? null,
-      organizer_verified: record?.organizations?.verified ?? null,
-      date: (c.completed_at as string | null)?.split('T')[0] ?? null,
-      hours: null,
-      approver: (c.supervisor_name as string) ?? null,
-      type: 'completion',
+      name: (raw.name as string | null) ?? null,
+      event: (raw.event as string | null) ?? null,
+      organization: (raw.organization as string | null) ?? null,
+      organizer_verified: (raw.organizer_verified as boolean | null) ?? null,
+      date: (raw.date as string | null) ?? null,
+      hours: raw.hours == null ? null : Number(raw.hours),
+      approver: (raw.supervisor_name as string | null) ?? null,
+      type: raw.type === 'completion' ? 'completion' : 'hours',
     })
   }
 

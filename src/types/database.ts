@@ -498,6 +498,12 @@ isOneToOne: false
       } },
 "record_checkin_location":
 { Args: { "p_lat": number,"p_lon": number,"p_opportunity_id": string }; Returns: Json
+                           },
+"verify_code":
+{ Args: { "p_code": string }; Returns: Json
+                           },
+"verify_codes":
+{ Args: { "p_codes": string[] }; Returns: Json[]
                            }
           }
           Enums: {

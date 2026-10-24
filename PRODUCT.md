@@ -76,6 +76,15 @@ clear UX; evidence (tests, a pilot or permitted quote); a student who can explai
 - That a pilot exists without a real, permitted quote.
 - That the app has AI features; it has none at runtime.
 
+## Defense in depth / honeypot / zero-day
+
+Every security control ships with a primary control, an independent backup, a detection test
+(`npm run audit:defenses`), a versioned restore (`scripts/reapply-defenses.sh`), and saved
+red-team evidence. The hidden `/api/security/canary` honeypot logs hashed metadata only and
+returns 404; never give it data access. Incident response and zero-day posture live in
+`SECURITY-PLAYBOOK.md`. A security change is not done until removing the primary makes the
+audit fail.
+
 ## Maintaining this brief
 
 This is a living operating brief, not a one-time memo. Every feature, schema migration, security

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { trackClientEvent } from '@/lib/track-client'
 import { APP_EVENTS } from '@/lib/app-events'
+import type { Dictionary } from '@/lib/i18n'
 
 type JoinEventButtonProps = {
   opportunityId: string
@@ -15,6 +16,7 @@ type JoinEventButtonProps = {
   isFull: boolean
   isOpen: boolean
   isHost: boolean
+  dict: Dictionary
 }
 
 export default function JoinEventButton({
@@ -25,6 +27,7 @@ export default function JoinEventButton({
   isFull,
   isOpen,
   isHost,
+  dict,
 }: JoinEventButtonProps) {
   const [joined, setJoined] = useState(isJoined)
   const [loading, setLoading] = useState(false)
@@ -107,13 +110,13 @@ export default function JoinEventButton({
   if (isHost) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-gray-600">You posted this event.</p>
+        <p className="text-sm text-gray-600">{dict.common.hostPosted}</p>
         {organizationId && (
           <Link
             href={`/organizations/${organizationId}/manage`}
             className="inline-block bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-800"
           >
-            View sign-ups →
+            {dict.common.signups}
           </Link>
         )}
       </div>
@@ -121,14 +124,14 @@ export default function JoinEventButton({
   }
 
   if (!isOpen) {
-    return <p className="text-gray-600">This event is no longer accepting sign-ups.</p>
+    return <p className="text-gray-600">{dict.common.eventClosed}</p>
   }
 
   if (joined) {
     return (
       <div className="space-y-3">
         <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-lg text-sm">
-          You&apos;re signed up for <strong>{opportunityTitle}</strong>.
+          {dict.common.signedUp} <strong>{opportunityTitle}</strong>.
         </div>
         {error && (
           <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-sm">
@@ -141,10 +144,10 @@ export default function JoinEventButton({
           disabled={loading}
           className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
         >
-          {loading ? 'Updating…' : 'Cancel sign-up'}
+          {loading ? dict.common.updating : dict.common.cancel}
         </button>
         <p className="text-xs text-gray-500">
-          Once accepted, you can log hours from your dashboard after the event.
+          {dict.event.joinedHint}
         </p>
       </div>
     )
@@ -159,7 +162,7 @@ export default function JoinEventButton({
       )}
       {isFull ? (
         <p className="text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 px-4 py-3 rounded-lg text-sm">
-          This event is full. Check back later for cancellations.
+          {dict.common.eventFull}
         </p>
       ) : (
         <button
@@ -168,11 +171,11 @@ export default function JoinEventButton({
           disabled={loading}
           className="w-full bg-emerald-700 text-white py-3 rounded-lg font-semibold hover:bg-emerald-800 disabled:opacity-50 motion-pressable"
         >
-          {loading ? 'Joining…' : 'Join event'}
+          {loading ? dict.common.joining : dict.common.join}
         </button>
       )}
       <p className="text-xs text-gray-500 text-center">
-        One-click sign-up — no application form required.
+        {dict.common.oneClick}
       </p>
     </div>
   )

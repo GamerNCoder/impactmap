@@ -5,6 +5,7 @@ import type { Map as LeafletMap, LayerGroup } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import EventCard from '@/components/EventCard'
 import { useTheme } from '@/components/ThemeProvider'
+import type { Dictionary } from '@/lib/i18n'
 
 export type ExplorerEvent = {
   id: string
@@ -46,7 +47,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 }
 
-export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) {
+export default function EventsExplorer({ events, dict }: { events: ExplorerEvent[]; dict: Dictionary }) {
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<LeafletMap | null>(null)
   const meLayer = useRef<LayerGroup | null>(null)
@@ -86,11 +87,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
       ? sorted.filter((s) => s.distance != null && s.distance <= WALK_MI).length
       : events.length
     setWalkOnly(next)
-    setAnnouncement(
-      next
-        ? `Showing ${nextCount} event${nextCount === 1 ? '' : 's'} within ${WALK_MI} miles of you.`
-        : `Showing all ${events.length} events.`
-    )
+    setAnnouncement(next ? dict.events.filterOn : dict.events.filterOff)
   }
 
   useEffect(() => {
@@ -134,7 +131,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
 
   const locate = () => {
     if (!navigator.geolocation) {
-      setLocateError('Your browser cannot share location.')
+      setLocateError(dict.events.noLocation)
       return
     }
     setLocating(true)
@@ -159,7 +156,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
       },
       () => {
         setLocating(false)
-        setLocateError('Location is off. Events are still listed below.')
+        setLocateError(dict.events.locationOff)
       },
       { timeout: 10000, maximumAge: 300000 }
     )
@@ -176,7 +173,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
             disabled={locating}
             className="bg-white text-gray-900 shadow-md px-3 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-50 disabled:opacity-60"
           >
-            {locating ? 'Locating…' : me ? '✓ Sorted by distance' : '📍 Near me'}
+            {locating ? dict.events.locating : me ? `✓ ${dict.events.sorted}` : `📍 ${dict.events.near}`}
           </button>
           {me && (
             <button
@@ -187,18 +184,18 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
                 walkOnly ? 'bg-emerald-700 text-white' : 'bg-white text-gray-900 hover:bg-emerald-50'
               }`}
             >
-              {walkOnly ? `✓ Within ${WALK_MI} mi` : `🚶 Within ${WALK_MI} mi`}
+              {walkOnly ? `✓ ${dict.events.within}` : `🚶 ${dict.events.within}`}
             </button>
           )}
         </div>
       </div>
       {locateError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">{locateError}</p>}
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        The map is visual. Every mapped event is also listed as a card below.
+        {dict.events.mapNote}
       </p>
       {walkOnly && me && visible.length === 0 && (
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Nothing within {WALK_MI} miles of you. Turn the filter off to see every event.
+          {dict.events.noNearby}
         </p>
       )}
       <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
@@ -222,6 +219,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
             accessibleRestroom={e.accessibleRestroom}
             sensoryFriendly={e.sensoryFriendly}
             substanceFree={e.substanceFree}
+            dict={dict}
           />
         ))}
       </div>

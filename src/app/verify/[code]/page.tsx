@@ -20,54 +20,41 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
   const { code } = await params
   const supabase = await createClient()
 
-  const { data: hourRecord } = await supabase
-    .from('volunteer_hours')
-    .select(`
-      *,
-      opportunities(title, category, organizations(name, verified))
-    `)
-    .eq('verification_code', code)
-    .eq('verified', true)
-    .maybeSingle()
+  const { data: raw } = await supabase.rpc('verify_code', { p_code: code })
+  const record = raw as {
+    type: 'hours' | 'completion'
+    code: string
+    name: string | null
+    event: string | null
+    category: string | null
+    organization: string | null
+    organizer_verified: boolean | null
+    date: string | null
+    hours: number | null
+    supervisor_name: string | null
+    supervisor_title: string | null
+    supervisor_notes: string | null
+    description: string | null
+    verified_at: string | null
+    status: string | null
+  } | null
 
-  const { data: completionRecord } = !hourRecord
-    ? await supabase
-        .from('applications')
-        .select(`
-          *,
-          opportunities(title, category, organizations(name, verified))
-        `)
-        .eq('verification_code', code)
-        .eq('status', 'completed')
-        .maybeSingle()
-    : { data: null }
-
-  if (!hourRecord && !completionRecord) {
+  if (!record) {
     notFound()
   }
 
-  const isHours = Boolean(hourRecord)
-  const record = hourRecord ?? completionRecord!
-  const userId = isHours ? hourRecord!.user_id : completionRecord!.user_id
-
-  const { data: volunteer } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', userId!)
-    .maybeSingle()
-
-  const opp = record.opportunities as {
-    title: string
-    category: string
-    organizations: { name: string; verified: boolean } | null
-  } | null
-  const org = opp?.organizations
+  const isHours = record.type === 'hours'
+  const org = record.organization
+    ? { name: record.organization, verified: Boolean(record.organizer_verified) }
+    : null
+  const volunteer = { full_name: record.name }
+  const opp = { title: record.event, category: record.category }
+  const supervisorName = record.supervisor_name
+  const supervisorTitle = record.supervisor_title
+  const supervisorNotes = record.supervisor_notes
+  const verifiedAt = record.verified_at
 
   const credentialType = isHours ? 'Verified service hours' : 'Verified task completion'
-  const supervisorName = isHours ? hourRecord!.supervisor_name : completionRecord!.supervisor_name
-  const supervisorTitle = isHours ? hourRecord!.supervisor_title : completionRecord!.supervisor_title
-  const supervisorNotes = isHours ? hourRecord!.supervisor_notes : completionRecord!.supervisor_notes
-  const verifiedAt = isHours ? hourRecord!.verified_at : completionRecord!.verified_at
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4">
@@ -134,23 +121,23 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                 <dt className="text-gray-500">Category</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{opp?.category || '—'}</dd>
               </div>
-              {isHours && hourRecord && (
+              {isHours && record && (
                 <>
                   <div>
                     <dt className="text-gray-500">Service date</dt>
-                    <dd className="font-medium text-gray-900 dark:text-white">{formatDate(hourRecord.date)}</dd>
+                    <dd className="font-medium text-gray-900 dark:text-white">{formatDate(record.date!)}</dd>
                   </div>
                   <div>
                     <dt className="text-gray-500">Hours verified</dt>
-                    <dd className="font-medium text-gray-900 dark:text-white text-lg">{hourRecord.hours}</dd>
+                    <dd className="font-medium text-gray-900 dark:text-white text-lg">{record.hours}</dd>
                   </div>
                 </>
               )}
-              {!isHours && completionRecord?.completed_at && (
+              {!isHours && record.date && (
                 <div>
                   <dt className="text-gray-500">Completed on</dt>
                   <dd className="font-medium text-gray-900 dark:text-white">
-                    {formatDate(completionRecord.completed_at.split('T')[0])}
+                    {formatDate(record.date)}
                   </dd>
                 </div>
               )}
@@ -171,10 +158,10 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
               </div>
             </dl>
 
-            {isHours && hourRecord?.description && (
+            {isHours && record.description && (
               <div>
                 <p className="text-sm text-gray-500 mb-1">Service notes</p>
-                <p className="text-gray-700 dark:text-gray-300">{hourRecord.description}</p>
+                <p className="text-gray-700 dark:text-gray-300">{record.description}</p>
               </div>
             )}
 
@@ -185,7 +172,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
               </div>
             )}
 
-            <p className="text-xs text-gray-400 border-t border-gray-200 dark:border-gray-800 pt-4">
+            <p className="text-xs text-gray-600 border-t border-gray-200 dark:border-gray-800 pt-4">
               Issued by ImpactMap on behalf of the event organizer who approved this record.
               {' '}Reference code {code}.
             </p>

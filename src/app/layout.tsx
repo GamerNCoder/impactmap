@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import LayoutShell from "@/components/LayoutShell";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { getLocale } from "@/lib/locale";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,14 +45,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -64,7 +66,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col transition-colors duration-200">
         <ThemeProvider>
-          <LayoutShell>{children}</LayoutShell>
+          <LayoutShell locale={locale}>{children}</LayoutShell>
           <ServiceWorkerRegister />
         </ThemeProvider>
       </body>

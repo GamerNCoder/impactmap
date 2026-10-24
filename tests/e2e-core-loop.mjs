@@ -199,6 +199,17 @@ const { error: selfApproveErr } = await student.client
   .eq('id', selfHour.id)
 check('manager cannot approve own hours', Boolean(selfApproveErr), selfApproveErr?.message)
 
+// Second account: the owner adds a coordinator; that coordinator still cannot issue a code
+// to a volunteer who is a member of the same unverified organization.
+await student.client
+  .from('organization_members')
+  .insert({ organization_id: selfOrg.id, user_id: intruder.user.id, role: 'coordinator' })
+const { error: secondAccountErr } = await intruder.client
+  .from('volunteer_hours')
+  .update({ verified: true, verification_code: code() })
+  .eq('id', selfHour.id)
+check('unverified org cannot approve its own member through a second account', Boolean(secondAccountErr), secondAccountErr?.message)
+
 // Coordinator approves hours and completion.
 const hourCode = code()
 const { data: verified, error: verifyErr } = await coord.client
@@ -219,19 +230,10 @@ const { data: completed, error: completeErr } = await coord.client
 check('coordinator verifies completion', !completeErr && completed?.length === 1, completeErr?.message)
 
 // Anyone (counselor) can verify the IMP- code without signing in.
-const { data: publicHour } = await anon
-  .from('volunteer_hours')
-  .select('hours, opportunities(title, organizations(name))')
-  .eq('verification_code', hourCode)
-  .eq('verified', true)
-  .maybeSingle()
+const { data: publicHour } = await anon.rpc('verify_code', { p_code: hourCode })
 check('anonymous counselor verifies hours code', Number(publicHour?.hours) === 3, JSON.stringify(publicHour))
 
-const { data: publicCompletion } = await anon
-  .from('applications')
-  .select('status')
-  .eq('verification_code', completionCode)
-  .maybeSingle()
+const { data: publicCompletion } = await anon.rpc('verify_code', { p_code: completionCode })
 check('anonymous counselor verifies completion code', publicCompletion?.status === 'completed')
 
 // Small-cell suppression: a cause with 3 distinct volunteers is published; a cause with one

@@ -7,6 +7,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import Logo from '@/components/Logo'
 import ThemeToggle from '@/components/ThemeToggle'
 import QrScanLauncher from '@/components/QrScanLauncher'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import type { Locale } from '@/lib/i18n'
 
 const PRIMARY_NAV = [
   { href: '/opportunities', label: 'Events' },
@@ -186,7 +188,7 @@ function MobileMenu({
   )
 }
 
-export default function Navbar() {
+export default function Navbar({ locale }: { locale: Locale }) {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -253,6 +255,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-1">
+            <LanguageSwitcher locale={locale} />
             <QrScanLauncher variant="icon" />
             <ThemeToggle />
             {loading ? (

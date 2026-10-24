@@ -11,7 +11,7 @@ export default async function OrganizationsPage() {
 
   const { data: organizations, error } = await supabase
     .from('organizations')
-    .select('*')
+    .select('id, name, description, location, verified, created_at')
     .order('name')
 
   const { data: opportunityCounts } = await supabase

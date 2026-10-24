@@ -1,5 +1,12 @@
 # ImpactMap agent guide
 
+Security changes require all five layers: primary control, independent backup, detection test,
+versioned restore, and saved red-team evidence. Use `SECURITY-PLAYBOOK.md`; never claim a
+security fix from the code alone. The canary is defensive only and must stay isolated from app
+data.
+
+# ImpactMap agent guide
+
 Read `PRODUCT.md` before changing anything. It is the product invariants and the 48-hour order
 of operations.
 

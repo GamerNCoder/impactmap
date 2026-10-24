@@ -48,6 +48,9 @@ export default function Footer() {
           © {new Date().getFullYear()} ImpactMap · Verified service hours for students, schools, and nonprofits
         </div>
       </div>
+      <span aria-hidden="true" className="hidden">
+        <a href="/api/security/canary" rel="nofollow" tabIndex={-1}>Security canary</a>
+      </span>
     </footer>
   )
 }

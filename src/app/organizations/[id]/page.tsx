@@ -23,7 +23,7 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
 
   const { data: organization, error } = await supabase
     .from('organizations')
-    .select('*')
+    .select('id, name, description, website, location, email, phone, verified, created_at')
     .eq('id', id)
     .single()
 
