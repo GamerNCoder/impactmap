@@ -9,7 +9,7 @@ ImpactMap helps high school students find local volunteer events on a map, check
 Volunteer hours are tracked on paper forms that get lost, forged, or never signed. Students waste time finding events and chasing signatures; counselors have no easy way to confirm hours are real.
 
 ## Tech used
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgres with row-level security, auth) with generated, type-safe clients, Leaflet + OpenStreetMap for the map, Nominatim for address lookup, the Overpass API (OpenStreetMap) for the "near the event" card, Open-Meteo for the event weather outlook, the `qrcode` library, Vercel hosting. Tested with Playwright (full student → organizer → counselor walkthrough plus the health endpoint), an axe-core accessibility gate, and a database security suite (77 checks) that runs in CI.
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgres with row-level security, auth) with generated, type-safe clients, Leaflet + OpenStreetMap for the map, Nominatim for address lookup, the Overpass API (OpenStreetMap) for the "near the event" card, Open-Meteo for the event weather outlook, the `qrcode` library, Vercel hosting. Tested with Playwright (full student → organizer → counselor walkthrough plus the health endpoint), an axe-core accessibility gate (10/10 pages), and a database security suite (86 checks); both CI jobs are green.
 
 ## Safety and privacy
 - Students under 13 can't sign up; ages 13–15 need a guardian's name, email and consent.
@@ -21,25 +21,20 @@ Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Postgr
 ## AI-use disclosure (edit to match what you actually did)
 > I used AI coding assistants (Claude Code, Command Code and OpenAI Codex) while building ImpactMap. I chose the problem, designed the features and user flow, and decided what to keep and cut. AI helped me write and debug code, write automated tests, and review accessibility and security. I reviewed, ran and tested the code, and I can explain how every part of the app works. The app itself has no AI features.
 
-## Demo video script (~2–3 min, phone-size screen recording + voiceover)
-| Time | Screen | Say |
-|---|---|---|
-| 0:00 | Landing page | "Volunteer hours are tracked on paper. Forms get lost, and counselors can't tell what's real. ImpactMap fixes that." |
-| 0:15 | Sign up (student, birthday, guardian fields for 13–15) | "Students sign up in under a minute. Younger students need a guardian's consent." |
-| 0:35 | Events map, tap "📍 Near me" | "They find real events near them in Edison on a map." |
-| 0:50 | Sign in as the organizer → Host an event → post one at Roosevelt Park | "An organizer posts an event in about a minute. It lands on the map immediately — with its own check-in QR code." |
-| 1:05 | Back as the student, open that event → Join | "One tap to join." |
-| 1:15 | Dashboard → Log hours | "After the event, they log their hours." |
-| 1:25 | Switch to the organizer → Approve hours → "Approve 3h" | "The organizer approves with one tap. No signatures to chase." |
-| 1:40 | My hours: verified entry with IMP- code, 40h goal bar | "Each approval creates a verification code, and students see progress toward their goal." |
-| 1:55 | Counselor report (printable, QR per entry) | "They can print a counselor report with a QR code for every entry." |
-| 2:10 | Signed out → /verify → enter code | "A counselor scans it or types the code — no account needed — and sees it's real." |
-| 2:25 | Safety page | "Privacy is built into the database: no one sees a student's email or birthday." |
-| 2:35 | Landing page | "ImpactMap: find it, do it, prove it. Thank you." |
+## Demo video
 
-Recording tips: use a fresh test account, Chrome device toolbar (iPhone size), hide bookmarks bar, record at 1080p. Delete the test accounts afterward.
+Full recording script, a 60-second cut, a live run-of-show, submission answers and judge Q&A are
+in **`PRESENTATION.md`**.
 
-**Important:** use the shared demo organizer account (`/demo/organizer`) or the student's own organizer account for the approval step. The five seeded Edison events still have no owner, so hours logged against them cannot be approved — they are for showing the map. The demo organizer owns the three demo events and already has one pending log, which is the quickest way to show one-tap approval.
+Official 2026 constraints: **1–3 minutes**, uploaded **public** to YouTube or Vimeo, and the video
+must include the participant name(s), the app name, the purpose in one sentence, the target
+audience, the tools and languages used, and a working demonstration.
+
+Use the shared demo accounts (`/demo` → Student view, then Organizer view) for the approval step.
+The five seeded Edison events have no owner, so hours logged against them cannot be approved; the
+demo organizer owns the three demo events and already has one pending 2-hour log, which is the
+quickest honest way to show one-tap approval. If a previous visitor already approved it, click
+**Reset the demo data** on `/demo` first.
 
 **Production data:** the live site carries the five seeded Edison sample events plus three events from the shared demo organizer, so the map is not empty when a judge clicks the link. The organizers are fictional and unverified; join counts are honest, and the demo student is the only joiner. Everything the video shows for the join → log → approve → verify loop is real application behavior. A judge can also open `/demo` to try the student and organizer views without creating an account; the demo verification code `IMP-DEMO2026ABCD` is labeled as a demo record on `/verify`.
 
@@ -47,7 +42,9 @@ Recording tips: use a fresh test account, Chrome device toolbar (iPhone size), h
 - [x] Remove production test data (org "Austin Park Friends …", event "Saturday park cleanup", 2 `@example.com` users) — done 2026-10-15 via `supabase db query --linked`.
 - [x] Live demo, community impact page, accessibility gate, database suite and CI — done 2026-10-22.
 - [x] Engineering finish: generated type-safe Supabase clients (typed RPCs), `/api/health`, UI walkthrough in CI, full local verification — done 2026-10-22.
+- [x] Security finish: least-privilege grants restored, fail-closed demo reset, attributed audit rows, production defense audit 11/11 — done 2026-10-24.
+- [x] Presentation script: `PRESENTATION.md` (2:50 video, 60-second cut, live run-of-show, submission answers, Q&A) — done 2026-10-24.
 - [ ] Confirm district (assumed NJ-6) on congressionalappchallenge.us.
-- [ ] Record + upload video (YouTube/Vimeo, unlisted is fine).
+- [ ] Record + upload video — 1–3 minutes, **public** on YouTube or Vimeo, following `PRESENTATION.md`.
 - [ ] Paste AI-use disclosure.
 - [ ] Optional but strongest: a real pilot group (NHS, Key Club, library) with a quote or numbers. If it happens, update `/about` and add the quote.

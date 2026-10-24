@@ -36,6 +36,11 @@ Earlier detail is in git history (`git log -p HANDOFF.md`).
 - **Audit integrity:** `20261024000700_audit_rows_must_be_attributed.sql` requires
   `user_id = auth.uid()` on client audit inserts; unattributed rows are rejected (three new e2e
   checks). Trigger and account-deletion writes run as the table owner.
+- **Presentation:** `PRESENTATION.md` has the 2:50 video script (name, app, one-sentence purpose,
+  audience, tools, full loop), a 60-second cut, a live run-of-show with fallbacks, the six
+  submission answers and judge Q&A. Checked against the 2026 rulebook: 1–3 minutes and a **public**
+  YouTube/Vimeo upload; `SUBMISSION.md` had the old "unlisted is fine" and 77-check claims, now
+  corrected.
 - **Gotcha:** `REVOKE SELECT ON <table>` also clears that table's column ACLs; table and column
   grants are separate ACLs, so a least-privilege migration must rebuild the column set.
 - **Production audit caught a second regression:** `POST /api/demo/reset` returned 200 with no
