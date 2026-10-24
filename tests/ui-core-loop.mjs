@@ -1,10 +1,31 @@
 // Browser walkthrough of the full loop (phone viewport). Needs `npm run dev` + local Supabase.
 // Run: npm run test:ui
 import { chromium } from 'playwright'
-const BASE = process.env.BASE_URL ?? 'http://localhost:3000', run = Date.now(), shots = process.env.SHOTS_DIR ?? 'test-results'
-import { mkdirSync } from 'node:fs'; mkdirSync(shots, { recursive: true })
+import { createClient } from '@supabase/supabase-js'
+import { mkdirSync, readFileSync } from 'node:fs'
+
+const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
+const run = Date.now()
+const shots = process.env.SHOTS_DIR ?? 'test-results'
+mkdirSync(shots, { recursive: true })
 const browser = await chromium.launch()
 const log = (...a) => console.log('•', ...a)
+
+function readLocalEnv() {
+  try {
+    return Object.fromEntries(
+      readFileSync('.env.local', 'utf8')
+        .split('\n')
+        .filter((line) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(line))
+        .map((line) => {
+          const at = line.indexOf('=')
+          return [line.slice(0, at), line.slice(at + 1).trim().replace(/^["']|["']$/g, '')]
+        })
+    )
+  } catch {
+    return {}
+  }
+}
 
 async function fail(page, name, err) {
   await page.screenshot({ path: `${shots}/fail-${name}.png`, fullPage: true })
@@ -36,6 +57,13 @@ async function signup(label, dob = '2009-05-01') {
 }
 
 const coord = await signup('coordinator')
+await step(coord, 'health endpoint', async () => {
+  const res = await fetch(`${BASE}/api/health`)
+  const json = await res.json()
+  if (!res.ok || !json.ok || json.database !== 'ok') {
+    throw new Error(`HTTP ${res.status} ${JSON.stringify(json)}`)
+  }
+})
 let eventUrl
 await step(coord, 'coordinator: create org + event', async () => {
   await coord.goto(`${BASE}/opportunities/new`)
@@ -119,6 +147,74 @@ await step(counselor, 'counselor (signed out): verify code', async () => {
   await counselor.getByText('Test student').first().waitFor({ timeout: 10000 })
   await counselor.getByText('Hours verified').waitFor({ timeout: 5000 })
 })
+await step(counselor, 'counselor (signed out): bulk verify endpoint', async () => {
+  const res = await fetch(`${BASE}/api/verify/bulk`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ codes: [code, 'IMP-000000000000', 'not-a-code'] }),
+  })
+  if (!res.ok) throw new Error(`bulk returned HTTP ${res.status}`)
+  const json = await res.json()
+  if (json.summary?.checked !== 3) throw new Error(`checked=${json.summary?.checked}`)
+  if (json.summary?.verified !== 1) throw new Error(`verified=${json.summary?.verified}`)
+  const verified = json.results?.find((r) => r.code === code)
+  if (verified?.status !== 'verified' || verified?.name !== 'Test student') throw new Error(JSON.stringify(verified))
+  if (!json.results?.some((r) => r.status === 'invalid')) throw new Error('expected an invalid row')
+})
 await counselor.screenshot({ path: `${shots}/05-verify.png`, fullPage: true })
+
+// A session created outside the sign-up form (the OAuth shape: no terms, no birthday)
+// must be forced through both gates before a protected page opens.
+const local = readLocalEnv()
+const gateUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? local.NEXT_PUBLIC_SUPABASE_URL
+const gateKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? local.NEXT_PUBLIC_SUPABASE_ANON_KEY
+if (/localhost|127\.0\.0\.1/.test(BASE) && gateUrl && gateKey) {
+  const gateEmail = `gate-${run}@example.com`
+  const gateSignup = createClient(gateUrl, gateKey, { auth: { persistSession: false } })
+  const { error: gateSignupErr } = await gateSignup.auth.signUp({
+    email: gateEmail,
+    password: 'test-password-123',
+  })
+  if (gateSignupErr) {
+    console.log(`FAIL at gate signup: ${gateSignupErr.message}`)
+    await browser.close()
+    process.exit(1)
+  }
+  const gateCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const gate = await gateCtx.newPage()
+  await step(gate, 'gate: login without terms/birthday', async () => {
+    await gate.goto(`${BASE}/auth/login`)
+    await gate.fill('#email', gateEmail)
+    await gate.fill('#password', 'test-password-123')
+    await gate.locator('#login-terms').check()
+    await gate.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await gate.waitForURL(
+      (url) =>
+        url.pathname === '/dashboard' ||
+        url.pathname === '/auth/accept-terms' ||
+        url.pathname === '/auth/complete-profile',
+      { timeout: 15000 }
+    )
+    if (new URL(gate.url()).pathname === '/auth/accept-terms') {
+      await gate.locator('#terms').check()
+      await gate.getByRole('button', { name: /Continue to ImpactMap/ }).click()
+    }
+    if (new URL(gate.url()).pathname !== '/auth/complete-profile') {
+      await gate.goto(`${BASE}/dashboard`)
+    }
+    await gate.waitForURL((url) => url.pathname === '/auth/complete-profile', { timeout: 15000 })
+  })
+  await step(gate, 'gate: birthday opens the dashboard', async () => {
+    await gate.fill('#dob', '2009-05-01')
+    if (await gate.locator('#guardianName').isVisible()) {
+      await gate.fill('#guardianName', 'Pat Parent')
+      await gate.fill('#guardianEmail', `parent-gate-${run}@example.com`)
+      await gate.locator('#guardianConsent').check()
+    }
+    await gate.getByRole('button', { name: /^Continue$/ }).click()
+    await gate.waitForURL((url) => url.pathname === '/dashboard', { timeout: 15000 })
+  })
+  await gateCtx.close()
+}
 console.log('\nUI LOOP PASSED')
 await browser.close()

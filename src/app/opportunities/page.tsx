@@ -78,7 +78,7 @@ export default async function OpportunitiesPage({
                 title: opp.title,
                 category: opp.category,
                 location: opp.location,
-                remote: opp.remote,
+                remote: opp.remote ?? false,
                 organizationName: org?.name ?? null,
                 verified: Boolean(org?.verified),
                 volunteersNeeded: opp.volunteers_needed,

@@ -281,3 +281,8 @@ body {
     transform: none;
   }
 }
+
+/* Leaflet dark mode: invert OSM raster tiles instead of a keyed CARTO basemap. */
+.map-tiles-dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}

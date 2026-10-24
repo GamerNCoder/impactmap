@@ -79,6 +79,27 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
           <p className="text-sm text-gray-500">Impact Passport Verification</p>
         </div>
 
+        {code.startsWith('IMP-DEMO') && (
+          <div
+            role="note"
+            className="mb-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"
+          >
+            <strong>Demo record.</strong> This is a sample issued by the shared demo organizer, not a
+            real student&rsquo;s service record.
+          </div>
+        )}
+
+        {org && !org.verified && (
+          <div
+            role="alert"
+            className="mb-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"
+          >
+            <strong>Unverified organizer.</strong> This record was approved by an organization that
+            ImpactMap has not verified. Treat the code as the organizer&rsquo;s attestation, not an
+            ImpactMap-verified credential.
+          </div>
+        )}
+
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-900 overflow-hidden">
           <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
             <div>
@@ -165,7 +186,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
             )}
 
             <p className="text-xs text-gray-400 border-t border-gray-200 dark:border-gray-800 pt-4">
-              Issued by ImpactMap on behalf of a verified event organizer.
+              Issued by ImpactMap on behalf of the event organizer who approved this record.
               {' '}Reference code {code}.
             </p>
           </div>

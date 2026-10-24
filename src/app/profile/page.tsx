@@ -20,7 +20,7 @@ export default async function ProfilePage() {
   }
 
   // Private fields (email, birthday, guardian) are only readable through my_profile().
-  const { data } = await supabase.rpc('my_profile' as never)
+  const { data } = await supabase.rpc('my_profile')
   const profile = ((data as unknown as Profile[] | null) ?? [])[0] ?? null
 
   return (

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import CheckInLocation from '@/components/CheckInLocation'
 import { formatDate } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -40,8 +41,8 @@ export default async function CheckInPage({ params }: PageProps) {
 
   // Idempotent: scanning twice is not an error, it just reports "already".
   const { data: result } = await supabase.rpc(
-    'check_in_event' as never,
-    { p_opportunity_id: id } as never
+    'check_in_event',
+    { p_opportunity_id: id }
   )
   const outcome = (result ?? {}) as { ok?: boolean; already?: boolean; error?: string }
 
@@ -79,6 +80,10 @@ export default async function CheckInPage({ params }: PageProps) {
                   ? 'You had already checked in to this event. The organizer can see that you attended.'
                   : 'The organizer can now see that you attended.'}
               </p>
+            )}
+
+            {!opportunity.remote && outcome.ok && (
+              <CheckInLocation opportunityId={id} />
             )}
 
             <dl className="grid grid-cols-2 gap-4 text-sm">

@@ -1,17 +1,108 @@
-# ImpactMap — handoff (2026-10-18)
+# ImpactMap — handoff (2026-10-22)
 
 Earlier detail is in git history (`git log -p HANDOFF.md`).
 
 ## State
-- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed `cca78d7` (2026-10-18).
-- **Privacy fixed and deployed this session.** Migration `20261018120000_profiles_field_privacy.sql`:
-  `anon` lost the `profiles` column grants for `location`, `bio`, `skills` (verified on prod:
-  `select=location|bio|skills` went **200 → 401**; `id`, `full_name`, `hours_goal` still 200).
-  `authenticated` lost them too, so organizers/peers see a name only.
-- Migration `20261018130000_event_facilities.sql` adds `opportunities.facilities TEXT[]`.
-- Supabase project `impactmap-cac` (ref `zolvpddzpimegnkimzh`). Redeploy: `./deploy.sh`.
+- **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed **2026-10-22 from
+  the working tree** (last commit `4d31a36`; all 2026-10-21/22 changes are uncommitted).
+- Supabase project `impactmap-cac` (ref `zolvpddzpimegnkimszh`). Migrations through
+  `20261022000300_protect_demo_accounts.sql` are applied to production. Redeploy: `./deploy.sh`.
+- **Demo is live:** https://impactmap.vercel.app/demo (student/organizer one-click; 9 verified
+  demo hours + 1 pending log; code `IMP-DEMO2026ABCD`). Demo env vars are on Vercel and in
+  `.env.deploy.local`; `deploy.sh` reseeds after each deploy.
 - `.env.local` points at the LOCAL Supabase (`127.0.0.1:54321`); local dev needs the CLEAN
   tunnel: `scripts/clean-db.sh up` (tunnel is its own ssh; `clean-db.sh tunnel` re-establishes it).
+
+## 2026-10-22 — theme toggle + dark map fix
+- **Root cause:** `ThemeProvider` computed `resolvedTheme` with the server snapshot (`light`) while
+  the theme was `system`. On an OS-dark first visit the inline script made the page dark, but the
+  toggle rendered the light-mode label; the first click did the opposite of what it said. The
+  Leaflet tiles were always OSM light, so the map stayed bright in dark mode.
+- **Fix:** `resolvedTheme` is a `useSyncExternalStore` with a light server snapshot and a
+  client snapshot from the stored/system theme; a hydration-safe mounted check gates the class
+  apply. Invalid stored values fall back to `system`. `EventsExplorer` and `ImpactMapView` choose
+  OSM light vs CARTO `dark_all` tiles and re-initialise on theme change; `/attributions` credits
+  CARTO for the dark tiles.
+- **Regression test:** `npm run test:theme` (`tests/theme.mjs`) runs both OS schemes and both toggle
+  directions, checks class/storage/body/card colors, and asserts the CARTO dark and OSM light tile
+  URLs. It is wired into the CI database job after the UI walkthrough.
+- **Verified:** `tsc`, `eslint`, `next build` clean; theme test 26/26 checks; UI loop 15 steps;
+  a11y 10/10 pages. Deployed 2026-10-22 via `./deploy.sh`.
+
+## 2026-10-22 — engineering finish (typed clients, health, CI UI)
+- **Type safety:** `src/lib/supabase/{server,client}.ts` now use the generated `Database` type;
+  `src/types/database.ts` was regenerated from the current local schema (includes
+  `event_checkins.distance_m`/`outside_window`, `pilot_requests`, current RPCs). Removed the
+  `as never` RPC casts and fixed generated-type nullability in the export, manage, opportunity,
+  organization, audit and analytics paths.
+- **Health:** `GET /api/health` is a public liveness + database check (`ok/service/database/
+  latency_ms`, `503` on failure); the UI walkthrough now hits it.
+- **CI:** the database/accessibility job now also runs the **UI walkthrough** after the a11y gate.
+- **Verified:** `tsc --noEmit`, `eslint`, `next build` clean; `test:db` **77/77**; `test:ui`
+  **15 steps** (health + full loop + bulk + terms/birthday gate); `test:a11y` **10/10** pages;
+  local `/api/health` = `{ok:true,database:"ok",latency_ms:10}`. **Live:** `/api/health` HTTP 200,
+  `/`, `/demo`, `/impact`, `/pilot`, `/pilot/guide`, `/verify/IMP-DEMO2026ABCD` all 200; live
+  a11y 10/10. Deployed 2026-10-22 via `./deploy.sh` (demo reseeded).
+- **Remaining:** user-only demo video, AI-use disclosure, district confirmation and a real pilot
+  (the validation blocker); OAuth provider credentials; public repo; commit/push; CI has not run
+  on GitHub yet. Optional non-blocking stretch: performance budget, DB-backed rate limiting,
+  CSP nonce, a manual screen-reader pass.
+
+## 2026-10-21 — audit cleanup shipped to production
+- **Security:** `20261021000000_revoke_dead_tables.sql` applied to production — the 11 retired
+  SaaS tables (all 0 rows) lost every `anon`/`authenticated` grant and their permissive policies.
+  Verified on prod: no grants remain. Reversible (revoke, not drop).
+- **README now matches reality:** `supabase/migrations/` is the schema source of truth (the stale
+  `supabase/schema.sql` was removed), OAuth is Google/Apple/Microsoft only, the old paused project
+  ref is gone, and the tests/structure sections were refreshed. `CHANGELOG.md` added.
+- **Types regenerated** from the live schema (`event_checkins` added, five phantom tables gone).
+  **`src/middleware.ts` → `src/proxy.ts`** (Next 16 convention; build warning gone).
+  `supabase/config.toml` local redirect is now `http://127.0.0.1:3000/**`.
+- **Demo data:** the five live event dates were refreshed (all future; deadlines now after their
+  start dates), and `seed.sql` was corrected plus now refreshes dates on re-run. `/about` says four
+  of the five are pinned and the fifth is online.
+- **Tests:** `npm run test:db` = **70/70** (adds QR check-in, account-deletion cascades, retired-
+  table access); `npm run test:ui` passes and now covers `/api/verify/bulk` and the terms →
+  birthday gate for a session created outside the sign-up form (the OAuth shape).
+- **Uncommitted:** all of the above is in the working tree. Commit before the repo goes public.
+
+## 2026-10-22 — demo mode, community impact, check-in trust, pilot, a11y/CI
+- **Migrations added and applied to production 2026-10-22:** `20261022000000_impact_summary.sql`,
+  `20261022000100_checkin_trust.sql`, `20261022000200_pilot_requests.sql`,
+  `20261022000300_protect_demo_accounts.sql`.
+- **Live demo `/demo`:** one-click student and organizer sign-in with server-only passwords
+  (`DEMO_STUDENT_PASSWORD` / `DEMO_ORGANIZER_PASSWORD`, generated and stored by `deploy.sh` in
+  `.env.deploy.local`). `supabase/seed-demo.mjs` / `npm run seed:demo` creates the demo org
+  (fictional, unverified), three events, 9 verified hours across three causes, one pending 2h log,
+  a check-in and `IMP-DEMO2026ABCD`. The verify page labels demo codes; the demo banner marks the
+  shared accounts. `deploy.sh` seeds the demo after each deploy.
+- **Community impact `/impact`:** `impact_summary()` RPC aggregates verified hours by cause,
+  organization, month and event map; the page shows a Leaflet map, cause bars, a months chart and
+  "causes still waiting for hours". No student identity is returned. Privacy note says demo
+  records are included until a real pilot.
+- **Check-in trust:** `event_checkins.distance_m` and `outside_window`; `check_in_event` accepts
+  optional lat/lon, `record_checkin_location` adds it later; **coordinates are used only to
+  compute the distance and are never stored**. The organizer sees "0 m / 42 m / 12.1 km from the
+  event" and "outside event window". `/privacy` and `/safety` updated to match.
+- **Pilot program `/pilot` + `/pilot/guide`:** insert-only `pilot_requests` table, rate-limited
+  `POST /api/pilot`, printable guide, and `PILOT.md` outreach playbook (NHS/Key Club/library,
+  three-email sequence, what counts as evidence).
+- **Implementation/UX:** organizer approval queue moved above stats/trends/attendance; the landing
+  hero no longer shows "Hour logs approved 0" and its demo code is real; the duplicate demo event
+  titles were renamed; demo org is unverified to match the public disclosure.
+- **Tests/CI:** `test:db` now **77 checks** (impact RPC, distance/window, no-coordinate storage,
+  retired tables); `test:ui` passes; new `test:a11y` (axe-core WCAG 2.1 A/AA) passes locally and
+  against production on `/`, `/impact`, `/demo`, `/verify`, `/opportunities`, `/safety`, `/pilot`,
+  `/pilot/guide` and both demo roles. CI has a second job that starts local Supabase, runs the DB
+  suite and the a11y gate; a push will be its first real run.
+- **Dependencies:** upgraded Next.js + eslint-config-next `16.2.9` → `16.4.2` (fixes the critical
+  Next advisory); `npm audit --omit=dev` now reports **0 vulnerabilities**.
+- **Next 16.4.2 redirect fix:** the complete-profile and accept-terms forms now use
+  `window.location.assign()` instead of `router.push()`; the client router was reusing a prefetched
+  gated response and bouncing back. The birthday gate e2e caught it.
+- **Validation:** the pilot kit is ready, but a real pilot is still user-only. `/about` still says
+  "No real pilot group yet" — keep it until a real group runs one event, then add the numbers and a
+  permitted quote.
 
 ## Goal
 Win the Congressional App Challenge (deadline Oct 26 2026, district assumed NJ-6). Judged on
@@ -39,19 +130,27 @@ privacy/attributions surface, PWA, CI. Added this session:
   availability is private; Overpass and Open-Meteo credited).
 
 ## Open items
-1. ~~Privacy defect~~ **fixed + deployed** (see State).
-2. **OAuth (Google/Apple/Microsoft)** — mechanism in place, **needs the user's provider
+1. ~~Privacy defect~~ **fixed + deployed**.
+2. ~~Audit cleanup~~ **done 2026-10-21** — README/schema, types, proxy rename, dead-table revoke,
+   demo dates, and test coverage. See the section above.
+3. **OAuth (Google/Apple/Microsoft)** — mechanism is in place but **needs the user's provider
    credentials**. `deploy.sh` sets `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS=""`, which hides the
-   buttons. `/auth/complete-profile` for OAuth sign-ins is still not end-to-end tested.
-3. Seeded sample orgs have **no owner**, so hours logged on them can never be approved — the demo
-   must post its own event (already honest: no false "verified" badge, zero joins).
-4. **User-only:** demo video, AI-use disclosure, district confirmation, a real pilot (strongest win
+   buttons. The terms → birthday gate is now tested end-to-end without OAuth, but the real provider
+   callback `/auth/callback` is still untested.
+4. Seeded sample orgs have **no owner**, so hours logged on them can never be approved. The shared
+   demo organizer owns the three demo events and already has a pending log, so `/demo/organizer`
+   is the working approval demo.
+5. **User-only:** demo video, AI-use disclosure, district confirmation, a real pilot (strongest win
    factor).
-5. ~~Repo ingest~~ **done** — 48 one-page maps in `/Users/togi/notes/repo-map/` (this session added
-   `automation.md`, `utm.md`; `flutter.md` is a one-line "SDK copy").
-6. ~~Legal archive~~ **done** — all 14 sources retrieved. The three failures were re-fetched from
-   the Wayback Machine (the FTC slugs moved; CA `leginfo` is Cloudflare-gated). See
-   `notes/legal/MANIFEST.tsv` for the exact URLs and byte counts.
+6. **Commit the working tree** — the 2026-10-21/22 work is deployed but uncommitted (last commit
+   `4d31a36`).
+7. **LAUNCH Phase 1** (public repo) is still unchecked. `.cursor/memory/long-term.md` was refreshed
+   on 2026-10-22 (untracked, not shipped).
+8. **Validation blocker:** all coding/UX metrics are addressed; a 10/10 evidence score needs one
+   real group to run one event through `/pilot`. Then add the numbers and a permitted quote to
+   `/about` and the landing page.
+9. ~~Repo ingest~~ **done** — 48 one-page maps in `/Users/togi/notes/repo-map/`.
+10. ~~Legal archive~~ **done** — all 14 sources retrieved; see `notes/legal/MANIFEST.tsv`.
 
 ## Hard-won gotchas
 - `authenticated` **cannot** `SELECT date_of_birth` (column revoked) — use the `my_profile()` RPC.

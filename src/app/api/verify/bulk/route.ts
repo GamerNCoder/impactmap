@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 const MAX_CODES = 200
 const CODE_PATTERN = /^IMP-[A-Z0-9]{6,}$/
 
-type Batch = { name?: string }
+type Batch = { name?: string; verified?: boolean }
 
 /** Best-effort per-instance rate limit. Serverless instances do not share memory. */
 const RATE_LIMIT_WINDOW_MS = 60_000
@@ -33,6 +33,7 @@ type Row = {
   name: string | null
   event: string | null
   organization: string | null
+  organizer_verified: boolean | null
   date: string | null
   hours: number | null
   approver: string | null
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
         name: null,
         event: null,
         organization: null,
+        organizer_verified: null,
         date: null,
         hours: null,
         approver: null,
@@ -112,14 +114,14 @@ export async function POST(request: Request) {
     supabase
       .from('volunteer_hours')
       .select(
-        'verification_code, hours, date, verified_at, supervisor_name, user_id, opportunities(title, organizations(name))'
+        'verification_code, hours, date, verified_at, supervisor_name, user_id, opportunities(title, organizations(name, verified))'
       )
       .in('verification_code', codes)
       .eq('verified', true),
     supabase
       .from('applications')
       .select(
-        'verification_code, completed_at, verified_at, supervisor_name, user_id, opportunities(title, organizations(name))'
+        'verification_code, completed_at, verified_at, supervisor_name, user_id, opportunities(title, organizations(name, verified))'
       )
       .in('verification_code', codes)
       .eq('status', 'completed'),
@@ -149,6 +151,7 @@ export async function POST(request: Request) {
       name: (nameById.get(h.user_id as string) as string) ?? null,
       event: record?.title ?? null,
       organization: record?.organizations?.name ?? null,
+      organizer_verified: record?.organizations?.verified ?? null,
       date: (h.date as string) ?? null,
       hours: h.hours == null ? null : Number(h.hours),
       approver: (h.supervisor_name as string) ?? null,
@@ -166,6 +169,7 @@ export async function POST(request: Request) {
       name: (nameById.get(c.user_id as string) as string) ?? null,
       event: record?.title ?? null,
       organization: record?.organizations?.name ?? null,
+      organizer_verified: record?.organizations?.verified ?? null,
       date: (c.completed_at as string | null)?.split('T')[0] ?? null,
       hours: null,
       approver: (c.supervisor_name as string) ?? null,
@@ -182,6 +186,7 @@ export async function POST(request: Request) {
           name: null,
           event: null,
           organization: null,
+          organizer_verified: null,
           date: null,
           hours: null,
           approver: null,

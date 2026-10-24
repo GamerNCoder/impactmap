@@ -108,7 +108,7 @@ const DOES_NOT = [
   {
     title: 'The events on the live map are samples',
     body:
-      'The five events in Edison, New Jersey are demo listings from fictional organizers, placed at real public locations so the map is not empty on a first visit. They are deliberately not marked as verified organizers, and the join counts on them are honest zeros.',
+      'The live map includes demo listings from fictional organizers, including the shared demo organizer. They sit at real public locations so the map is not empty on a first visit; one is an online event with no pin. They are deliberately not marked as verified organizers, and their join counts are honest (the demo student is the only joiner).',
   },
   {
     title: 'Social sign-in is not switched on',

@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import LogHoursForm from '@/components/LogHoursForm'
 import DashboardQrFocus from '@/components/DashboardQrFocus'
 import HoursGoal from '@/components/HoursGoal'
+import DemoNotice from '@/components/DemoNotice'
 import { formatDate } from '@/lib/constants'
 import { formatAvailability } from '@/lib/availability'
 
@@ -22,7 +23,7 @@ export default async function DashboardPage() {
   }
 
   // Private fields, including availability, are owner-only: read them through my_profile().
-  const { data: profileRows } = await supabase.rpc('my_profile' as never)
+  const { data: profileRows } = await supabase.rpc('my_profile')
   const profile = ((profileRows as unknown as {
     full_name: string | null
     hours_goal: number | null
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-full">
+      <DemoNotice email={user.email} />
       <Suspense fallback={null}>
         <DashboardQrFocus />
       </Suspense>

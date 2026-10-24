@@ -28,7 +28,7 @@ const RULES = [
   },
   {
     title: 'Less data, less risk',
-    body: 'We don’t ask for ID documents, phone numbers or your home address. If you tap “Near me”, your location is only used on your device to sort events by distance. It is never saved.',
+    body: 'We don’t ask for ID documents, phone numbers or your home address. “Near me” uses your location on your device only. If you choose to share it on a check-in, we keep the distance to the event, not your coordinates.',
   },
 ]
 

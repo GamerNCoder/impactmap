@@ -1,19 +1,29 @@
 # ImpactMap
 
-A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, log their hours, and get them verified by the organizer.
+A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, check in by QR, log their hours, and get them approved by the organizer with one tap.
 
 ## Features
 
-- **Find events on a map** — Leaflet + OpenStreetMap pins, a "Near me" distance sort, plus category and text filters
+- **Find events on a map** — Leaflet + OpenStreetMap pins, a "Near me" distance sort, a "Within 3 mi" filter, plus category and text filters
 - **One-tap join** — no application form; join an event and it appears on your dashboard
-- **QR check-in** — each event has a check-in QR code volunteers can scan on arrival
+- **QR check-in** — each event has a check-in QR code volunteers can scan on arrival; attendance is recorded separately from applications so walk-ins count too
+- **Check-in trust layer** — volunteers can optionally share their location; the app keeps the distance to the event (never the coordinates) and flags scans outside the event window for the organizer
 - **Log hours** — after the event, log your time; the organizer approves it with one tap
 - **Verification codes** — each approval issues an `IMP-` code a counselor can check at `/verify` with no account
+- **Bulk verification** — counselors can paste a whole class list of `IMP-` codes at once
 - **Counselor report** — a printable/PDF service record with a QR code per verified entry
+- **Community impact map** — verified hours by cause, month, organization and event, aggregated with no student identities
 - **Hours goal** — set a target (for example 40 hours for NHS) and track progress
 - **Public record** — share a link to your organizer-approved hours
-- **Student safety** — 13+ only, guardian consent for 13–15, and date of birth/email are hidden from other users in the database itself
+- **Availability** — mark when you can usually volunteer; visible only to you
+- **Event context** — a weather outlook for outdoor events and a "near the event" card for cafés, food and transit
+- **Student safety** — 13+ only, guardian consent for 13–15, and date of birth/email/bio/skills/town are hidden from other users in the database itself
 - **Row Level Security** — Supabase RLS policies protect user data; students cannot approve their own hours
+- **Type-safe data layer** — the generated Supabase schema types are wired into both the server and browser clients, RPCs included
+- **Account controls** — export your data or delete your account from the profile page
+- **Live demo** — one-click student and organizer demo accounts, no signup
+- **Light and dark themes** — follows the OS by default, persists the choice, and switches the map basemap between OSM light and CARTO dark
+- **Pilot program** — a request form and printable guide for schools, clubs and libraries
 
 ## Tech stack
 
@@ -21,7 +31,12 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 |-------|------------|
 | Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
 | Backend | Supabase (PostgreSQL, Auth, RLS) |
+| Types | Generated Supabase `Database` types, wired into both clients |
+| Maps | Leaflet + OpenStreetMap light tiles / CARTO dark tiles, Nominatim, Overpass API |
+| Weather | Open-Meteo |
+| QR | `qrcode`, `html5-qrcode` |
 | Deployment | Vercel |
+| Tests | Node, Playwright, axe-core |
 
 ## Getting started
 
@@ -35,11 +50,23 @@ npm install
 
 ### 2. Set up Supabase
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. In the SQL Editor, run `supabase/schema.sql`
-3. Run `supabase/seed.sql` for sample organizations and opportunities
-4. Enable Email auth under **Authentication → Providers**
-5. (Optional) Enable Google/GitHub OAuth and set redirect URL to `http://localhost:3000/auth/callback`
+The SQL migrations in [`supabase/migrations/`](./supabase/migrations) are the source of truth for the schema.
+
+For a hosted project:
+
+```bash
+supabase link --project-ref <your-project-ref>
+supabase db push
+```
+
+For local development (requires Docker):
+
+```bash
+supabase start
+supabase db reset   # applies every migration, then supabase/seed.sql
+```
+
+`supabase/seed.sql` is **local-only sample data** — fictional Edison, NJ events — and is deliberately not pushed to production.
 
 ### 3. Environment variables
 
@@ -54,13 +81,23 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Find these in Supabase → **Project Settings → API**.
+Find these in Supabase → **Project Settings → API**. For local development use `http://127.0.0.1:54321` and the local anon key from `supabase status`.
 
-### Social sign-in (Google, Apple, GitHub, Microsoft)
+The demo accounts are optional and server-only:
 
-The login and signup pages support all four providers. Enable each one in Supabase with OAuth credentials from the provider:
+```env
+NEXT_PUBLIC_DEMO_ENABLED=true
+DEMO_STUDENT_EMAIL=demo.student@impactmap.app
+DEMO_STUDENT_PASSWORD=<random>
+DEMO_ORGANIZER_EMAIL=demo.organizer@impactmap.app
+DEMO_ORGANIZER_PASSWORD=<random>
+```
 
-**Setup guide:** [`supabase/oauth-setup.md`](./supabase/oauth-setup.md)
+`deploy.sh` generates the passwords once, stores them in `.env.deploy.local`, sets the Vercel variables, and seeds the accounts. For local use, run:
+
+```bash
+npm run seed:demo   # needs SUPABASE_SERVICE_ROLE_KEY in .env.local
+```
 
 ### 4. Run locally
 
@@ -68,71 +105,85 @@ The login and signup pages support all four providers. Enable each one in Supaba
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The demo is at [`/demo`](http://localhost:3000/demo).
+
+## Social sign-in (Google, Apple and Microsoft only)
+
+The login and signup pages support Google, Apple and Microsoft (Supabase's `azure` provider). GitHub is **not** implemented. Buttons only appear for providers listed in `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS` (for example `google,apple,azure`); when that variable is empty, no social buttons are shown.
+
+Provider setup: [`supabase/oauth-setup.md`](./supabase/oauth-setup.md).
 
 ## Deploy to Vercel
 
-### Option A: Vercel CLI (fastest)
+The supported path is the one-command script, which applies pending Supabase migrations, deploys the app and seeds the demo accounts:
 
 ```bash
-npx vercel login
-npx vercel --prod \
-  -e NEXT_PUBLIC_SUPABASE_URL=https://pgvasfubdwkgugoqqfjf.supabase.co \
-  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+./deploy.sh
 ```
 
-### Option B: Import from GitHub
+It reads `SUPABASE_PROJECT_REF` and `SUPABASE_DB_PASSWORD` from `.env.deploy.local` (created on first run), stores the public Supabase URL and anon key in Vercel, and seeds the demo. The anon key is public by design; RLS enforces access.
 
-1. Import [github.com/heyitsmeyourbudlol-lgtm/impactmap](https://github.com/heyitsmeyourbudlol-lgtm/impactmap) at [vercel.com/new](https://vercel.com/new)
-2. Add environment variables (see below)
-3. Deploy
-
-### Environment variables (Vercel)
+For a manual deploy, set these Vercel environment variables:
 
 | Variable | Value |
 |----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://pgvasfubdwkgugoqqfjf.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://<your-project-ref>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | From Supabase → Project Settings → API |
 
-### Supabase auth URLs (after Vercel deploy)
+Then set the Supabase **Site URL** and **Redirect URLs** (Authentication → URL Configuration) to the deployed origin plus `/auth/callback`.
 
-In Supabase → **Authentication → URL Configuration**:
+## Demo data on the live site
 
-- **Site URL:** `https://your-app.vercel.app`
-- **Redirect URLs:** `https://your-app.vercel.app/auth/callback`, `http://localhost:3000/auth/callback`
+The live site includes the five seeded Edison events plus three events from the shared demo organizer. The demo organizations are fictional and unverified; join counts are honest (the demo student is the only joiner). Use [`/demo`](https://impactmap.vercel.app/demo) to sign in as the demo student or organizer without an account. The demo verification code is `IMP-DEMO2026ABCD`, and the verify page labels it as a demo record.
 
-## Supabase project
+## Pilot program
 
-This repo is wired to Supabase project **impactmap-cac**. The paused `impactmap`
-project from an earlier iteration still exists but is unused.
+Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap.vercel.app/pilot). Requests are insert-only in `pilot_requests`; the team reads them through the Supabase dashboard. The printable guide is at [`/pilot/guide`](https://impactmap.vercel.app/pilot/guide), and the outreach playbook is in [`PILOT.md`](./PILOT.md).
 
-- Schema applied via the migrations in `supabase/migrations/`
-- Seed data: 5 Edison, NJ demo events
-- Dashboard: [supabase.com/dashboard](https://supabase.com/dashboard)
+## Health check
+
+`GET /api/health` returns `{ "ok": true, "service": "impactmap", "database": "ok", "latency_ms": 10 }`, or a `503` with `database: "unreachable"` if the Supabase query fails. It is public, has no secrets, and is safe to use for an uptime monitor.
 
 ## Tests
 
-- `npm run test:db` — 26 database and security checks (`tests/e2e-core-loop.mjs`)
-- `npm run test:ui` — Playwright walkthrough of the full student → organizer → counselor loop (`tests/ui-core-loop.mjs`); set `BASE_URL` to run it against a deployed site
+- `npm run test:db` — 77 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
+- `npm run test:ui` — Playwright walkthrough of the health endpoint, the full student → organizer → counselor loop, bulk verification and the terms/birthday gate (`tests/ui-core-loop.mjs`); start `npm run dev` first, or set `BASE_URL` to run it against a deployed site
+- `npm run test:a11y` — axe-core WCAG 2.1 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
+- `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the OSM ↔ CARTO dark map tiles); requires a running app
+- CI runs `tsc`, `eslint`, `next build`, the database suite, the accessibility gate, the UI walkthrough and the theme test (`.github/workflows/ci.yml`)
 
 ## Project structure
 
 ```
 src/
-├── app/
-│   ├── auth/          # Login, signup, OAuth callback
-│   ├── dashboard/     # Applications & hours tracking
-│   ├── opportunities/ # Browse & detail pages
-│   ├── organizations/ # Organization listings
-│   └── profile/       # Volunteer profile editor
-├── components/        # Shared UI components
-├── lib/supabase/      # Browser & server Supabase clients
-└── types/             # Database TypeScript types
+├── app/                 # App Router pages and API routes
+│   ├── about, accessibility, attributions, privacy, safety, security, terms
+│   ├── api/             # geocode, nearby, me/export, org exports, pilot, track, health, verify/bulk
+│   ├── auth/            # login, signup, OAuth callback, terms, complete-profile
+│   ├── checkin/[id]/    # QR check-in landing page
+│   ├── dashboard/       # joins, hours, approvals
+│   ├── demo/            # one-click student and organizer demo
+│   ├── impact/          # public aggregate impact map
+│   ├── opportunities/   # map, detail, new event
+│   ├── organizations/   # directory and organizer dashboard
+│   ├── passport/        # verified record and printable report
+│   ├── pilot/           # pilot request page and printable guide
+│   ├── profile/         # profile, availability, goal, export, deletion
+│   └── verify/          # public IMP- code lookup (no account)
+├── components/          # client UI components
+├── lib/                 # auth, QR, service record, org access, weather, Supabase clients
+└── types/               # generated Supabase types
 supabase/
-├── schema.sql         # Database schema + RLS
-└── seed.sql           # Sample data
+├── migrations/          # schema and RLS source of truth
+├── seed.sql             # local-only sample data
+├── seed-demo.mjs        # idempotent shared demo accounts and records
+└── oauth-setup.md
 ```
 
 ## License
 
 MIT
+
+## Product invariants
+
+Read [PRODUCT.md](./PRODUCT.md) before changing the product. Accessibility, language reach, and the trust/privacy invariants there are release gates; the 48-hour priority order is included.

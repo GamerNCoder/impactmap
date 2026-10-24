@@ -83,7 +83,7 @@ export default function EventCard({
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
               <span className="text-gray-500">{filled} joined</span>
-              <span className={isFull ? 'text-amber-600 font-medium' : 'text-gray-500'}>
+              <span className={isFull ? 'text-amber-700 dark:text-amber-400 font-medium' : 'text-gray-500'}>
                 {isFull ? 'Full' : `${spotsLeft} spots left`}
               </span>
             </div>

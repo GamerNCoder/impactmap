@@ -49,7 +49,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Volunteer activity:</strong> the events you join, the hours you log, event check-ins that
-            record your attendance, organizer approvals, and any completed-task (completion) records.
+            record your attendance (and, if you choose to share it, the approximate distance from the event),
+            organizer approvals, and any completed-task (completion) records.
           </li>
           <li>
             <strong>Volunteer availability (optional):</strong> the days and coarse parts of the day you mark
@@ -76,8 +77,11 @@ export default function PrivacyPage() {
         <p>
           We do not ask for or store phone numbers, government-issued ID documents or ID numbers, home
           addresses, or photos or selfies. (A date of birth is collected so the age rules below can be
-          applied, but it is not an identity document.) Location is used only on your device, and only when
-          you tap &quot;Near me&quot;, to sort events by distance; it is never sent to us or saved.
+          applied, but it is not an identity document.) Location is used on your device when you tap
+          &quot;Near me&quot; to sort events by distance, and is not sent to us for that. If you choose
+          &quot;Use my location&quot; on a check-in, your device coordinates are sent to our server solely
+          to calculate the distance to that event; we store the distance, not the coordinates, and the
+          organizer sees that distance rather than a map of where you are.
         </p>
 
         <h2>4. How we use information</h2>

@@ -27,8 +27,65 @@ jobs:
         run: npm run build
         env:
           # Placeholder values: the build only needs these to be present.
-          # The database security tests (npm run test:db) are deliberately NOT run
-          # here: they need real credentials and they create rows in the target
-          # database, so they belong on a disposable local Supabase, not CI.
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+
+  database-and-accessibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+
+      - name: Start local Supabase
+        run: |
+          supabase start --yes
+          supabase db reset --yes
+
+      - name: Write the test environment
+        run: |
+          supabase status -o env > /tmp/supabase.env
+          set -a
+          source /tmp/supabase.env
+          set +a
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env.local
+
+      - name: Database and security tests
+        run: npm run test:db
+
+      - name: Install the Chromium used by the accessibility test
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the app for the accessibility test
+        run: |
+          npm run dev > /tmp/next-dev.log 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl -sf http://localhost:3000/ >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "dev server did not start"
+          cat /tmp/next-dev.log
+          exit 1
+
+      - name: Accessibility test (WCAG 2.1 A/AA, serious/critical)
+        run: npm run test:a11y
+
+      - name: UI walkthrough (health + full loop + bulk + auth gate)
+        run: npm run test:ui
+
+      - name: Theme toggle and dark map test
+        run: npm run test:theme
+
+      - name: Show the dev server log on failure
+        if: failure()
+        run: cat /tmp/next-dev.log

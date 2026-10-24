@@ -93,7 +93,6 @@ export default function SignupPage() {
 
         trackClientEvent(APP_EVENTS.AUTH_SIGNUP)
         router.push('/opportunities')
-        router.refresh()
         return
       }
 

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { categoryForEvent, type TrackEventInput } from '@/lib/app-events'
 import { sanitizeText } from '@/lib/security'
+import type { Json } from '@/types/database'
 
 /** Server-side silent event capture. Never throws — analytics must not break UX. */
 export async function trackAppEvent(input: TrackEventInput): Promise<void> {
@@ -21,7 +22,7 @@ export async function trackAppEvent(input: TrackEventInput): Promise<void> {
       path: input.path ? sanitizeText(input.path, 300) : null,
       resource_type: input.resourceType ? sanitizeText(input.resourceType, 80) : null,
       resource_id: input.resourceId ?? null,
-      metadata: safeMeta,
+      metadata: safeMeta as Json,
     })
   } catch {
     // Silent failure by design

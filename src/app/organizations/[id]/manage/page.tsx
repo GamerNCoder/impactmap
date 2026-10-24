@@ -10,6 +10,7 @@ import OrgStats from '@/components/OrgStats'
 import HoursTrend from '@/components/HoursTrend'
 import { formatDate } from '@/lib/constants'
 import { canManageOrg } from '@/lib/org-access'
+import DemoNotice from '@/components/DemoNotice'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -97,6 +98,8 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     opportunity_id: string
     user_id: string
     checked_in_at: string
+    distance_m: number | null
+    outside_window: boolean
   }> = []
 
 
@@ -117,12 +120,20 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
     const { data: attendance } = await supabase
       .from('event_checkins')
-      .select('id, opportunity_id, user_id, checked_in_at')
+      .select('id, opportunity_id, user_id, checked_in_at, distance_m, outside_window')
       .in('opportunity_id', oppIds)
       .order('checked_in_at', { ascending: false })
 
-    pendingHours = pending ?? []
-    verifiedHoursList = verified ?? []
+    pendingHours = (pending ?? []).flatMap((h) =>
+      h.user_id && h.opportunity_id
+        ? [{ ...h, user_id: h.user_id, opportunity_id: h.opportunity_id }]
+        : []
+    )
+    verifiedHoursList = (verified ?? []).flatMap((h) =>
+      h.user_id && h.opportunity_id
+        ? [{ ...h, user_id: h.user_id, opportunity_id: h.opportunity_id }]
+        : []
+    )
     checkins = attendance ?? []
   }
 
@@ -158,6 +169,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-full">
+      <DemoNotice email={user.email} />
       <Suspense fallback={null}>
         <ManageVolunteerFocus />
       </Suspense>
@@ -210,44 +222,6 @@ export default async function OrganizationManagePage({ params }: PageProps) {
               </section>
             )}
 
-            <OrgStats
-              pendingHours={pendingHours}
-              verifiedHoursList={verifiedHoursList}
-              checkins={checkins}
-              totalVerified={totalVerified}
-              profileMap={profileMap}
-              oppMap={oppMap}
-            />
-
-            <HoursTrend verifiedHoursList={verifiedHoursList} />
-
-            <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Attendance</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Recorded when volunteers scan an event&rsquo;s check-in QR on arrival. Attendance is not
-                approval — you still approve the hours they log.
-              </p>
-              {attendanceByOpp.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  No check-ins yet. Print the check-in QR on an event page and put it at the sign-in table.
-                </p>
-              ) : (
-                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {attendanceByOpp.map(([oppId, rows]) => (
-                    <li key={oppId} className="py-3 first:pt-0 last:pb-0">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
-                        {oppMap.get(oppId) ?? 'Event'}
-                        <span className="text-gray-500 font-normal"> · {rows.length} checked in</span>
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {rows.map((r) => profileMap.get(r.user_id) || 'Student').join(', ')}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
             <section>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hours to approve</h2>
               {pendingHours.length > 0 ? (
@@ -272,6 +246,64 @@ export default async function OrganizationManagePage({ params }: PageProps) {
                 <p className="text-gray-500 bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   You&apos;re all caught up. New hours show up here when students log them.
                 </p>
+              )}
+            </section>
+
+            <OrgStats
+              pendingHours={pendingHours}
+              verifiedHoursList={verifiedHoursList}
+              checkins={checkins}
+              totalVerified={totalVerified}
+              profileMap={profileMap}
+              oppMap={oppMap}
+            />
+
+            <HoursTrend verifiedHoursList={verifiedHoursList} />
+
+            <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Attendance</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Recorded when volunteers scan an event&rsquo;s check-in QR on arrival. Attendance is not
+                approval — you still approve the hours they log. If a volunteer shares their location,
+                you see the approximate distance from the event; coordinates are never stored.
+              </p>
+              {attendanceByOpp.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No check-ins yet. Print the check-in QR on an event page and put it at the sign-in table.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {attendanceByOpp.map(([oppId, rows]) => (
+                    <li key={oppId} className="py-3 first:pt-0 last:pb-0">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {oppMap.get(oppId) ?? 'Event'}
+                        <span className="text-gray-500 font-normal"> · {rows.length} checked in</span>
+                      </p>
+                      <ul className="mt-2 space-y-1">
+                        {rows.map((row) => (
+                          <li key={row.id} className="text-sm text-gray-600 dark:text-gray-400">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {profileMap.get(row.user_id) || 'Student'}
+                            </span>
+                            <span>
+                              {' · '}
+                              {row.distance_m == null
+                                ? 'location not shared'
+                                : row.distance_m <= 250
+                                  ? `${row.distance_m} m from the event`
+                                  : `${(row.distance_m / 1000).toFixed(1)} km from the event`}
+                            </span>
+                            {row.outside_window && (
+                              <span className="text-amber-700 dark:text-amber-400 font-medium">
+                                {' · outside event window'}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
               )}
             </section>
 

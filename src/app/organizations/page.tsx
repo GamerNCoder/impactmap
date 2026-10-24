@@ -20,6 +20,7 @@ export default async function OrganizationsPage() {
     .eq('status', 'open')
 
   const countMap = (opportunityCounts || []).reduce<Record<string, number>>((acc, row) => {
+    if (!row.organization_id) return acc
     acc[row.organization_id] = (acc[row.organization_id] || 0) + 1
     return acc
   }, {})
@@ -49,7 +50,7 @@ export default async function OrganizationsPage() {
                 name={org.name}
                 description={org.description}
                 location={org.location}
-                verified={org.verified}
+                verified={org.verified ?? false}
                 opportunityCount={countMap[org.id] || 0}
               />
             ))}

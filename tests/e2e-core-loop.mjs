@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const run = Date.now()
+const pastDate = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10)
 let failures = 0
 
 function check(name, ok, detail = '') {
@@ -61,6 +62,9 @@ const { data: event, error: eventErr } = await coord.client
     volunteers_needed: 1,
     facilities: ['Restrooms', 'Drinking water'],
     status: 'open',
+    latitude: 40.5285,
+    longitude: -74.3915,
+    start_date: pastDate,
   })
   .select('id')
   .single()
@@ -81,6 +85,46 @@ check('capacity enforced', full?.error === 'full', JSON.stringify(full))
 const { data: opp } = await anon.from('opportunities').select('volunteers_count, facilities').eq('id', event.id).single()
 check('volunteers_count synced', opp?.volunteers_count === 1, String(opp?.volunteers_count))
 check('organizer-declared facilities are public', (opp?.facilities ?? []).length === 2, JSON.stringify(opp?.facilities))
+
+// QR attendance: the check-in RPC records who turned up, is idempotent, and is readable
+// only by the volunteer and the event's organizer.
+const { error: anonCheckinErr } = await anon.rpc('check_in_event', { p_opportunity_id: event.id })
+check('anonymous cannot check in', Boolean(anonCheckinErr), anonCheckinErr?.message)
+const { data: checkin } = await student.client.rpc('check_in_event', { p_opportunity_id: event.id })
+check('student check-in records attendance', checkin?.ok === true && checkin?.already === false, JSON.stringify(checkin))
+check('check-in flags a scan outside the event window', checkin?.outside_window === true, JSON.stringify(checkin))
+const { data: located } = await student.client.rpc('record_checkin_location', {
+  p_opportunity_id: event.id,
+  p_lat: 40.5286,
+  p_lon: -74.3916,
+})
+check('check-in records distance without coordinates', located?.ok === true && located?.distance_m != null && located.distance_m < 100, JSON.stringify(located))
+const { data: far } = await student.client.rpc('record_checkin_location', {
+  p_opportunity_id: event.id,
+  p_lat: 40.6,
+  p_lon: -74.5,
+})
+check('a far location is recorded, not blocked', far?.ok === true && far?.distance_m > 1000, JSON.stringify(far))
+const { data: attendanceRow } = await student.client
+  .from('event_checkins')
+  .select('*')
+  .eq('opportunity_id', event.id)
+  .eq('user_id', student.user.id)
+  .single()
+check('check-in stores no raw coordinates', !('checkin_lat' in (attendanceRow ?? {})) && !('checkin_lon' in (attendanceRow ?? {})), JSON.stringify(attendanceRow))
+const { data: checkinAgain } = await student.client.rpc('check_in_event', { p_opportunity_id: event.id })
+check('repeat check-in is idempotent', checkinAgain?.ok === true && checkinAgain?.already === true, JSON.stringify(checkinAgain))
+const { data: organizerCheckins } = await coord.client
+  .from('event_checkins')
+  .select('id, source, distance_m, outside_window')
+  .eq('opportunity_id', event.id)
+  .eq('user_id', student.user.id)
+check('organizer reads event attendance', organizerCheckins?.length === 1 && organizerCheckins[0].source === 'qr' && organizerCheckins[0].distance_m != null, JSON.stringify(organizerCheckins))
+const { data: outsiderCheckins } = await intruder.client
+  .from('event_checkins')
+  .select('id')
+  .eq('opportunity_id', event.id)
+check('non-organizer cannot read event attendance', (outsiderCheckins ?? []).length === 0)
 
 // Student logs hours; cannot self-verify.
 const { data: hour, error: hourErr } = await student.client
@@ -111,6 +155,49 @@ check('student cannot mark own completion', Boolean(selfCompleteErr))
 
 const { data: intruderHours } = await intruder.client.from('volunteer_hours').select('id').eq('id', hour.id)
 check('other users cannot read unverified hours', (intruderHours ?? []).length === 0)
+
+// Self-dealing: owning the org and posting the event must not let a student approve their
+// own hours. RLS would allow the manager update; the trigger is the enforcement point.
+const { data: selfOrg, error: selfOrgErr } = await student.client
+  .from('organizations')
+  .insert({ name: `Self-dealing org ${run}`, verified: false })
+  .select('id')
+  .single()
+check('student creates org for self-dealing probe', !selfOrgErr, selfOrgErr?.message)
+
+await student.client
+  .from('organization_members')
+  .insert({ organization_id: selfOrg.id, user_id: student.user.id, role: 'owner' })
+
+const { data: selfEvent, error: selfEventErr } = await student.client
+  .from('opportunities')
+  .insert({
+    organization_id: selfOrg.id,
+    posted_by: student.user.id,
+    title: 'Self-dealing event',
+    description: 'Fixture',
+    category: 'Environment',
+    volunteers_needed: 2,
+    status: 'open',
+    start_date: pastDate,
+  })
+  .select('id')
+  .single()
+check('student posts own event for self-dealing probe', !selfEventErr, selfEventErr?.message)
+
+await student.client.rpc('join_opportunity', { p_opportunity_id: selfEvent.id })
+const { data: selfHour, error: selfHourErr } = await student.client
+  .from('volunteer_hours')
+  .insert({ user_id: student.user.id, opportunity_id: selfEvent.id, date: '2026-10-10', hours: 2 })
+  .select('id')
+  .single()
+check('student logs own hours for self-dealing probe', Boolean(selfHour?.id), selfHourErr?.message)
+
+const { error: selfApproveErr } = await student.client
+  .from('volunteer_hours')
+  .update({ verified: true, verification_code: code() })
+  .eq('id', selfHour.id)
+check('manager cannot approve own hours', Boolean(selfApproveErr), selfApproveErr?.message)
 
 // Coordinator approves hours and completion.
 const hourCode = code()
@@ -146,6 +233,70 @@ const { data: publicCompletion } = await anon
   .eq('verification_code', completionCode)
   .maybeSingle()
 check('anonymous counselor verifies completion code', publicCompletion?.status === 'completed')
+
+// Small-cell suppression: a cause with 3 distinct volunteers is published; a cause with one
+// volunteer is not. Seed two more students on a second event for the visible group.
+const student2 = await signUp('student2')
+const student3 = await signUp('student3')
+const { data: event2 } = await coord.client
+  .from('opportunities')
+  .insert({
+    organization_id: org.id,
+    posted_by: coord.user.id,
+    title: 'Trail cleanup 2',
+    description: 'Fixture',
+    category: 'Environment',
+    volunteers_needed: 3,
+    status: 'open',
+    start_date: pastDate,
+  })
+  .select('id')
+  .single()
+
+for (const s of [student, student2, student3]) {
+  await s.client.rpc('join_opportunity', { p_opportunity_id: event2.id })
+  const { data: h } = await s.client
+    .from('volunteer_hours')
+    .insert({ user_id: s.user.id, opportunity_id: event2.id, date: '2026-10-10', hours: 1 })
+    .select('id')
+    .single()
+  await coord.client
+    .from('volunteer_hours')
+    .update({ verified: true, verification_code: code(), verified_at: new Date().toISOString() })
+    .eq('id', h.id)
+}
+
+const { data: soloEvent } = await coord.client
+  .from('opportunities')
+  .insert({
+    organization_id: org.id,
+    posted_by: coord.user.id,
+    title: 'Solo fixture event',
+    description: 'Fixture',
+    category: 'Other',
+    volunteers_needed: 1,
+    status: 'open',
+    start_date: pastDate,
+  })
+  .select('id')
+  .single()
+await student.client.rpc('join_opportunity', { p_opportunity_id: soloEvent.id })
+const { data: soloHour } = await student.client
+  .from('volunteer_hours')
+  .insert({ user_id: student.user.id, opportunity_id: soloEvent.id, date: '2026-10-10', hours: 1 })
+  .select('id')
+  .single()
+await coord.client
+  .from('volunteer_hours')
+  .update({ verified: true, verification_code: code(), verified_at: new Date().toISOString() })
+  .eq('id', soloHour.id)
+
+// The public impact page reads an aggregate RPC; it must work for anon and never leak identities.
+const { data: impact, error: impactErr } = await anon.rpc('impact_summary')
+check('public impact summary works', !impactErr && (impact?.totals?.records ?? 0) >= 1, impactErr?.message)
+check('impact summary groups verified hours by cause', (impact?.by_category ?? []).some((row) => row.category === 'Environment'))
+check('impact summary keeps student identity out', !JSON.stringify(impact ?? {}).includes(student.user.id))
+check('impact suppresses groups under 3 volunteers', !(impact?.by_category ?? []).some((row) => row.category === 'Other'))
 
 const { data: publicName } = await anon.from('profiles').select('full_name').eq('id', student.user.id).single()
 check('public sees student name', publicName?.full_name === 'Test student')
@@ -195,6 +346,62 @@ check('student reads own availability', (mine?.volunteer_availability ?? []).len
 const { data: goal } = await student.client
   .from('profiles').update({ hours_goal: 40 }).eq('id', student.user.id).select('hours_goal').single()
 check('student sets hours goal', goal?.hours_goal === 40)
+
+// Account deletion removes the auth row and cascades to everything the user owns.
+const deleter = await signUp('deleter')
+const { data: deleterEvent } = await coord.client
+  .from('opportunities')
+  .insert({
+    organization_id: org.id,
+    posted_by: coord.user.id,
+    title: 'Deletion fixture event',
+    description: 'Fixture',
+    category: 'Other',
+    volunteers_needed: 5,
+    status: 'open',
+  })
+  .select('id')
+  .single()
+await deleter.client.rpc('join_opportunity', { p_opportunity_id: deleterEvent.id })
+const { data: deleterHour, error: deleterHourErr } = await deleter.client
+  .from('volunteer_hours')
+  .insert({ user_id: deleter.user.id, opportunity_id: deleterEvent.id, date: '2026-10-10', hours: 2 })
+  .select('id')
+  .single()
+check('deleter logs hours', Boolean(deleterHour?.id), deleterHourErr?.message)
+await deleter.client.rpc('check_in_event', { p_opportunity_id: deleterEvent.id })
+const { data: deletion } = await deleter.client.rpc('delete_my_account')
+check('account deletion returns ok', deletion?.ok === true, JSON.stringify(deletion))
+const { data: deletedProfile } = await anon.from('profiles').select('id').eq('id', deleter.user.id)
+check('deleted account profile is gone', (deletedProfile ?? []).length === 0)
+const { data: deletedHours } = await coord.client.from('volunteer_hours').select('id').eq('user_id', deleter.user.id)
+check('deleted account hours are gone', (deletedHours ?? []).length === 0)
+const { data: deletedCheckins } = await coord.client.from('event_checkins').select('id').eq('user_id', deleter.user.id)
+check('deleted account check-ins are gone', (deletedCheckins ?? []).length === 0)
+const { data: deletedAuth } = await deleter.client.auth.getUser()
+check('deleted account cannot authenticate', deletedAuth?.user == null)
+
+// Retired SaaS-build tables: empty and unused, but once reachable through the Data API.
+// The revoke migration must keep them inaccessible to both anonymous and signed-in callers.
+const retiredTables = [
+  'volunteer_reviews',
+  'user_badges',
+  'skill_competency_results',
+  'skill_competency_attempts',
+  'id_verification_submissions',
+  'org_api_keys',
+  'org_webhooks',
+  'transfer_requests',
+  'community_groups',
+  'group_members',
+  'shared_posts',
+]
+for (const table of retiredTables) {
+  const { error: anonRetiredErr } = await anon.from(table).select('id').limit(1)
+  check(`public cannot read retired table ${table}`, Boolean(anonRetiredErr))
+  const { error: authRetiredErr } = await intruder.client.from(table).select('id').limit(1)
+  check(`signed-in users cannot read retired table ${table}`, Boolean(authRetiredErr))
+}
 
 console.log(failures ?`\n${failures} check(s) failed` : '\nAll checks passed')
 process.exit(failures ? 1 : 0)

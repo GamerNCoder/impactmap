@@ -10,14 +10,19 @@ import QrScanLauncher from '@/components/QrScanLauncher'
 
 const PRIMARY_NAV = [
   { href: '/opportunities', label: 'Events' },
+  { href: '/impact', label: 'Impact' },
   { href: '/dashboard', label: 'Home' },
   { href: '/passport', label: 'My hours' },
   { href: '/opportunities/new', label: 'Host an event' },
 ]
 
+const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_ENABLED === 'true'
+
 const GUEST_NAV = [
   { href: '/opportunities', label: 'Events' },
+  { href: '/impact', label: 'Impact' },
   { href: '/verify', label: 'Check a code' },
+  ...(DEMO_ENABLED ? [{ href: '/demo', label: 'Live demo' }] : []),
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/safety', label: 'Safety' },
 ]

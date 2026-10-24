@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import EventCard from "@/components/EventCard";
+import { DEMO_VERIFICATION_CODE, demoEnabled } from "@/lib/demo";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: upcoming }, { count: eventCount }, { count: approvedCount }] = await Promise.all([
+  const [{ data: upcoming }, { count: eventCount }] = await Promise.all([
     supabase
       .from("opportunities")
       .select("*, organizations(name, verified)")
@@ -23,8 +24,9 @@ export default async function Home() {
       .order("start_date", { ascending: true, nullsFirst: false })
       .limit(3),
     supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "open"),
-    supabase.from("volunteer_hours").select("id", { count: "exact", head: true }).eq("verified", true),
   ]);
+
+  const demo = demoEnabled();
 
   return (
     <div className="flex flex-col">
@@ -57,28 +59,48 @@ export default async function Home() {
                   Create free account
                 </Link>
               )}
+              {demo && !user && (
+                <Link href="/demo" className="inline-flex items-center border border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10 px-6 py-3 rounded-xl font-semibold motion-pressable">
+                  Try the live demo
+                </Link>
+              )}
             </div>
+            {demo && !user && (
+              <p className="mt-3 text-xs text-gray-400 motion-fade-in-up motion-delay-3">
+                No signup. Look at the student view, then approve a log as the organizer.
+              </p>
+            )}
             <dl className="mt-10 flex gap-10 text-sm">
               <div>
                 <dt className="text-gray-400">Open events</dt>
                 <dd className="text-2xl font-bold">{eventCount ?? 0}</dd>
               </div>
               <div>
-                <dt className="text-gray-400">Hour logs approved</dt>
-                <dd className="text-2xl font-bold">{approvedCount ?? 0}</dd>
+                <dt className="text-gray-400">Counselor lookup</dt>
+                <dd className="text-base font-semibold text-emerald-300">No account needed</dd>
               </div>
             </dl>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur motion-fade-in-up motion-delay-2">
             <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Counselor view</p>
-            <p className="mt-3 font-mono text-lg">IMP-7C41A9E2B0D3</p>
+            <Link
+              href={`/verify/${DEMO_VERIFICATION_CODE}`}
+              className="mt-3 block font-mono text-lg hover:text-emerald-300 transition-colors"
+            >
+              {DEMO_VERIFICATION_CODE}
+            </Link>
             <div className="mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4">
               <p className="font-semibold text-emerald-300">✓ Hours verified</p>
-              <p className="text-sm text-gray-300 mt-1">Alex J. · 3 hours · Roosevelt Park Fall Cleanup</p>
+              <p className="text-sm text-gray-300 mt-1">Demo Student · 3 hours · Roosevelt Park Trail Cleanup</p>
               <p className="text-xs text-gray-400 mt-1">Approved by the event organizer</p>
             </div>
-            <p className="text-xs text-gray-400 mt-3">Example. Anyone can check a real code at /verify.</p>
+            <p className="text-xs text-gray-400 mt-3">
+              This demo code works.{' '}
+              <Link href={`/verify/${DEMO_VERIFICATION_CODE}`} className="text-emerald-300 underline underline-offset-2">
+                Open it with no account →
+              </Link>
+            </p>
           </div>
         </div>
       </section>
@@ -115,11 +137,11 @@ export default async function Home() {
                     title={opp.title}
                     category={opp.category}
                     location={opp.location}
-                    remote={opp.remote}
+                    remote={opp.remote ?? false}
                     organizationName={org?.name}
                     verified={Boolean(org?.verified)}
-                    volunteersNeeded={opp.volunteers_needed}
-                    volunteersCount={opp.volunteers_count}
+                    volunteersNeeded={opp.volunteers_needed ?? undefined}
+                    volunteersCount={opp.volunteers_count ?? 0}
                     startDate={opp.start_date}
                   />
                 );
@@ -128,6 +150,25 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <section className="bg-gray-950 text-white py-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Community impact</p>
+            <h2 className="mt-2 text-3xl font-bold">See the impact, not just the events.</h2>
+            <p className="mt-2 text-gray-400 max-w-2xl leading-relaxed">
+              Verified hours by cause, month and neighborhood — built only from organizer-approved
+              logs, with no student names attached.
+            </p>
+          </div>
+          <Link
+            href="/impact"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl border border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10 px-6 py-3 font-semibold motion-pressable"
+          >
+            Open the impact map →
+          </Link>
+        </div>
+      </section>
 
       <section className="bg-white dark:bg-gray-950 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-6">
@@ -143,7 +184,7 @@ export default async function Home() {
           <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white">For counselors</h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Check any code without an account and see who approved the hours and when.</p>
-            <Link href="/verify" className="inline-block mt-3 text-sm font-semibold text-emerald-700 dark:text-emerald-400">Check a code →</Link>
+            <Link href="/pilot" className="inline-block mt-3 text-sm font-semibold text-emerald-700 dark:text-emerald-400">Run a pilot at your school →</Link>
           </div>
         </div>
         <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 text-sm text-gray-600 dark:text-gray-400">

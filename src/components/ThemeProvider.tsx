@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useSyncExternalStore,
 } from 'react'
 
@@ -44,8 +43,9 @@ function subscribeTheme(callback: () => void) {
 }
 
 function getStoredTheme(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-  return stored ?? 'system'
+  if (typeof window === 'undefined') return 'system'
+  const stored = localStorage.getItem(STORAGE_KEY)
+  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
 }
 
 function getServerThemeSnapshot(): Theme {
@@ -57,21 +57,35 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+function getResolvedTheme(): 'light' | 'dark' {
+  const theme = getStoredTheme()
+  return theme === 'system' ? getSystemTheme() : theme
+}
+
+function getServerResolvedTheme(): 'light' | 'dark' {
+  return 'light'
+}
+
+const subscribeNoop = () => () => {}
+const isClientSnapshot = () => true
+const isServerSnapshot = () => false
+
 function applyTheme(resolved: 'light' | 'dark') {
   document.documentElement.classList.toggle('dark', resolved === 'dark')
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useSyncExternalStore(subscribeTheme, getStoredTheme, getServerThemeSnapshot)
-
-  const resolvedTheme = useMemo(
-    () => (theme === 'system' ? getSystemTheme() : theme),
-    [theme]
+  const resolvedTheme = useSyncExternalStore(
+    subscribeTheme,
+    getResolvedTheme,
+    getServerResolvedTheme
   )
+  const mounted = useSyncExternalStore(subscribeNoop, isClientSnapshot, isServerSnapshot)
 
   useEffect(() => {
-    applyTheme(resolvedTheme)
-  }, [resolvedTheme])
+    if (mounted) applyTheme(resolvedTheme)
+  }, [mounted, resolvedTheme])
 
   const setTheme = useCallback((next: Theme) => {
     localStorage.setItem(STORAGE_KEY, next)

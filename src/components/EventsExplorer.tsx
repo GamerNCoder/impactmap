@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Map as LeafletMap, LayerGroup } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import EventCard from '@/components/EventCard'
+import { useTheme } from '@/components/ThemeProvider'
 
 export type ExplorerEvent = {
   id: string
@@ -50,6 +51,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
   const [locateError, setLocateError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [walkOnly, setWalkOnly] = useState(false)
+  const { resolvedTheme } = useTheme()
 
   const pinned = useMemo(
     () => events.filter((e) => e.latitude != null && e.longitude != null),
@@ -95,6 +97,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors',
+        className: resolvedTheme === 'dark' ? 'map-tiles-dark' : undefined,
       }).addTo(map)
       for (const e of pinned) {
         L.circleMarker([e.latitude!, e.longitude!], {
@@ -123,7 +126,7 @@ export default function EventsExplorer({ events }: { events: ExplorerEvent[] }) 
       mapRef.current?.remove()
       mapRef.current = null
     }
-  }, [pinned])
+  }, [pinned, resolvedTheme])
 
   const locate = () => {
     if (!navigator.geolocation) {

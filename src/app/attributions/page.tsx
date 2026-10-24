@@ -49,8 +49,10 @@ export default function AttributionsPage() {
           requires.
         </p>
         <p>
-          Tiles are fetched from the OpenStreetMap Foundation&rsquo;s tile servers (tile.openstreetmap.org).
-          Use of those servers is subject to the OpenStreetMap Foundation&rsquo;s tile usage policy.
+          Map tiles are rendered from OpenStreetMap data using the OpenStreetMap Foundation&rsquo;s
+          tile servers (tile.openstreetmap.org). Dark mode applies a client-side color filter to the
+          same tiles; no third-party basemap API key is required. Map data remains &copy;
+          OpenStreetMap contributors under the ODbL.
         </p>
         <p>
           The &quot;near the event&quot; card lists nearby cafés, restaurants and transit stops using the{' '}

@@ -46,8 +46,8 @@ export default function AcceptTermsForm() {
       if (updateError) throw updateError
 
       clearTermsPendingCookie()
-      router.push(nextPath.startsWith('/') ? nextPath : '/dashboard')
-      router.refresh()
+      // Full navigation avoids a prefetched gated response from before terms were accepted.
+      window.location.assign(nextPath.startsWith('/') ? nextPath : '/dashboard')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not save acceptance')
     } finally {

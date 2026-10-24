@@ -63,7 +63,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const isJoined = existingApplication?.status === 'accepted' || existingApplication?.status === 'pending'
   const isFull =
     opportunity.volunteers_needed != null &&
-    opportunity.volunteers_count >= opportunity.volunteers_needed
+    (opportunity.volunteers_count ?? 0) >= opportunity.volunteers_needed
 
   const weather = opportunity.remote
     ? null

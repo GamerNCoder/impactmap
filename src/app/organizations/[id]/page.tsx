@@ -124,10 +124,10 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
                   title={opp.title}
                   category={opp.category}
                   location={opp.location}
-                  remote={opp.remote}
+                  remote={opp.remote ?? false}
                   organizationName={organization.name}
-                  volunteersNeeded={opp.volunteers_needed}
-                  volunteersCount={opp.volunteers_count}
+                  volunteersNeeded={opp.volunteers_needed ?? undefined}
+                  volunteersCount={opp.volunteers_count ?? 0}
                   deadline={opp.deadline}
                 />
               ))}

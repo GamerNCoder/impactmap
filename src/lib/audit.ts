@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { AuditAction } from '@/lib/security'
+import type { Json } from '@/types/database'
 
 export async function logSecurityEvent(
   userId: string | null,
@@ -14,6 +15,6 @@ export async function logSecurityEvent(
     action,
     resource_type: resourceType ?? null,
     resource_id: resourceId ?? null,
-    metadata: metadata ?? {},
+    metadata: (metadata ?? {}) as Json,
   })
 }

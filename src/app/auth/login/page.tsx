@@ -65,7 +65,6 @@ function LoginForm() {
       const destination = nextPath.startsWith('/') ? nextPath : '/dashboard'
       trackClientEvent(APP_EVENTS.AUTH_LOGIN)
       router.push(destination)
-      router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
     } finally {

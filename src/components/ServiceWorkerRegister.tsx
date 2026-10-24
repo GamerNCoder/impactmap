@@ -126,8 +126,8 @@ export default function ServiceWorkerRegister() {
         }
 
         const { data, error } = await supabase.rpc(
-          'check_in_event' as never,
-          { p_opportunity_id: item.opportunityId } as never
+          'check_in_event',
+          { p_opportunity_id: item.opportunityId }
         )
 
         if (error) {

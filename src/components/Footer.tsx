@@ -19,6 +19,8 @@ export default function Footer() {
               <li><Link href="/passport" className="hover:text-emerald-400 transition-colors">My hours</Link></li>
               <li><Link href="/verify" className="hover:text-emerald-400 transition-colors">Check a code</Link></li>
               <li><Link href="/opportunities" className="hover:text-emerald-400 transition-colors">Events</Link></li>
+              <li><Link href="/impact" className="hover:text-emerald-400 transition-colors">Community impact</Link></li>
+              <li><Link href="/demo" className="hover:text-emerald-400 transition-colors">Live demo</Link></li>
             </ul>
           </nav>
           <nav aria-label="Organizations">
@@ -26,6 +28,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/organizations" className="hover:text-emerald-400 transition-colors">Directory</Link></li>
               <li><Link href="/opportunities/new" className="hover:text-emerald-400 transition-colors">Post an event</Link></li>
+              <li><Link href="/pilot" className="hover:text-emerald-400 transition-colors">Pilot program</Link></li>
             </ul>
           </nav>
           <nav aria-label="Legal and trust">

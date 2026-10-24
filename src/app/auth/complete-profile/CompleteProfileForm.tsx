@@ -102,8 +102,9 @@ export default function CompleteProfileForm() {
 
       if (updateError) throw updateError
 
-      router.push(nextPath.startsWith('/') ? nextPath : '/dashboard')
-      router.refresh()
+      // Full navigation: the client router can reuse a prefetched /dashboard response from
+      // before the birthday existed, which would bounce straight back to this page.
+      window.location.assign(nextPath.startsWith('/') ? nextPath : '/dashboard')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not save your details')
     } finally {

@@ -69,8 +69,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
     .not('verification_code', 'is', null)
     .order('verified_at', { ascending: false })
 
-  const hourUserIds = [...new Set((hours ?? []).map((h) => h.user_id))]
-  const completionUserIds = [...new Set((verifiedCompletions ?? []).map((c) => c.user_id))]
+  const hourUserIds = [...new Set((hours ?? []).map((h) => h.user_id).filter((id): id is string => Boolean(id)))]
+  const completionUserIds = [...new Set((verifiedCompletions ?? []).map((c) => c.user_id).filter((id): id is string => Boolean(id)))]
   const allUserIds = [...new Set([...hourUserIds, ...completionUserIds])]
   const { data: profiles } = allUserIds.length
     ? await supabase.from('profiles').select('id, full_name').in('id', allUserIds)
@@ -93,8 +93,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
   ]
 
   const hourRows = (hours ?? []).map((h) => {
-    const profile = profileMap.get(h.user_id)
-    const opp = oppMap.get(h.opportunity_id)
+    const profile = h.user_id ? profileMap.get(h.user_id) : undefined
+    const opp = h.opportunity_id ? oppMap.get(h.opportunity_id) : undefined
     return [
       'Service hours',
       profile?.full_name ?? '',
@@ -110,8 +110,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
   })
 
   const completionRows = (verifiedCompletions ?? []).map((c) => {
-    const profile = profileMap.get(c.user_id)
-    const opp = oppMap.get(c.opportunity_id)
+    const profile = c.user_id ? profileMap.get(c.user_id) : undefined
+    const opp = c.opportunity_id ? oppMap.get(c.opportunity_id) : undefined
     const date = c.completed_at?.split('T')[0] ?? ''
     return [
       'Task completion',
