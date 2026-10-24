@@ -318,13 +318,14 @@ check('public cannot read platform-admin flag', Boolean(anonAdminErr))
 const { error: anonAvailErr } = await anon.from('profiles').select('volunteer_availability').eq('id', student.user.id).single()
 check('public cannot read student availability', Boolean(anonAvailErr))
 
-const { data: adminTry } = await student.client
+// is_platform_admin is not column-readable by authenticated users, so confirm the guard through
+// the SECURITY DEFINER helper instead of a RETURNING read.
+await student.client
   .from('profiles')
   .update({ is_platform_admin: true })
   .eq('id', student.user.id)
-  .select('is_platform_admin')
-  .single()
-check('student cannot make self admin', adminTry?.is_platform_admin === false)
+const { data: adminNow } = await student.client.rpc('is_platform_admin')
+check('student cannot make self admin', adminNow === false)
 
 // Minor privacy: other signed-in users (e.g. adult organizers) see names, not contact details.
 const { error: peerEmailErr } = await intruder.client.from('profiles').select('email').eq('id', student.user.id).single()

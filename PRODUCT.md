@@ -93,23 +93,42 @@ changes an invariant, change the invariant here first, then the code. At the end
 session, update **Current state** and append to the **Decision log**. A change is not done until
 the brief matches the app.
 
-## Current state (2026-10-23)
+## Current state (2026-10-24)
 
 Implemented and building: self-approval DB trigger; unverified-organizer warning on `/verify`;
 bulk `organizer_verified` warning; k-anonymous `impact_summary` with matching `/impact` copy;
-demo reset with origin check, confirmation, and deploy service key; safe `next` paths; CSV formula
-neutralization; check-in requires an accepted application; wheelchair/accessible-restroom/
-sensory/substance fields, filters, cards and detail badges; map/QR text alternatives; broader a11y
-route gate; OpenStreetMap maps with a dark filter (CARTO keyless tiles retired); self-dealing and
-3-volunteer e2e tests.
+demo reset with origin check, confirmation, and a `reset_demo()` RPC (no runtime service key);
+safe `next` paths; CSV formula neutralization; check-in requires an accepted application;
+wheelchair/accessible-restroom/sensory/substance fields, filters, cards and detail badges; map/QR
+text alternatives; broader a11y route gate; OpenStreetMap maps with a dark filter (CARTO keyless
+tiles retired); self-dealing and 3-volunteer e2e tests; language switcher with Spanish core
+volunteer flow (two dictionaries of 100 profiles; a profile is metadata, not a translation claim);
+expiring codes, audit triggers, verification requests, CSV event import, calendar/JSON export,
+`/offline`, `/robots.txt`, `/sitemap.xml`, `/trust`, and a rate-limited public verify surface.
 
-Still open: apply the new migrations to production; second-account/coordinator self-dealing (label
-is present, gate is not); public `volunteer_hours` column grants; organization billing and profile
-admin-column grants; audit-log integrity; language switcher + Spanish core; full offline; the demo
-video/submission; run `test:db`/`test:a11y` against a migrated database and confirm GitHub CI.
+Least privilege is restored on top of the defense-in-depth revoke: `anon` reads `profiles` only as
+id/full_name/hours_goal; `authenticated` reads only public profile columns (no email, birthday,
+location, bio, availability, terms or admin flag) and organizations reads exclude billing
+columns, while writes stay table-level and RLS-scoped; `impact_summary()` runs `SECURITY DEFINER`
+with a pinned `search_path` so `anon` needs no `volunteer_hours` grant. `npm run audit:defenses`
+fails if anon can read private profile fields or if the impact RPC stops answering.
+
+CI runs on Node 22 because `@supabase/supabase-js` requires native WebSocket; the DB suite is
+83 checks against a freshly reset database. Local 2026-10-24: `test:db` 83/83, `test:a11y` 10/10
+pages, `test:ui` full loop, `test:theme`, `tsc`, `eslint` and `next build` clean.
+
+Still open: audit-log integrity (authenticated inserts with a null `user_id` are still accepted);
+user-only demo video, AI-use disclosure and submission; OAuth provider credentials; a real pilot;
+and the live deploy/verification of the 2026-10-24 security migration. Full offline is a non-goal.
 
 ## Decision log
 
+- **2026-10-24** — CI runs Node 22: supabase-js needs native WebSocket, so the Node 20 DB job
+  failed before the first assertion.
+- **2026-10-24** — Column grants are the backup to RLS, not a formality: `REVOKE SELECT` on a
+  table also clears its column ACLs, so the migration rebuilds each role's exact column set.
+  The public impact aggregate runs `SECURITY DEFINER` with a pinned `search_path` instead of
+  granting `anon` a `volunteer_hours` grant.
 - **2026-10-23** — Trust invariants: no self-approval; check-in is a signal, not proof; public
   impact k-anonymous (3 distinct volunteers, 5 student total); unverified organizers always
   labeled.

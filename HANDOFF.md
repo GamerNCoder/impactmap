@@ -3,15 +3,38 @@ handoff-index: false
 product: impactmap
 repo: /Users/togi/Projects/impactmap
 signatures: impactmap, congressional app challenge, cac, volunteer hours, vercel, supabase, demo, pilot, nj-6, event check-in
-updated: 2026-10-24T16:06-04:00
+updated: 2026-10-24T18:17-04:00
 ---
-# ImpactMap — handoff (2026-10-22)
+# ImpactMap — handoff (2026-10-24)
 
-Current repo facts, 2026-10-24: branch `cac/core-loop` @ `ced5b9a`
-("Add live break report"), **35 dirty paths**; the live deploy is still from the
-working tree, so commit before a public repo. Live: https://impactmap.vercel.app.
+Current repo facts, 2026-10-24: branch `cac/core-loop`, clean tree (see `git log` for the tip);
+all 2026-10-21/22 work and the break-report fixes are committed and pushed to the public repo
+(`github.com/heyitsmeyourbudlol-lgtm/impactmap`). Live: https://impactmap.vercel.app.
 
 Earlier detail is in git history (`git log -p HANDOFF.md`).
+
+## 2026-10-24 — CI unblocked + least-privilege restore
+- **CI root cause:** the `database-and-accessibility` job pinned Node 20; `@supabase/supabase-js`
+  now throws "Node.js 20 detected without native WebSocket support" when the client is created,
+  so the DB suite died before its first check (`verify`: tsc/lint/build was already green). Both
+  CI jobs now run Node 22.
+- **Fresh-reset regression:** `20261024000000_defense_in_depth.sql` granted table-wide SELECT on
+  `profiles` and `organizations` to `authenticated` (any signed-in adult could read every
+  student's email, birthday, location, bio and availability), re-exposed `bio` to `anon`, and its
+  blanket function revoke left `impact_summary()` without EXECUTE, so `/impact` failed for anon.
+  `20261024000600_restore_least_privilege_grants.sql` rebuilds the exact column sets, keeps
+  writes table-level under RLS, and makes `impact_summary()` `SECURITY DEFINER` with a pinned
+  `search_path` (anon still has no `volunteer_hours` grant).
+- **Tests:** the self-admin check now reads `is_platform_admin()` because the column is no longer
+  selectable; `audit:defenses` fails if anon reads bio/location/skills/availability or if the
+  impact RPC stops answering; the unused `hasAcceptedTerms()` (which selected the revoked terms
+  columns) was deleted.
+- **Verified locally on Node 22:** `test:db` **83/83** on a freshly reset database (run
+  `scripts/clean-db.sh reset` first), `test:a11y` 10/10, `test:ui` full loop, `test:theme`,
+  `tsc`, `eslint` and `next build` clean. A reset wipes the demo users — rerun
+  `npm run seed:demo` before the browser tests.
+- **Gotcha:** `REVOKE SELECT ON <table>` also clears that table's column ACLs; table and column
+  grants are separate ACLs, so a least-privilege migration must rebuild the column set.
 
 ## State
 - **Live:** https://impactmap.vercel.app · branch `cac/core-loop` · deployed **2026-10-22 from
@@ -153,10 +176,10 @@ privacy/attributions surface, PWA, CI. Added this session:
    is the working approval demo.
 5. **User-only:** demo video, AI-use disclosure, district confirmation, a real pilot (strongest win
    factor).
-6. **Commit the working tree** — the 2026-10-21/22 work is deployed but uncommitted (last commit
-   `4d31a36`).
-7. **LAUNCH Phase 1** (public repo) is still unchecked. `.cursor/memory/long-term.md` was refreshed
-   on 2026-10-22 (untracked, not shipped).
+6. ~~Commit the working tree~~ **done 2026-10-24** — all work is committed and pushed; the
+   GitHub CI failure (Node 20 vs native WebSocket) is fixed in this session.
+7. **LAUNCH Phase 1** — the repo is public with a LICENSE; **CONTRIBUTING is still missing**.
+   `.cursor/memory/long-term.md` was refreshed on 2026-10-22 (untracked, not shipped).
 8. **Validation blocker:** all coding/UX metrics are addressed; a 10/10 evidence score needs one
    real group to run one event through `/pilot`. Then add the numbers and a permitted quote to
    `/about` and the landing page.
