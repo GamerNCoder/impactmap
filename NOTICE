@@ -6,7 +6,7 @@ licences below. Full licence texts ship with each package under node_modules.
 
 Software libraries
 ------------------
-Next.js 16.2.9                         MIT License
+Next.js 16.4.2                         MIT License
 React and React DOM 19.2.4             MIT License
 @supabase/supabase-js 2.108.2          MIT License
 @supabase/ssr 0.12.0                   MIT License

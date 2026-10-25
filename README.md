@@ -22,7 +22,7 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 - **Type-safe data layer** — the generated Supabase schema types are wired into both the server and browser clients, RPCs included
 - **Account controls** — export your data or delete your account from the profile page
 - **Live demo** — one-click student and organizer demo accounts, no signup
-- **Light and dark themes** — follows the OS by default, persists the choice, and switches the map basemap between OSM light and CARTO dark
+- **Light and dark themes** — follows the OS by default, persists the choice, and darkens the OpenStreetMap tiles with a CSS filter in dark mode
 - **Pilot program** — a request form and printable guide for schools, clubs and libraries
 
 ## Tech stack
@@ -32,7 +32,7 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 | Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
 | Backend | Supabase (PostgreSQL, Auth, RLS) |
 | Types | Generated Supabase `Database` types, wired into both clients |
-| Maps | Leaflet + OpenStreetMap light tiles / CARTO dark tiles, Nominatim, Overpass API |
+| Maps | Leaflet + OpenStreetMap tiles (dark via CSS filter), Nominatim, Overpass API |
 | Weather | Open-Meteo |
 | QR | `qrcode`, `html5-qrcode` |
 | Deployment | Vercel |
@@ -93,7 +93,7 @@ DEMO_ORGANIZER_EMAIL=demo.organizer@impactmap.app
 DEMO_ORGANIZER_PASSWORD=<random>
 ```
 
-`deploy.sh` generates the passwords once, stores them in `.env.deploy.local`, sets the Vercel variables, and seeds the accounts. For local use, run:
+For local use, run:
 
 ```bash
 npm run seed:demo   # needs SUPABASE_SERVICE_ROLE_KEY in .env.local
@@ -115,15 +115,14 @@ Provider setup: [`supabase/oauth-setup.md`](./supabase/oauth-setup.md).
 
 ## Deploy to Vercel
 
-The supported path is the one-command script, which applies pending Supabase migrations, deploys the app and seeds the demo accounts:
+Apply the Supabase migrations to your hosted project, then import the repository in Vercel (or run `vercel --prod`):
 
 ```bash
-./deploy.sh
+supabase link --project-ref <your-project-ref>
+supabase db push
 ```
 
-It reads `SUPABASE_PROJECT_REF` and `SUPABASE_DB_PASSWORD` from `.env.deploy.local` (created on first run), stores the public Supabase URL and anon key in Vercel, and seeds the demo. The anon key is public by design; RLS enforces access.
-
-For a manual deploy, set these Vercel environment variables:
+Set these Vercel environment variables:
 
 | Variable | Value |
 |----------|-------|
@@ -138,7 +137,7 @@ The live site includes the five seeded Edison events plus three events from the 
 
 ## Pilot program
 
-Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap.vercel.app/pilot). Requests are insert-only in `pilot_requests`; the team reads them through the Supabase dashboard. The printable guide is at [`/pilot/guide`](https://impactmap.vercel.app/pilot/guide), and the outreach playbook is in [`PILOT.md`](./PILOT.md).
+Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap.vercel.app/pilot). Requests are insert-only in `pilot_requests`; the team reads them through the Supabase dashboard. The printable guide is at [`/pilot/guide`](https://impactmap.vercel.app/pilot/guide).
 
 ## Health check
 
@@ -146,10 +145,10 @@ Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap
 
 ## Tests
 
-- `npm run test:db` — 77 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
+- `npm run test:db` — 86 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
 - `npm run test:ui` — Playwright walkthrough of the health endpoint, the full student → organizer → counselor loop, bulk verification and the terms/birthday gate (`tests/ui-core-loop.mjs`); start `npm run dev` first, or set `BASE_URL` to run it against a deployed site
 - `npm run test:a11y` — axe-core WCAG 2.1 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
-- `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the OSM ↔ CARTO dark map tiles); requires a running app
+- `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the dark map-tile filter); requires a running app
 - CI runs `tsc`, `eslint`, `next build`, the database suite, the accessibility gate, the UI walkthrough and the theme test (`.github/workflows/ci.yml`)
 
 ## Project structure
@@ -178,12 +177,14 @@ supabase/
 ├── seed.sql             # local-only sample data
 ├── seed-demo.mjs        # idempotent shared demo accounts and records
 └── oauth-setup.md
+tests/                   # database, UI, accessibility and theme suites
+scripts/                 # deterministic audits (defenses, languages)
 ```
 
 ## License
 
 MIT
 
-## Product invariants
+## Contributing
 
-Read [PRODUCT.md](./PRODUCT.md) before changing the product. Accessibility, language reach, and the trust/privacy invariants there are release gates; the 48-hour priority order is included.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, test commands and the trust/privacy invariants a change must preserve.

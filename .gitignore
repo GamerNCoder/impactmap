@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -42,7 +43,14 @@ next-env.d.ts
 
 # automation factory (local only)
 /notes/
-/scripts/
+/scripts/*
+!/scripts/audit-defenses.mjs
+!/scripts/audit-languages.mjs
+/tests/*
+!/tests/a11y.mjs
+!/tests/e2e-core-loop.mjs
+!/tests/theme.mjs
+!/tests/ui-core-loop.mjs
 /profiles/
 /repos/
 /.cursor/
@@ -51,8 +59,22 @@ IMPORT.md
 LAUNCH.md
 automation.config.json
 install.sh
-/tests/
 __pycache__/
+
+# internal notes, submission packet and project-specific deploy tooling (not published)
+/HANDOFF.md
+/AGENTS.md
+/CLAUDE.md
+/PRODUCT.md
+/PILOT.md
+/SECURITY-PLAYBOOK.md
+/BREAK-REPORT.md
+/DEFENSE-AUDIT.md
+/LANGUAGE-AUDIT.md
+/SUBMISSION.md
+/PRESENTATION.md
+/deploy.sh
+/.github/workflows/deploy.yml
 
 # test output
 /test-results
