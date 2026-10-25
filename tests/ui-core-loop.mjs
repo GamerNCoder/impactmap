@@ -64,6 +64,23 @@ await step(coord, 'health endpoint', async () => {
     throw new Error(`HTTP ${res.status} ${JSON.stringify(json)}`)
   }
 })
+await step(coord, 'demo reset origin checks', async () => {
+  const url = `${BASE}/api/demo/reset`
+  const noOrigin = await fetch(url, { method: 'POST', redirect: 'manual' })
+  if (noOrigin.status !== 403) throw new Error(`no Origin: HTTP ${noOrigin.status}, expected 403`)
+  const crossSite = await fetch(url, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { Origin: 'https://evil.example' },
+  })
+  if (crossSite.status !== 403) throw new Error(`cross-site Origin: HTTP ${crossSite.status}, expected 403`)
+  const sameOrigin = await fetch(url, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { Origin: new URL(BASE).origin },
+  })
+  if (sameOrigin.status !== 307) throw new Error(`same-origin: HTTP ${sameOrigin.status}, expected 307`)
+})
 let eventUrl
 await step(coord, 'coordinator: create org + event', async () => {
   await coord.goto(`${BASE}/opportunities/new`)

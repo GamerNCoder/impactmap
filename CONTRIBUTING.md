@@ -34,6 +34,7 @@ npm run test:db          # needs local Supabase and .env.local
 npm run test:a11y        # needs the app running
 npm run test:ui          # needs the app running
 npm run test:theme       # needs the app running
+npm run audit:defenses   # needs SUPABASE_URL/SUPABASE_ANON_KEY and, for headers, BASE_URL
 ```
 
 Say what you changed and which commands you ran. A change is not done because it compiles; it is

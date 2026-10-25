@@ -149,7 +149,8 @@ Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap
 - `npm run test:ui` — Playwright walkthrough of the health endpoint, the full student → organizer → counselor loop, bulk verification and the terms/birthday gate (`tests/ui-core-loop.mjs`); start `npm run dev` first, or set `BASE_URL` to run it against a deployed site
 - `npm run test:a11y` — axe-core WCAG 2.1 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
 - `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the dark map-tile filter); requires a running app
-- CI runs `tsc`, `eslint`, `next build`, the database suite, the accessibility gate, the UI walkthrough and the theme test (`.github/workflows/ci.yml`)
+- `npm run audit:defenses` — detection layer for the grant, profile-privacy, impact-RPC, demo-reset-origin and header controls; reads `SUPABASE_URL` and `SUPABASE_ANON_KEY`, and adds live header checks when `BASE_URL` is set
+- CI runs `tsc`, `eslint`, `next build`, the database suite, the defense audit, the accessibility gate, the UI walkthrough and the theme test (`.github/workflows/ci.yml`)
 
 ## Project structure
 

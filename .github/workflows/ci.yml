@@ -77,6 +77,13 @@ jobs:
           cat /tmp/next-dev.log
           exit 1
 
+      - name: Defense audit (grants, privacy, impact RPC, reset origin, headers)
+        run: |
+          set -a
+          source /tmp/supabase.env
+          set +a
+          SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" BASE_URL=http://localhost:3000 npm run audit:defenses
+
       - name: Accessibility test (WCAG 2.1 A/AA, serious/critical)
         run: npm run test:a11y
 
