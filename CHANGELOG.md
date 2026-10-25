@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.4.0 — 2026-10-24
+
+Security hardening, CI coverage and the open-source release.
+
+### Security
+- Restored least privilege after the defense-in-depth revoke: `anon` reads `profiles` only as
+  id/full_name/hours_goal; `authenticated` reads only public profile columns and organizations
+  reads exclude billing columns, while writes stay table-level under RLS. `impact_summary()` runs
+  `SECURITY DEFINER` with a pinned `search_path` and still returns only k-anonymous aggregates.
+- `POST /api/demo/reset` now fails closed: a missing or cross-site `Origin` returns 403.
+- Audit rows must be attributed: the INSERT policy requires `user_id = auth.uid()`, so a signed-in
+  account cannot forge an anonymous entry.
+
+### Fixed
+- CI ran Node 20, where the Supabase client refuses to start without native WebSocket. Both jobs
+  now run Node 22.4+; `.nvmrc` and `engines` make the requirement explicit.
+- A fresh database reset exposed table-wide profile and organization SELECT grants left by the
+  defense migration. A new migration rebuilds the exact column sets, and the database suite fails
+  if they reopen.
+
+### Added
+- `npm run audit:defenses` runs in CI, and the UI walkthrough asserts the demo-reset origin cases.
+- `SECURITY.md`, `CONTRIBUTING.md` and a tracked `.env.example`.
+- The public repository now contains only the app, migrations and seed data, the test suites, the
+  two deterministic audits, CI and the public docs.
+
+### Changed
+- Dark mode darkens the OpenStreetMap tiles with a CSS filter; the CARTO keyless basemap is
+  retired.
+
+### Verified
+- `test:db` 86/86, `test:a11y` 10/10, `test:ui`, `test:theme`, `audit:defenses` 11/11, `tsc`,
+  `eslint`, `next build`, and CI green.
+
 ## 0.3.1 — 2026-10-22
 
 Light/dark theme correctness and dark map tiles.

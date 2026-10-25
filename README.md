@@ -42,6 +42,9 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 
 ### 1. Clone and install
 
+Node.js **22.4 or newer** is required: the Supabase client needs the native WebSocket, and CI runs
+Node 22. `.nvmrc` is included, so `nvm use` selects it.
+
 ```bash
 git clone https://github.com/heyitsmeyourbudlol-lgtm/impactmap.git
 cd impactmap
