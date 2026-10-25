@@ -43,6 +43,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Language profile audit
+        run: npm run audit:languages
+
       - uses: supabase/setup-cli@v1
         with:
           version: 2.120.0
@@ -58,10 +61,20 @@ jobs:
           set -a
           source /tmp/supabase.env
           set +a
-          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env.local
+          {
+            printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL"
+            printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$ANON_KEY"
+            printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY"
+            printf 'NEXT_PUBLIC_DEMO_ENABLED=true\n'
+            printf 'DEMO_STUDENT_PASSWORD=ci-student-password\n'
+            printf 'DEMO_ORGANIZER_PASSWORD=ci-organizer-password\n'
+          } > .env.local
 
       - name: Database and security tests
         run: npm run test:db
+
+      - name: Seed the demo accounts
+        run: npm run seed:demo
 
       - name: Install the Chromium used by the accessibility test
         run: npx playwright install --with-deps chromium
@@ -84,7 +97,7 @@ jobs:
           set +a
           SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" BASE_URL=http://localhost:3000 npm run audit:defenses
 
-      - name: Accessibility test (WCAG 2.1 A/AA, serious/critical)
+      - name: Accessibility test (WCAG 2.2 A/AA, serious/critical)
         run: npm run test:a11y
 
       - name: UI walkthrough (health + full loop + bulk + auth gate)

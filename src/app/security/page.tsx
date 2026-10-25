@@ -89,9 +89,9 @@ export default function SecurityPage() {
           <li>
             <strong>Column-level grants hide sensitive profile fields.</strong> Reading the profiles table
             is revoked for anonymous visitors and for other signed-in users; only non-sensitive columns
-            (such as name, avatar, and bio) are granted. A volunteer&rsquo;s date of birth, email, and
-            guardian name, email, and consent are not readable by other users or the public &mdash; the
-            owner reads their own record through a dedicated, owner-scoped function.
+            (such as name and avatar) are granted. A volunteer&rsquo;s date of birth, email, bio, town,
+            availability, and guardian name, email, and consent are not readable by other users or the
+            public &mdash; the owner reads their own record through a dedicated, owner-scoped function.
           </li>
           <li>
             <strong>Students cannot approve their own hours.</strong> When a volunteer logs hours, the

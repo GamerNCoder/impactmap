@@ -1,4 +1,4 @@
-// Accessibility gate: WCAG 2.1 A/AA rules via axe-core on the main public pages and both
+// Accessibility gate: WCAG 2.2 A/AA rules via axe-core on the main public pages and both
 // demo roles. Needs `npm run dev` (or BASE_URL pointing at a deployed site).
 import { chromium } from 'playwright'
 import { createRequire } from 'node:module'
@@ -17,7 +17,7 @@ async function runAxe(page, label) {
   await page.addScriptTag({ path: axePath })
   const results = await page.evaluate(async () => {
     return await window.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
     })
   })
 

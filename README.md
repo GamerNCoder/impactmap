@@ -136,7 +136,7 @@ Then set the Supabase **Site URL** and **Redirect URLs** (Authentication → URL
 
 ## Demo data on the live site
 
-The live site includes the five seeded Edison events plus three events from the shared demo organizer. The demo organizations are fictional and unverified; join counts are honest (the demo student is the only joiner). Use [`/demo`](https://impactmap.vercel.app/demo) to sign in as the demo student or organizer without an account. The demo verification code is `IMP-DEMO2026ABCD`, and the verify page labels it as a demo record.
+The live site includes five sample Edison events (inserted separately; `seed.sql` itself is not pushed) plus three events from the shared demo organizer. The demo organizations are fictional and unverified; join counts are honest (the demo student is the only joiner). Use [`/demo`](https://impactmap.vercel.app/demo) to sign in as the demo student or organizer without an account. The demo verification code is `IMP-DEMO2026ABCD`, and the verify page labels it as a demo record.
 
 ## Pilot program
 
@@ -150,7 +150,7 @@ Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap
 
 - `npm run test:db` — 86 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
 - `npm run test:ui` — Playwright walkthrough of the health endpoint, the full student → organizer → counselor loop, bulk verification and the terms/birthday gate (`tests/ui-core-loop.mjs`); start `npm run dev` first, or set `BASE_URL` to run it against a deployed site
-- `npm run test:a11y` — axe-core WCAG 2.1 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
+- `npm run test:a11y` — axe-core WCAG 2.2 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
 - `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the dark map-tile filter); requires a running app
 - `npm run audit:defenses` — detection layer for the grant, profile-privacy, impact-RPC, demo-reset-origin and header controls; reads `SUPABASE_URL` and `SUPABASE_ANON_KEY`, and adds live header checks when `BASE_URL` is set
 - CI runs `tsc`, `eslint`, `next build`, the database suite, the defense audit, the accessibility gate, the UI walkthrough and the theme test (`.github/workflows/ci.yml`)

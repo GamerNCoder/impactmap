@@ -23,6 +23,12 @@ available under the Open Database License (ODbL) 1.0.
 Map tiles are served by the OpenStreetMap Foundation tile servers.
 Geocoding uses the OpenStreetMap Foundation Nominatim service.
 
+Weather
+-------
+Weather outlooks use Open-Meteo (https://open-meteo.com/). Open-Meteo data is
+published under the Creative Commons Attribution 4.0 International licence
+(CC BY 4.0) and is derived from national weather services.
+
 Fonts
 -----
 Geist and Geist Mono, Copyright 2024 The Geist Project Authors

@@ -1,12 +1,13 @@
 # OAuth provider setup (Google, Apple, Microsoft)
 
-ImpactMap uses Supabase Auth. **Social sign-in buttons only appear for providers listed in `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS`.** GitHub is not supported. If that env var is empty, the app defaults to Google, Apple, and Microsoft.
+ImpactMap uses Supabase Auth. **Social sign-in buttons only appear for providers listed in `NEXT_PUBLIC_ENABLED_OAUTH_PROVIDERS`.** GitHub is not supported. If that env var is empty, no social buttons are shown; email and password always work.
 
-**Project:** `pgvasfubdwkgugoqqfjf`  
+Replace `<your-project-ref>` and `<your-site-url>` below with your own Supabase project ref and deployed origin.
+
 **Supabase callback URL (use in every provider):**
 
 ```
-https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback
+https://<your-project-ref>.supabase.co/auth/v1/callback
 ```
 
 ## 0. Enable a provider in the app (required after Supabase setup)
@@ -28,30 +29,30 @@ Rebuild/redeploy after changing this variable.
 
 ## 1. Supabase URL configuration
 
-In [Authentication → URL Configuration](https://supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf/auth/url-configuration):
+In [Authentication → URL Configuration](https://supabase.com/dashboard/project/<your-project-ref>/auth/url-configuration):
 
 | Setting | Values |
 |---------|--------|
-| Site URL | `https://impactmap.vercel.app` |
-| Redirect URLs | `https://impactmap.vercel.app/auth/callback`, `http://localhost:3000/auth/callback` |
+| Site URL | `<your-site-url>` |
+| Redirect URLs | `<your-site-url>/auth/callback`, `http://localhost:3000/auth/callback` |
 
 ## 2. Enable providers
 
-Open [Authentication → Providers](https://supabase.com/dashboard/project/pgvasfubdwkgugoqqfjf/auth/providers) and configure each provider below.
+Open [Authentication → Providers](https://supabase.com/dashboard/project/<your-project-ref>/auth/providers) and configure each provider below.
 
 ### Google
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
 2. Create **OAuth client ID** (Web application)
-3. Authorized redirect URI: `https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback`
+3. Authorized redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback`
 4. Copy Client ID + Client Secret into Supabase **Google** provider → Enable
 
 ### Apple
 
 1. [Apple Developer](https://developer.apple.com/account/resources/identifiers/list) → Services IDs
 2. Enable Sign in with Apple; configure domains and return URL:
-   - Domain: `pgvasfubdwkgugoqqfjf.supabase.co`
-   - Return URL: `https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback`
+   - Domain: `<your-project-ref>.supabase.co`
+   - Return URL: `https://<your-project-ref>.supabase.co/auth/v1/callback`
 3. Create a Sign in with Apple key; note Team ID, Key ID, Services ID, and private key
 4. Enter credentials in Supabase **Apple** provider → Enable
 
@@ -60,7 +61,7 @@ Open [Authentication → Providers](https://supabase.com/dashboard/project/pgvas
 Supabase uses the **Azure** provider for Microsoft accounts.
 
 1. [Azure Portal](https://portal.azure.com/) → App registrations → New registration
-2. Redirect URI (Web): `https://pgvasfubdwkgugoqqfjf.supabase.co/auth/v1/callback`
+2. Redirect URI (Web): `https://<your-project-ref>.supabase.co/auth/v1/callback`
 3. Create a client secret under Certificates & secrets
 4. Copy Application (client) ID + secret into Supabase **Azure** provider → Enable
 

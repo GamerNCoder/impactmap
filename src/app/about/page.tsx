@@ -319,7 +319,7 @@ export default function AboutPage() {
           </p>
           <p className="mt-6 text-gray-600 dark:text-gray-400 leading-relaxed">
             The full student → organizer → counselor loop is covered by an automated browser
-            walkthrough at phone size, alongside 26 database and security checks — including tests
+            walkthrough at phone size, alongside 86 database and security checks — including tests
             that a student cannot approve their own hours and that another user cannot read a
             student’s email or birthday.
           </p>

@@ -18,8 +18,9 @@ This is a student-maintained project, so reports are handled on a best-effort ba
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` is public. Access is enforced by row-level security and
   column-level grants; a report that only shows the key is visible is not a vulnerability.
 - Demo accounts and records are shared, labeled as demo data, and intentionally resettable.
-- A verification code is a bearer credential: whoever holds it can look up the record. The public
-  record deliberately shows a partial name and no free-text service notes.
+- A verification code is a bearer credential: whoever holds it can look up the record. The
+  verification page deliberately shows a partial name and no free-text service notes; a
+  volunteer's own shared page shows the name they chose to share.
 
 ## What is tested
 

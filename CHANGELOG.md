@@ -29,10 +29,11 @@ Security hardening, CI coverage and the open-source release.
 ### Changed
 - Dark mode darkens the OpenStreetMap tiles with a CSS filter; the CARTO keyless basemap is
   retired.
+- The axe-core gate now includes the WCAG 2.2 AA rules, matching the accessibility statement.
 
 ### Verified
-- `test:db` 86/86, `test:a11y` 10/10, `test:ui`, `test:theme`, `audit:defenses` 11/11, `tsc`,
-  `eslint`, `next build`, and CI green.
+- `test:db` 86/86, `test:a11y` 19/19 (17 public pages plus both demo roles), `test:ui`,
+  `test:theme`, `audit:defenses` 11/11, `tsc`, `eslint`, `next build`, and CI green.
 
 ## 0.3.1 — 2026-10-22
 
@@ -67,7 +68,7 @@ Community impact, judge demo mode, check-in trust and a pilot program.
 - **Community impact map** (`/impact`): aggregate verified hours by cause, month, organization and event, with a public map and "causes still waiting for hours"; backed by the `impact_summary()` RPC and no student identities.
 - **Live demo** (`/demo`): one-click student and organizer demo accounts, a populated dashboard/passport, a verified `IMP-DEMO2026ABCD` code, a pending approval, and demo-record labeling on `/verify`.
 - **Check-in trust layer**: optional device location becomes a distance from the event (coordinates are never stored), plus an event-window flag; the organizer sees "42 m from the event" or "outside event window".
-- **Pilot program** (`/pilot`, `/pilot/guide`): an insert-only request form, a printable one-page guide, and `PILOT.md` outreach playbook.
+- **Pilot program** (`/pilot`, `/pilot/guide`): an insert-only request form and a printable one-page guide.
 - `npm run test:a11y` (axe-core WCAG 2.1 A/AA) and CI jobs for the database suite and accessibility gate.
 - `npm run seed:demo` and three new migrations.
 

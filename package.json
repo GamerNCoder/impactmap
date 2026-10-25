@@ -1,6 +1,12 @@
 {
   "name": "impactmap",
-  "version": "0.1.0",
+  "version": "0.4.0",
+  "description": "Verified student volunteer hours: find an event, check in, log hours, one-tap organizer approval, and a code a counselor can check without an account.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heyitsmeyourbudlol-lgtm/impactmap.git"
+  },
   "private": true,
   "engines": {
     "node": ">=22.4.0"

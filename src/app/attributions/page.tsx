@@ -19,7 +19,7 @@ export default function AttributionsPage() {
 
       <article className="max-w-3xl mx-auto px-4 py-10 prose prose-gray dark:prose-invert">
         <h1>Attributions</h1>
-        <p className="text-sm text-gray-500 not-prose">Last updated: October 18, 2026</p>
+        <p className="text-sm text-gray-500 not-prose">Last updated: October 24, 2026</p>
 
         <p>
           ImpactMap stands on a lot of other people&rsquo;s work. This page credits the third-party software,
@@ -30,12 +30,12 @@ export default function AttributionsPage() {
 
         <h2>1. Software libraries</h2>
         <ul>
-          <li><strong>Next.js</strong> 16.2.9 &mdash; MIT License</li>
+          <li><strong>Next.js</strong> 16.4.2 &mdash; MIT License</li>
           <li><strong>React</strong> and <strong>React DOM</strong> 19.2.4 &mdash; MIT License</li>
           <li><strong>@supabase/supabase-js</strong> 2.108.2 &mdash; MIT License</li>
           <li><strong>@supabase/ssr</strong> 0.12.0 &mdash; MIT License</li>
-          <li><strong>Tailwind CSS</strong> 4.3.1 &mdash; MIT License</li>
-          <li><strong>@tailwindcss/postcss</strong> 4.3.1 &mdash; MIT License</li>
+          <li><strong>Tailwind CSS</strong> 4.3.3 &mdash; MIT License</li>
+          <li><strong>@tailwindcss/postcss</strong> 4.3.3 &mdash; MIT License</li>
           <li><strong>Leaflet</strong> 1.9.4 &mdash; BSD 2-Clause &quot;Simplified&quot; License</li>
           <li><strong>qrcode</strong> 1.5.4 &mdash; MIT License</li>
           <li><strong>html5-qrcode</strong> 2.3.8 &mdash; Apache License 2.0</li>
