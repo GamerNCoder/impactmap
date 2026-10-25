@@ -162,7 +162,8 @@ export default async function ImpactPage() {
               <div className="mt-6 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 p-4">
                 <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Causes still waiting for hours</p>
                 <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
-                  These have open events but no verified hours yet: {gaps.join(', ')}.
+                  These have open events but no publishable hours yet — either none have been
+                  approved, or fewer than three distinct volunteers have logged them: {gaps.join(', ')}.
                 </p>
               </div>
             )}
