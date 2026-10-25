@@ -4,6 +4,9 @@
 
 A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, check in by QR, log their hours, and get them approved by the organizer with one tap.
 
+**Congressional App Challenge judges: start with [`JUDGES.md`](./JUDGES.md)** — a one-page tour,
+the live demo links, and an honest account of what is real and what is sample data.
+
 ## Features
 
 - **Find events on a map** — Leaflet + OpenStreetMap pins, a "Near me" distance sort, a "Within 3 mi" filter, plus category and text filters
@@ -27,7 +30,7 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 - **Light and dark themes** — follows the OS by default, persists the choice, and darkens the OpenStreetMap tiles with a CSS filter in dark mode
 - **Pilot program** — a request form and printable guide for schools, clubs and libraries
 - **Inclusion controls** — wheelchair, accessible-restroom and sensory-friendly event attributes and filters, a language switcher with a Spanish core volunteer flow, map text alternatives, and a keyboard/screen-reader path
-- **Offline honesty** — a cached shell and a queued check-in banner that says when a check-in was not recorded; the app never claims to work fully offline
+- **Offline honesty** — a cached shell, a check-in stored on the device and replayed when online, and a banner that says so; the app never claims to work fully offline
 
 ## Tech stack
 
