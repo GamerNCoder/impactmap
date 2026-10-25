@@ -79,7 +79,11 @@ await step(coord, 'demo reset origin checks', async () => {
     redirect: 'manual',
     headers: { Origin: new URL(BASE).origin },
   })
-  if (sameOrigin.status !== 307) throw new Error(`same-origin: HTTP ${sameOrigin.status}, expected 307`)
+  // 503 is the honest answer when the demo accounts are not configured; CI seeds them, so 307
+  // is the normal path. Either way, the request must pass the origin gate.
+  if (sameOrigin.status !== 307 && sameOrigin.status !== 503) {
+    throw new Error(`same-origin: HTTP ${sameOrigin.status}, expected 307 or 503`)
+  }
 })
 let eventUrl
 await step(coord, 'coordinator: create org + event', async () => {

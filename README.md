@@ -1,5 +1,7 @@
 # ImpactMap
 
+[![CI](https://github.com/heyitsmeyourbudlol-lgtm/impactmap/actions/workflows/ci.yml/badge.svg)](https://github.com/heyitsmeyourbudlol-lgtm/impactmap/actions/workflows/ci.yml)
+
 A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, check in by QR, log their hours, and get them approved by the organizer with one tap.
 
 ## Features
@@ -24,6 +26,8 @@ A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **T
 - **Live demo** — one-click student and organizer demo accounts, no signup
 - **Light and dark themes** — follows the OS by default, persists the choice, and darkens the OpenStreetMap tiles with a CSS filter in dark mode
 - **Pilot program** — a request form and printable guide for schools, clubs and libraries
+- **Inclusion controls** — wheelchair, accessible-restroom and sensory-friendly event attributes and filters, a language switcher with a Spanish core volunteer flow, map text alternatives, and a keyboard/screen-reader path
+- **Offline honesty** — a cached shell and a queued check-in banner that says when a check-in was not recorded; the app never claims to work fully offline
 
 ## Tech stack
 
@@ -160,8 +164,8 @@ Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap
 ```
 src/
 ├── app/                 # App Router pages and API routes
-│   ├── about, accessibility, attributions, privacy, safety, security, terms
-│   ├── api/             # geocode, nearby, me/export, org exports, pilot, track, health, verify/bulk
+│   ├── about, accessibility, attributions, offline, privacy, safety, security, terms, trust
+│   ├── api/             # geocode, nearby, me/export, org exports, pilot, track, health, verify/bulk, demo/reset
 │   ├── auth/            # login, signup, OAuth callback, terms, complete-profile
 │   ├── checkin/[id]/    # QR check-in landing page
 │   ├── dashboard/       # joins, hours, approvals
