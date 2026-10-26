@@ -160,8 +160,8 @@ export default function TermsPage() {
         <p>
           Questions about these Terms: contact your organization coordinator, or reach the ImpactMap team
           through the project&rsquo;s public repository at{' '}
-          <a href="https://github.com/heyitsmeyourbudlol-lgtm/impactmap/issues">
-            github.com/heyitsmeyourbudlol-lgtm/impactmap
+          <a href="https://github.com/GamerNCoder/impactmap/issues">
+            github.com/GamerNCoder/impactmap
           </a>
           . See also our <Link href="/privacy">Privacy Policy</Link>,{' '}
           <Link href="/safety">student safety rules</Link>, and{' '}

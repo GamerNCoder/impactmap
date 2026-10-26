@@ -7,7 +7,7 @@ Small, focused changes are easiest to review.
 ## Setup
 
 ```bash
-git clone https://github.com/heyitsmeyourbudlol-lgtm/impactmap.git
+git clone https://github.com/GamerNCoder/impactmap.git
 cd impactmap
 npm install
 ```

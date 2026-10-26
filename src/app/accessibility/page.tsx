@@ -96,8 +96,8 @@ export default function AccessibilityPage() {
         <p>
           If you hit an accessibility problem, please tell us. The fastest route is to open an issue on the
           project repository at{' '}
-          <a href="https://github.com/heyitsmeyourbudlol-lgtm/impactmap/issues">
-            github.com/heyitsmeyourbudlol-lgtm/impactmap/issues
+          <a href="https://github.com/GamerNCoder/impactmap/issues">
+            github.com/GamerNCoder/impactmap/issues
           </a>
           . Describe the page, what you were trying to do, the assistive technology or browser you use, and
           what happened. Please do not include personal or account details in a public issue.

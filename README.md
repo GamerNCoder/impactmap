@@ -1,6 +1,6 @@
 # ImpactMap
 
-[![CI](https://github.com/heyitsmeyourbudlol-lgtm/impactmap/actions/workflows/ci.yml/badge.svg)](https://github.com/heyitsmeyourbudlol-lgtm/impactmap/actions/workflows/ci.yml)
+[![CI](https://github.com/GamerNCoder/impactmap/actions/workflows/ci.yml/badge.svg)](https://github.com/GamerNCoder/impactmap/actions/workflows/ci.yml)
 
 A volunteer service-hour portal built with **Next.js 16**, **Supabase**, and **Tailwind CSS**. Students find local events on a map, join in one tap, check in by QR, log their hours, and get them approved by the organizer with one tap.
 
@@ -53,7 +53,7 @@ Node.js **22.4 or newer** is required: the Supabase client needs the native WebS
 Node 22. `.nvmrc` is included, so `nvm use` selects it.
 
 ```bash
-git clone https://github.com/heyitsmeyourbudlol-lgtm/impactmap.git
+git clone https://github.com/GamerNCoder/impactmap.git
 cd impactmap
 npm install
 ```

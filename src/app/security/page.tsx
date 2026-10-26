@@ -30,15 +30,15 @@ export default function SecurityPage() {
         <p>
           Report privately through GitHub&rsquo;s Private Vulnerability Reporting on the project repository:
           open{' '}
-          <a href="https://github.com/heyitsmeyourbudlol-lgtm/impactmap/security/advisories/new">
-            github.com/heyitsmeyourbudlol-lgtm/impactmap &rarr; Security &rarr; Report a vulnerability
+          <a href="https://github.com/GamerNCoder/impactmap/security/advisories/new">
+            github.com/GamerNCoder/impactmap &rarr; Security &rarr; Report a vulnerability
           </a>
           . That channel is private to the maintainers.
         </p>
         <p>
           If you cannot use it, open a minimal public issue at{' '}
-          <a href="https://github.com/heyitsmeyourbudlol-lgtm/impactmap/issues">
-            github.com/heyitsmeyourbudlol-lgtm/impactmap/issues
+          <a href="https://github.com/GamerNCoder/impactmap/issues">
+            github.com/GamerNCoder/impactmap/issues
           </a>{' '}
           asking for a private channel, and do not include the details of the flaw, any data, or a
           proof-of-concept in the public thread.

@@ -260,8 +260,8 @@ export default function PrivacyPage() {
           Questions, corrections, and data requests: use the &quot;Your data&quot; section of your{' '}
           <Link href="/profile">profile</Link> for access, export, and deletion, or reach the ImpactMap team
           through the project&rsquo;s public repository at{' '}
-          <a href="https://github.com/heyitsmeyourbudlol-lgtm/impactmap/issues">
-            github.com/heyitsmeyourbudlol-lgtm/impactmap
+          <a href="https://github.com/GamerNCoder/impactmap/issues">
+            github.com/GamerNCoder/impactmap
           </a>
           . See also our <Link href="/safety">student safety rules</Link>,{' '}
           <Link href="/terms">Terms &amp; Conditions</Link>, <Link href="/security">security page</Link>, and{' '}

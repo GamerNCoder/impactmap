@@ -6,7 +6,7 @@ seconds, without an account and without exposing student contact details.
 
 - **Live app:** https://impactmap.vercel.app
 - **Demo, no signup:** https://impactmap.vercel.app/demo
-- **Source:** https://github.com/heyitsmeyourbudlol-lgtm/impactmap
+- **Source:** https://github.com/GamerNCoder/impactmap
 - **What a code does and does not prove:** https://impactmap.vercel.app/trust
 
 2026 Congressional App Challenge entry, New Jersey's 6th District.
