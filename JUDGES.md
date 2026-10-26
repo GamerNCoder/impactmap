@@ -29,7 +29,7 @@ without a car — and for the organizers and counselors who sign off.
 
 ## Try the whole loop in about two minutes
 
-1. Open **`/demo` → Student view**. The shared student has **9 verified hours**, one pending
+1. Open **`/demo` → Student view**. The shared demo student has **9 verified hours**, one pending
    2-hour log, and a **40-hour goal**. Open **Passport** to see the verified entries and the
    printable counselor report.
 2. Back on `/demo`, open **Organizer view**. The pending log is waiting under **Hours to approve**.
