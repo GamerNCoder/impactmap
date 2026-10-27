@@ -55,6 +55,7 @@ next-env.d.ts
 /repos/
 /.cursor/
 /.claude/
+/.commandcode/
 IMPORT.md
 LAUNCH.md
 automation.config.json
