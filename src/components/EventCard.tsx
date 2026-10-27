@@ -8,6 +8,7 @@ type EventCardProps = {
   id: string
   title: string
   category: string
+  categoryLabel?: string
   location: string | null
   remote: boolean
   organizationName?: string | null
@@ -27,6 +28,7 @@ export default function EventCard({
   id,
   title,
   category,
+  categoryLabel,
   location,
   remote,
   organizationName,
@@ -56,10 +58,10 @@ export default function EventCard({
         <div className="flex items-start justify-between gap-3 mb-3">
           <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cat.bg} ${cat.text}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${cat.dot}`} />
-            {category}
+            {categoryLabel ?? category}
           </span>
           {distanceMi != null && (
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{distanceMi < 0.1 ? 'Here' : `${distanceMi.toFixed(1)} mi`}</span>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{distanceMi < 0.1 ? dict.common.here : dict.common.miles.replace('{miles}', distanceMi.toFixed(1))}</span>
           )}
         </div>
 
@@ -68,10 +70,10 @@ export default function EventCard({
         </h2>
         {(wheelchairAccessible || accessibleRestroom || sensoryFriendly || substanceFree) && (
           <div className="mb-3 flex flex-wrap gap-1.5">
-            {wheelchairAccessible && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">Wheelchair accessible</span>}
-            {accessibleRestroom && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">Accessible restroom</span>}
-            {sensoryFriendly && <span className="rounded-full bg-violet-50 text-violet-800 px-2 py-0.5 text-xs font-medium">Sensory-friendly</span>}
-            {substanceFree && <span className="rounded-full bg-emerald-50 text-emerald-800 px-2 py-0.5 text-xs font-medium">Alcohol- and smoke-free</span>}
+            {wheelchairAccessible && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">{dict.events.wheelchair}</span>}
+            {accessibleRestroom && <span className="rounded-full bg-sky-50 text-sky-800 px-2 py-0.5 text-xs font-medium">{dict.events.restroom}</span>}
+            {sensoryFriendly && <span className="rounded-full bg-violet-50 text-violet-800 px-2 py-0.5 text-xs font-medium">{dict.events.sensory}</span>}
+            {substanceFree && <span className="rounded-full bg-emerald-50 text-emerald-800 px-2 py-0.5 text-xs font-medium">{dict.events.substance}</span>}
           </div>
         )}
 
@@ -80,7 +82,7 @@ export default function EventCard({
             {organizationName}
             {verified && (
               <span className="ml-1.5 inline-flex items-center text-xs font-semibold text-emerald-700 dark:text-emerald-400" title="ImpactMap checked this organizer">
-                ✓ Verified organizer
+                ✓ {dict.event.verified}
               </span>
             )}
           </p>
@@ -92,12 +94,12 @@ export default function EventCard({
               <svg className="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {formatDate(startDate)}
+              {formatDate(startDate, dict.locale)}
             </span>
           </div>
         )}
 
-        <EventLocation location={location} remote={remote} className="mb-4" />
+        <EventLocation location={location} remote={remote} className="mb-4" onlineLabel={dict.event.online} />
 
         {capacity > 0 && (
           <div className="mb-4">

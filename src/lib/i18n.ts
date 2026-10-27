@@ -11,7 +11,21 @@ export function isLocale(value: string | null | undefined): value is Locale {
   return value === 'en' || value === 'es'
 }
 
+type EventContent = {
+  title: string
+  description: string
+  category: string
+  location: string | null
+  time_commitment: string
+  skills: string[]
+  requirements: string
+  benefits: string
+}
+
 const en = {
+  locale: 'en' as Locale,
+  categories: {} as Record<string, string>,
+  eventContent: {} as Record<string, EventContent>,
   nav: {
     events: 'Events', impact: 'Impact', home: 'Home', myHours: 'My hours',
     host: 'Host an event', checkCode: 'Check a code', demo: 'Live demo',
@@ -46,7 +60,8 @@ const en = {
     badge: 'Events', title: 'Find your next event',
     intro: 'Pick an event on the map, join in one tap, and get your hours verified.',
     host: '+ Host an event', search: 'Search events', all: 'All causes',
-    wheelchair: 'Wheelchair accessible', substance: 'Alcohol- and smoke-free',
+    wheelchair: 'Wheelchair accessible', restroom: 'Accessible restroom',
+    sensory: 'Sensory-friendly', substance: 'Alcohol- and smoke-free',
     go: 'Go', clear: 'Clear', unable: 'Unable to load events.', none: 'No events found.',
     first: 'Post the first one', mapNote: 'The map is visual. Every mapped event is also listed as a card below.',
     near: 'Near me', locating: 'Locating…', sorted: 'Sorted by distance', within: 'Within 3 mi',
@@ -56,9 +71,10 @@ const en = {
   },
   event: {
     back: 'Back to opportunities', online: 'Online', verified: 'Verified organizer',
+    statusOpen: 'Open', statusClosed: 'Closed',
     requirements: 'Requirements', benefits: 'Benefits', skills: 'Skills', details: 'Details',
     location: 'Location', format: 'Format', onlineEvent: 'Online event', time: 'Time commitment',
-    start: 'Start date', applyBy: 'Apply by', needed: 'Volunteers needed', filled: 'filled',
+    start: 'Start date', applyBy: 'Apply by', needed: 'Volunteers needed', filled: 'filled', calendar: 'Add to calendar',
     facilities: 'On-site facilities', join: 'Join this event', signIn: 'Sign in to join',
     signInBody: 'Sign in to join this event.', rejected: 'Your previous sign-up was not accepted.',
     weather: 'Weather outlook', weatherNote: 'Informational only — check a local forecast before the event.',
@@ -93,6 +109,99 @@ const en = {
 }
 
 const es: typeof en = {
+  locale: 'es' as Locale,
+  categories: {
+    Education: 'Educación',
+    Environment: 'Medio ambiente',
+    'Food Security': 'Seguridad alimentaria',
+    Health: 'Salud',
+    Community: 'Comunidad',
+    'Animal Welfare': 'Bienestar animal',
+    'Arts & Culture': 'Arte y cultura',
+    'Disaster Relief': 'Ayuda en desastres',
+  },
+  eventContent: {
+    'Saturday Food Sort': {
+      title: 'Clasificación de alimentos del sábado',
+      description: 'Clasifica y empaca alimentos donados en cajas familiares para despensas locales. No se necesita experiencia.',
+      category: 'Seguridad alimentaria',
+      location: 'Pabellón del parque Papaianni, Edison, NJ',
+      time_commitment: '3 horas, sábados',
+      skills: ['Trabajo en equipo'],
+      requirements: '13 años o más. Calzado cerrado.',
+      benefits: 'Horas de servicio verificadas, certificado.',
+    },
+    'After-School Homework Help': {
+      title: 'Ayuda con las tareas después de clases',
+      description: 'Ayuda a estudiantes de primaria y secundaria con la lectura y las tareas de matemáticas.',
+      category: 'Educación',
+      location: 'Biblioteca Pública de Edison (sede principal), Plainfield Ave, Edison, NJ',
+      time_commitment: '2 horas por semana',
+      skills: ['Paciencia', 'Comunicación'],
+      requirements: '14 años o más. Compromiso semanal durante al menos un mes.',
+      benefits: 'Horas de servicio verificadas, carta de recomendación después de 20 horas.',
+    },
+    'Roosevelt Park Fall Cleanup': {
+      title: 'Limpieza de otoño del parque Roosevelt',
+      description: 'Recoge basura alrededor del lago y los senderos y retira las hojas de los caminos.',
+      category: 'Medio ambiente',
+      location: 'Parque Roosevelt, Edison, NJ',
+      time_commitment: 'Una vez, 3 horas',
+      skills: ['Trabajo al aire libre'],
+      requirements: '13 años o más. Se proporcionan guantes y bolsas.',
+      benefits: 'Horas de servicio verificadas, foto grupal.',
+    },
+    'Dismal Swamp Trail Restoration': {
+      title: 'Restauración del sendero de Dismal Swamp',
+      description: 'Elimina plantas invasoras y ayuda a mantener los senderos de madera en el área de conservación.',
+      category: 'Medio ambiente',
+      location: 'Área de conservación Dismal Swamp, New Durham Rd, Edison, NJ',
+      time_commitment: 'Una vez, 4 horas',
+      skills: ['Trabajo al aire libre', 'Resistencia física'],
+      requirements: '14 años o más. Se recomiendan pantalones largos y botas.',
+      benefits: 'Horas de servicio verificadas, introducción a la ecología local.',
+    },
+    'Virtual Tech Help for Seniors': {
+      title: 'Ayuda tecnológica virtual para personas mayores',
+      description: 'Acompaña a personas mayores con videollamadas, correo electrónico y ajustes del teléfono mediante una videollamada programada.',
+      category: 'Comunidad',
+      location: null,
+      time_commitment: '1 hora por semana',
+      skills: ['Paciencia', 'Conocimientos básicos de tecnología'],
+      requirements: '13 años o más. Conexión a internet confiable.',
+      benefits: 'Horas de servicio verificadas, experiencia de voluntariado remoto.',
+    },
+    'Roosevelt Park Trail Cleanup': {
+      title: 'Limpieza del sendero del parque Roosevelt',
+      description: 'Recoge basura alrededor del lago y los senderos, retira hojas de los caminos y ayuda a clasificar el reciclaje. Se proporcionan guantes y bolsas.',
+      category: 'Medio ambiente',
+      location: 'Parque Roosevelt, Edison, NJ',
+      time_commitment: 'Una vez, 3 horas',
+      skills: ['Trabajo al aire libre'],
+      requirements: '13 años o más. Calzado cerrado.',
+      benefits: 'Horas de servicio verificadas, foto grupal.',
+    },
+    'After-School Tutoring': {
+      title: 'Tutoría después de clases',
+      description: 'Ayuda a estudiantes de primaria y secundaria con la lectura y las tareas de matemáticas en la biblioteca de Edison.',
+      category: 'Educación',
+      location: 'Biblioteca Pública de Edison, Plainfield Ave, Edison, NJ',
+      time_commitment: '2 horas por semana',
+      skills: ['Paciencia', 'Comunicación'],
+      requirements: '14 años o más. Compromiso semanal durante al menos un mes.',
+      benefits: 'Horas de servicio verificadas, carta de recomendación después de 20 horas.',
+    },
+    'Senior Tech Help (Virtual)': {
+      title: 'Ayuda tecnológica para personas mayores (virtual)',
+      description: 'Acompaña a personas mayores con videollamadas, correo electrónico y ajustes del teléfono mediante una videollamada programada.',
+      category: 'Comunidad',
+      location: null,
+      time_commitment: '1 hora por semana',
+      skills: ['Paciencia', 'Conocimientos básicos de tecnología'],
+      requirements: '13 años o más. Conexión a internet confiable.',
+      benefits: 'Horas de servicio verificadas, experiencia de voluntariado remoto.',
+    },
+  },
   nav: {
     events: 'Eventos', impact: 'Impacto', home: 'Inicio', myHours: 'Mis horas',
     host: 'Publicar un evento', checkCode: 'Verificar un código', demo: 'Demostración',
@@ -127,7 +236,8 @@ const es: typeof en = {
     badge: 'Eventos', title: 'Encuentra tu próximo evento',
     intro: 'Elige un evento en el mapa, únete con un toque y obtén tus horas verificadas.',
     host: '+ Publicar un evento', search: 'Buscar eventos', all: 'Todas las causas',
-    wheelchair: 'Accesible para sillas de ruedas', substance: 'Sin alcohol ni humo',
+    wheelchair: 'Accesible para sillas de ruedas', restroom: 'Baño accesible',
+    sensory: 'Amigable para personas con sensibilidad sensorial', substance: 'Sin alcohol ni humo',
     go: 'Buscar', clear: 'Limpiar', unable: 'No se pudieron cargar los eventos.', none: 'No se encontraron eventos.',
     first: 'Publica el primero', mapNote: 'El mapa es visual. Cada evento del mapa también aparece como tarjeta debajo.',
     near: 'Cerca de mí', locating: 'Ubicando…', sorted: 'Ordenado por distancia', within: 'A 3 millas',
@@ -137,9 +247,10 @@ const es: typeof en = {
   },
   event: {
     back: 'Volver a oportunidades', online: 'En línea', verified: 'Organizador verificado',
+    statusOpen: 'Abierto', statusClosed: 'Cerrado',
     requirements: 'Requisitos', benefits: 'Beneficios', skills: 'Habilidades', details: 'Detalles',
     location: 'Ubicación', format: 'Formato', onlineEvent: 'Evento en línea', time: 'Compromiso de tiempo',
-    start: 'Fecha de inicio', applyBy: 'Postularse antes del', needed: 'Voluntarios necesarios', filled: 'inscritos',
+    start: 'Fecha de inicio', applyBy: 'Postularse antes del', needed: 'Voluntarios necesarios', filled: 'inscritos', calendar: 'Añadir al calendario',
     facilities: 'Servicios en el lugar', join: 'Unirme a este evento', signIn: 'Inicia sesión para unirte',
     signInBody: 'Inicia sesión para unirte a este evento.', rejected: 'Tu registro anterior no fue aceptado.',
     weather: 'Pronóstico del tiempo', weatherNote: 'Solo informativo — consulta el pronóstico local antes del evento.',
@@ -177,4 +288,39 @@ export type Dictionary = typeof en
 const dictionaries: Record<Locale, Dictionary> = { en, es }
 export function getDictionary(locale: Locale): Dictionary {
   return dictionaries[locale]
+}
+
+type LocalizableEvent = {
+  title: string
+  description?: string | null
+  category?: string
+  location?: string | null
+  time_commitment?: string | null
+  skills_required?: string[] | null
+  requirements?: string | null
+  benefits?: string | null
+}
+
+export function localizeEvent<T extends LocalizableEvent>(event: T, dict: Dictionary): T {
+  const hit = dict.eventContent[event.title]
+  if (!hit) return event
+  return {
+    ...event,
+    title: hit.title,
+    description: hit.description,
+    category: hit.category,
+    location: hit.location,
+    time_commitment: hit.time_commitment,
+    skills_required: hit.skills,
+    requirements: hit.requirements,
+    benefits: hit.benefits,
+  } as T
+}
+
+export function localizeEventTitle(title: string, dict: Dictionary): string {
+  return dict.eventContent[title]?.title ?? title
+}
+
+export function categoryLabel(category: string, dict: Dictionary): string {
+  return dict.categories[category] ?? category
 }

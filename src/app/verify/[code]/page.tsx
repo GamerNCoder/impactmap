@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEventTitle, categoryLabel } from '@/lib/i18n'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
@@ -18,6 +20,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function VerifyCredentialPage({ params }: PageProps) {
   const { code } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
 
   const { data: raw } = await supabase.rpc('verify_code', { p_code: code })
@@ -49,7 +52,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
     ? { name: record.organization, verified: Boolean(record.organizer_verified) }
     : null
   const volunteer = { full_name: record.name }
-  const opp = { title: record.event, category: record.category }
+  const opp = { title: localizeEventTitle(record.event ?? '', t), category: categoryLabel(record.category ?? '', t) }
   const supervisorName = record.supervisor_name
   const supervisorTitle = record.supervisor_title
   const supervisorNotes = record.supervisor_notes

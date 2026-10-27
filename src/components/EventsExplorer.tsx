@@ -11,6 +11,7 @@ export type ExplorerEvent = {
   id: string
   title: string
   category: string
+  categoryLabel?: string
   location: string | null
   remote: boolean
   organizationName: string | null
@@ -216,6 +217,7 @@ export default function EventsExplorer({ events, dict }: { events: ExplorerEvent
             id={e.id}
             title={e.title}
             category={e.category}
+            categoryLabel={e.categoryLabel}
             location={e.location}
             remote={e.remote}
             organizationName={e.organizationName}

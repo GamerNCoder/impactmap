@@ -9,7 +9,7 @@ import { formatDate } from '@/lib/constants'
 import { getEventWeather } from '@/lib/weather'
 import NearTheEvent from '@/components/NearTheEvent'
 import { getLocale } from '@/lib/locale'
-import { getDictionary } from '@/lib/i18n'
+import { getDictionary, localizeEvent, localizeEventTitle } from '@/lib/i18n'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
   const supabase = await createClient()
   const { data } = await supabase.from('opportunities').select('title').eq('id', id).single()
   return {
-    title: data ? `${data.title} | ImpactMap` : 'Opportunity | ImpactMap',
+    title: data ? `${localizeEventTitle(data.title, t)} | ImpactMap` : 'Opportunity | ImpactMap',
   }
 }
 
@@ -39,6 +39,8 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   if (error || !opportunity) {
     notFound()
   }
+
+  const content = localizeEvent(opportunity, t)
 
   const org = opportunity.organizations as {
     id: string
@@ -83,7 +85,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Link href="/opportunities" className="text-emerald-700 hover:text-emerald-800 text-sm font-medium">
-          ← Back to opportunities
+          ← {t.event.back}
         </Link>
 
         <div className="mt-6 grid lg:grid-cols-3 gap-8">
@@ -91,31 +93,31 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
             <div className="bg-white rounded-lg shadow-sm p-8">
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="bg-emerald-100 text-emerald-700 text-sm font-medium px-3 py-1 rounded-full">
-                  {opportunity.category}
+                  {content.category}
                 </span>
                 {opportunity.remote && (
                   <span className="bg-violet-100 text-violet-800 text-sm font-medium px-3 py-1 rounded-full">
-                    Online
+                    {t.event.online}
                   </span>
                 )}
                 <span className="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full capitalize">
-                  {opportunity.status}
+                  {opportunity.status === 'open' ? t.event.statusOpen : t.event.statusClosed}
                 </span>
                 {opportunity.wheelchair_accessible && (
-                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">Wheelchair accessible</span>
+                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">{t.events.wheelchair}</span>
                 )}
                 {opportunity.accessible_restroom && (
-                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">Accessible restroom</span>
+                  <span className="bg-sky-100 text-sky-800 text-sm font-medium px-3 py-1 rounded-full">{t.events.restroom}</span>
                 )}
                 {opportunity.sensory_friendly && (
-                  <span className="bg-violet-100 text-violet-800 text-sm font-medium px-3 py-1 rounded-full">Sensory-friendly</span>
+                  <span className="bg-violet-100 text-violet-800 text-sm font-medium px-3 py-1 rounded-full">{t.events.sensory}</span>
                 )}
                 {opportunity.substance_free && (
-                  <span className="bg-emerald-100 text-emerald-800 text-sm font-medium px-3 py-1 rounded-full">Alcohol- and smoke-free</span>
+                  <span className="bg-emerald-100 text-emerald-800 text-sm font-medium px-3 py-1 rounded-full">{t.events.substance}</span>
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{opportunity.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{content.title}</h1>
 
               {org && (
                 <Link
@@ -126,32 +128,32 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                 </Link>
               )}
               {org?.verified && (
-                <span className="ml-2 text-xs font-semibold text-emerald-700" title="ImpactMap checked this organizer">✓ Verified organizer</span>
+                <span className="ml-2 text-xs font-semibold text-emerald-700" title={t.event.verified}>✓ {t.event.verified}</span>
               )}
 
               <div className="mt-6 prose prose-gray max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{opportunity.description}</p>
+                <p className="text-gray-700 whitespace-pre-wrap">{content.description}</p>
               </div>
 
-              {opportunity.requirements && (
+              {content.requirements && (
                 <div className="mt-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Requirements</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{opportunity.requirements}</p>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">{t.event.requirements}</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{content.requirements}</p>
                 </div>
               )}
 
-              {opportunity.benefits && (
+              {content.benefits && (
                 <div className="mt-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Benefits</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{opportunity.benefits}</p>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">{t.event.benefits}</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{content.benefits}</p>
                 </div>
               )}
 
-              {opportunity.skills_required && opportunity.skills_required.length > 0 && (
+              {content.skills_required && content.skills_required.length > 0 && (
                 <div className="mt-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Skills</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">{t.event.skills}</h2>
                   <div className="flex flex-wrap gap-2">
-                    {opportunity.skills_required.map((skill: string) => (
+                    {content.skills_required.map((skill: string) => (
                       <span key={skill} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
                         {skill}
                       </span>
@@ -164,43 +166,43 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.event.details}</h2>
               <dl className="space-y-3 text-sm">
-                {opportunity.location?.trim() && (
+                {content.location?.trim() && (
                   <div>
-                    <dt className="text-gray-500">Location</dt>
-                    <dd className="font-medium text-gray-900">{opportunity.location}</dd>
+                    <dt className="text-gray-500">{t.event.location}</dt>
+                    <dd className="font-medium text-gray-900">{content.location}</dd>
                   </div>
                 )}
                 {opportunity.remote && (
                   <div>
-                    <dt className="text-gray-500">Format</dt>
-                    <dd className="font-medium text-gray-900">Online event</dd>
+                    <dt className="text-gray-500">{t.event.format}</dt>
+                    <dd className="font-medium text-gray-900">{t.event.onlineEvent}</dd>
                   </div>
                 )}
-                {opportunity.time_commitment && (
+                {content.time_commitment && (
                   <div>
-                    <dt className="text-gray-500">Time commitment</dt>
-                    <dd className="font-medium text-gray-900">{opportunity.time_commitment}</dd>
+                    <dt className="text-gray-500">{t.event.time}</dt>
+                    <dd className="font-medium text-gray-900">{content.time_commitment}</dd>
                   </div>
                 )}
                 {opportunity.start_date && (
                   <div>
-                    <dt className="text-gray-500">Start date</dt>
-                    <dd className="font-medium text-gray-900">{formatDate(opportunity.start_date)}</dd>
+                    <dt className="text-gray-500">{t.event.start}</dt>
+                    <dd className="font-medium text-gray-900">{formatDate(opportunity.start_date, t.locale)}</dd>
                   </div>
                 )}
                 {opportunity.deadline && (
                   <div>
-                    <dt className="text-gray-500">Apply by</dt>
-                    <dd className="font-medium text-gray-900">{formatDate(opportunity.deadline)}</dd>
+                    <dt className="text-gray-500">{t.event.applyBy}</dt>
+                    <dd className="font-medium text-gray-900">{formatDate(opportunity.deadline, t.locale)}</dd>
                   </div>
                 )}
                 {opportunity.volunteers_needed != null && (
                   <div>
-                    <dt className="text-gray-500">Volunteers needed</dt>
+                    <dt className="text-gray-500">{t.event.needed}</dt>
                     <dd className="font-medium text-gray-900">
-                      {opportunity.volunteers_count} / {opportunity.volunteers_needed} filled
+                      {opportunity.volunteers_count} / {opportunity.volunteers_needed} {t.event.filled}
                     </dd>
                   </div>
                 )}
@@ -208,7 +210,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
               {opportunity.facilities && opportunity.facilities.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">On-site facilities</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">{t.event.facilities}</h3>
                   <ul className="flex flex-wrap gap-2">
                     {opportunity.facilities.map((facility: string) => (
                       <li
@@ -225,9 +227,9 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
             {weather && weather.risks.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-amber-400">
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">Weather outlook</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">{t.event.weather}</h2>
                 <p className="text-xs text-gray-500 mb-3">
-                  {formatDate(weather.date)} · Open-Meteo forecast
+                  {formatDate(weather.date, t.locale)} · Open-Meteo forecast
                 </p>
                 <ul className="space-y-3">
                   {weather.risks.map((risk) => (
@@ -248,7 +250,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                   ))}
                 </ul>
                 <p className="text-xs text-gray-400 mt-3">
-                  Informational only — check a local forecast before the event.
+                  {t.event.weatherNote}
                 </p>
               </div>
             )}
@@ -258,22 +260,22 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
             )}
 
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Join this event</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.event.join}</h2>
               {!user ? (
                 <div className="text-center">
-                  <p className="text-gray-600 mb-4">Sign in to join this event.</p>
+                  <p className="text-gray-600 mb-4">{t.event.signInBody}</p>
                   <Link
                     href={`/auth/login?next=/opportunities/${id}`}
                     className="inline-block bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-800"
                   >
-                    Sign in to join
+                    {t.event.signIn}
                   </Link>
                 </div>
               ) : (
                 <>
                   <JoinEventButton
                     opportunityId={id}
-                    opportunityTitle={opportunity.title}
+                    opportunityTitle={content.title}
                     organizationId={opportunity.organization_id}
                     isJoined={isJoined}
                     isFull={isFull}
@@ -282,18 +284,18 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                     dict={t}
                   />
                   {existingApplication && existingApplication.status === 'rejected' && (
-                    <p className="mt-3 text-sm text-red-600">Your previous sign-up was not accepted.</p>
+                    <p className="mt-3 text-sm text-red-600">{t.event.rejected}</p>
                   )}
                 </>
               )}
             </div>
 
-            <EventCheckInQr opportunityId={id} title={opportunity.title} dict={t} />
+            <EventCheckInQr opportunityId={id} title={content.title} dict={t} />
             <a
               href={`/api/opportunities/${id}/calendar`}
               className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
             >
-              <span aria-hidden>📅</span> Add to calendar
+              <span aria-hidden>📅</span> {t.event.calendar}
             </a>
           </div>
         </div>

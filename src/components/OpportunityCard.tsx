@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { formatDate } from '@/lib/constants'
 import EventLocation from '@/components/EventLocation'
+import type { Dictionary } from '@/lib/i18n'
 
 type OpportunityCardProps = {
   id: string
@@ -12,6 +13,7 @@ type OpportunityCardProps = {
   volunteersNeeded?: number | null
   volunteersCount?: number
   deadline?: string | null
+  dict: Dictionary
 }
 
 export default function OpportunityCard({
@@ -24,6 +26,7 @@ export default function OpportunityCard({
   volunteersNeeded,
   volunteersCount = 0,
   deadline,
+  dict,
 }: OpportunityCardProps) {
   const spotsLeft =
     volunteersNeeded != null ? Math.max(0, volunteersNeeded - volunteersCount) : null
@@ -36,19 +39,19 @@ export default function OpportunityCard({
         <p className="text-gray-600 mb-4">{organizationName}</p>
       )}
       <div className="flex flex-wrap gap-2 text-sm text-gray-500 mb-4">
-        <EventLocation location={location} remote={remote} />
+        <EventLocation location={location} remote={remote} onlineLabel={dict.event.online} />
         {deadline && (
-          <span>Apply by {formatDate(deadline)}</span>
+          <span>{dict.event.applyBy} {formatDate(deadline, dict.locale)}</span>
         )}
         {spotsLeft != null && (
-          <span>{spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} left</span>
+          <span>{dict.common.spots.replace('{count}', String(spotsLeft))}</span>
         )}
       </div>
       <Link
         href={`/opportunities/${id}`}
         className="mt-auto text-emerald-700 font-medium hover:text-emerald-800"
       >
-        View details →
+        {dict.common.view} →
       </Link>
     </article>
   )

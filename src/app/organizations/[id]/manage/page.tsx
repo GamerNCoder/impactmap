@@ -9,6 +9,8 @@ import CoordinatorRequestActions from '@/components/CoordinatorRequestActions'
 import OrgStats from '@/components/OrgStats'
 import HoursTrend from '@/components/HoursTrend'
 import { formatDate } from '@/lib/constants'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEventTitle } from '@/lib/i18n'
 import { canManageOrg } from '@/lib/org-access'
 import DemoNotice from '@/components/DemoNotice'
 import RequestVerification from '@/components/RequestVerification'
@@ -27,6 +29,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function OrganizationManagePage({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -153,7 +156,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
   const { data: opps } = oppIds.length
     ? await supabase.from('opportunities').select('id, title').in('id', oppIds)
     : { data: [] }
-  const oppMap = new Map((opps ?? []).map((o) => [o.id, o.title]))
+  const oppMap = new Map((opps ?? []).map((o) => [o.id, localizeEventTitle(o.title, t)]))
 
   const attendanceByOpp = [
     ...checkins.reduce((groups, row) => {

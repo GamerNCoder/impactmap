@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEventTitle } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -13,6 +15,7 @@ export const metadata = {
 }
 
 export default async function ServiceReportPage() {
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login?next=/passport/report')
@@ -72,7 +75,7 @@ export default async function ServiceReportPage() {
                 <tr key={r.code} className="border-b border-gray-200 align-top break-inside-avoid">
                   <td className="py-3 pr-2">{r.date ? formatDate(r.date) : '—'}</td>
                   <td className="py-3 pr-2">
-                    <p className="font-medium">{r.event}</p>
+                    <p className="font-medium">{localizeEventTitle(r.event, t)}</p>
                     <p className="text-gray-600">{r.organization}</p>
                     {r.approver && <p className="text-gray-500 text-xs mt-1 sm:hidden print:hidden">Approved by {r.approver}</p>}
                   </td>

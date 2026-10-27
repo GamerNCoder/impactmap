@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEventTitle } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -15,6 +17,7 @@ export const metadata = {
 }
 
 export default async function DashboardPage() {
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -53,6 +56,7 @@ export default async function DashboardPage() {
   const verifiedHours = (hours ?? []).filter((h) => h.verified).reduce((s, e) => s + Number(e.hours), 0)
   const pendingCount = (hours ?? []).filter((h) => !h.verified).length
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
+  const greetingName = profile?.full_name?.startsWith('Demo ') ? profile.full_name : firstName
 
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-full">
@@ -62,7 +66,7 @@ export default async function DashboardPage() {
       </Suspense>
       <div className="bg-gradient-to-br from-emerald-700 to-teal-700 text-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-          <h1 className="text-3xl font-bold">Hey {firstName}</h1>
+          <h1 className="text-3xl font-bold">Hey {greetingName}</h1>
           <p className="mt-4 text-4xl font-extrabold">
             {verifiedHours.toFixed(1)}
             <span className="text-lg font-semibold text-emerald-100 ml-2">verified hours</span>
@@ -105,10 +109,10 @@ export default async function DashboardPage() {
                     className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 transition-shadow"
                   >
                     <h3 className="font-medium text-gray-900 dark:text-white mb-3 text-sm">
-                      <Link href={`/opportunities/${opp.id}`} className="hover:text-emerald-600">{opp.title}</Link>
+                      <Link href={`/opportunities/${opp.id}`} className="hover:text-emerald-600">{localizeEventTitle(opp.title, t)}</Link>
                       {opp.start_date && <span className="text-gray-500 font-normal"> · {formatDate(opp.start_date)}</span>}
                     </h3>
-                    <LogHoursForm opportunityId={opp.id} opportunityTitle={opp.title} />
+                    <LogHoursForm opportunityId={opp.id} opportunityTitle={localizeEventTitle(opp.title, t)} />
                   </div>
                 )
               })}
@@ -134,7 +138,7 @@ export default async function DashboardPage() {
                 <li key={event.id} className="py-4 first:pt-0 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <Link href={`/opportunities/${event.id}`} className="font-medium text-gray-900 dark:text-white hover:text-emerald-600">
-                      {event.title}
+                      {localizeEventTitle(event.title, t)}
                     </Link>
                     <p className="text-sm text-gray-500 mt-1">
                       {event.volunteers_count}{event.volunteers_needed != null ? ` / ${event.volunteers_needed}` : ''} joined

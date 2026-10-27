@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import ImpactMapView, { type ImpactPoint } from '@/components/ImpactMapView'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, categoryLabel } from '@/lib/i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +48,7 @@ function monthLabel(month: string): string {
 }
 
 export default async function ImpactPage() {
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
 
   const [{ data: raw }, { data: openEvents }] = await Promise.all([
@@ -141,7 +144,7 @@ export default async function ImpactPage() {
                 {byCategory.map((row) => (
                   <li key={row.category}>
                     <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="font-medium text-gray-900 dark:text-white">{row.category}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{categoryLabel(row.category, t)}</span>
                       <span className="text-gray-500">
                         {Number(row.hours).toLocaleString('en-US', { maximumFractionDigits: 1 })}h
                         <span className="text-gray-500"> · {row.records} log{row.records === 1 ? '' : 's'}</span>
@@ -163,7 +166,7 @@ export default async function ImpactPage() {
                 <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Causes still waiting for hours</p>
                 <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
                   These have open events but no publishable hours yet — either none have been
-                  approved, or fewer than three distinct volunteers have logged them: {gaps.join(', ')}.
+                  approved, or fewer than three distinct volunteers have logged them: {gaps.map((c) => categoryLabel(c, t)).join(', ')}.
                 </p>
               </div>
             )}

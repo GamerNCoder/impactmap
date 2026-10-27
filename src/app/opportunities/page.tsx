@@ -3,7 +3,7 @@ import EventsExplorer from '@/components/EventsExplorer'
 import Link from 'next/link'
 import { OPPORTUNITY_CATEGORIES } from '@/lib/constants'
 import { getLocale } from '@/lib/locale'
-import { getDictionary } from '@/lib/i18n'
+import { getDictionary, localizeEvent, categoryLabel } from '@/lib/i18n'
 
 export const metadata = {
   title: 'Events | ImpactMap',
@@ -60,7 +60,7 @@ export default async function OpportunitiesPage({
           <label htmlFor="category" className="sr-only">{t.verify.category}</label>
           <select id="category" name="category" defaultValue={params.category || ''} className="rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2">
             <option value="">{t.events.all}</option>
-            {OPPORTUNITY_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+            {OPPORTUNITY_CATEGORIES.map((cat) => <option key={cat} value={cat}>{categoryLabel(cat, t)}</option>)}
           </select>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 px-2">
             <input type="checkbox" name="wheelchair" value="1" defaultChecked={params.wheelchair === '1'} />
@@ -87,11 +87,13 @@ export default async function OpportunitiesPage({
             dict={t}
             events={opportunities.map((opp) => {
               const org = opp.organizations as { name: string; verified: boolean } | null
+              const content = localizeEvent(opp, t)
               return {
                 id: opp.id,
-                title: opp.title,
+                title: content.title,
                 category: opp.category,
-                location: opp.location,
+                categoryLabel: categoryLabel(opp.category, t),
+                location: content.location,
                 remote: opp.remote ?? false,
                 organizationName: org?.name ?? null,
                 verified: Boolean(org?.verified),

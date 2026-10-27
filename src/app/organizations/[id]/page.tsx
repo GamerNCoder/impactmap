@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import OpportunityCard from '@/components/OpportunityCard'
 import { canManageOrg } from '@/lib/org-access'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEvent } from '@/lib/i18n'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -19,6 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function OrganizationDetailPage({ params }: PageProps) {
   const { id } = await params
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
 
   const { data: organization, error } = await supabase
@@ -117,20 +120,24 @@ export default async function OrganizationDetailPage({ params }: PageProps) {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Open opportunities</h2>
           {opportunities && opportunities.length > 0 ? (
             <div className="grid md:grid-cols-2 gap-6">
-              {opportunities.map((opp) => (
+              {opportunities.map((opp) => {
+                const content = localizeEvent(opp, t)
+                return (
                 <OpportunityCard
                   key={opp.id}
                   id={opp.id}
-                  title={opp.title}
-                  category={opp.category}
-                  location={opp.location}
+                  title={content.title}
+                  category={content.category}
+                  location={content.location}
                   remote={opp.remote ?? false}
                   organizationName={organization.name}
                   volunteersNeeded={opp.volunteers_needed ?? undefined}
                   volunteersCount={opp.volunteers_count ?? 0}
                   deadline={opp.deadline}
+                  dict={t}
                 />
-              ))}
+                )
+              })}
             </div>
           ) : (
             <p className="text-gray-600 bg-white rounded-lg shadow-sm p-8 text-center">

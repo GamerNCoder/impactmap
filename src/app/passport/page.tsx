@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocale } from '@/lib/locale'
+import { getDictionary, localizeEventTitle } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate } from '@/lib/constants'
@@ -14,6 +16,7 @@ export const metadata = {
 }
 
 export default async function PassportPage() {
+  const t = getDictionary(await getLocale())
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -59,7 +62,7 @@ export default async function PassportPage() {
                 <li key={r.code} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-l-4 border-l-emerald-500 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{r.event}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{localizeEventTitle(r.event, t)}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{r.organization}</p>
                       <p className="text-sm text-gray-500 mt-1">
                         {r.hours != null ? `${r.hours}h · ` : ''}{r.date ? formatDate(r.date) : ''}
@@ -90,7 +93,7 @@ export default async function PassportPage() {
             <ul className="space-y-3">
               {record.pending.map((p) => (
                 <li key={p.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-l-4 border-l-amber-400 p-4">
-                  <p className="font-medium text-gray-900 dark:text-white">{p.event}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{localizeEventTitle(p.event, t)}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {p.hours}h on {formatDate(p.date)}
                   </p>
