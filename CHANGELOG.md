@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Trust
+- A misclicked approval can be revoked without deleting it. The code stays and `/verify` labels the
+  record revoked; it leaves the student's total, the organizer CSV export and the public impact
+  aggregate, and both the revoke and the undo write database audit rows (`hours.revoke`,
+  `hours.restore`). Managers get a short Undo toast; `revoke_hours` / `restore_hours` are
+  manager-only and not callable anonymously.
+- The demo reset clears a revoked demo approval as well as the pending log, so the demo stays
+  repeatable.
+
 ### Accessibility
 - A text-size control (A−/A+) in the header enlarges text to 125/150/200%, applies before paint,
   and remembers the choice on the device.
@@ -16,6 +25,11 @@
 ### Fixed
 - The shared header overflowed by 28 px at 320 px and about 290 px at 200% text on every page
   that used it.
+
+### Verified
+- Local 2026-10-27: `test:db` 101/101, `test:a11y` 25/25, `test:ui` full loop including revoke and
+  undo, `test:theme`, `audit:defenses` 13/13 against a local stack, `tsc`, `eslint` (0 errors) and
+  `next build`.
 
 ## 0.4.0 — 2026-10-24
 

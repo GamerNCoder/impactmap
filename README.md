@@ -15,6 +15,7 @@ the live demo links, and an honest account of what is real and what is sample da
 - **Check-in trust layer** — volunteers can optionally share their location; the app keeps the distance to the event (never the coordinates) and flags scans outside the event window for the organizer
 - **Log hours** — after the event, log your time; the organizer approves it with one tap
 - **Verification codes** — each approval issues an `IMP-` code a counselor can check at `/verify` with no account
+- **Correction without erasure** — a misclicked approval can be revoked; the code stays and resolves to a marked revoked record, the hours leave every total, and both the revoke and the undo are audited
 - **Bulk verification** — counselors can paste a whole class list of `IMP-` codes at once
 - **Counselor report** — a printable/PDF service record with a QR code per verified entry
 - **Community impact map** — verified hours by cause, month, organization and event, aggregated with no student identities
@@ -155,7 +156,7 @@ Schools, clubs and libraries can request a pilot at [`/pilot`](https://impactmap
 
 ## Tests
 
-- `npm run test:db` — 86 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
+- `npm run test:db` — 101 database and security checks against a running Supabase (`tests/e2e-core-loop.mjs`); reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `.env.local`
 - `npm run test:ui` — Playwright walkthrough of the health endpoint, the full student → organizer → counselor loop, bulk verification and the terms/birthday gate (`tests/ui-core-loop.mjs`); start `npm run dev` first, or set `BASE_URL` to run it against a deployed site
 - `npm run test:a11y` — axe-core WCAG 2.2 A/AA gate on the public pages, both demo roles, `/pilot` and the guide (`tests/a11y.mjs`); requires a running app
 - `npm run test:theme` — Playwright checks both OS color schemes and both toggle directions (class, storage, body/card colors, and the dark map-tile filter); requires a running app

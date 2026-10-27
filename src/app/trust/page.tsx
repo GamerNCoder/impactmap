@@ -18,6 +18,11 @@ export default function TrustPage() {
               the event, date, hours, and supervisor attestation. The database enforces that the person
               whose hours are approved cannot approve them, and that an unverified organization is labeled.
             </p>
+            <p className="mt-2">
+              An organizer can revoke an approval they issued by mistake. The code stays on record and
+              resolves to a clearly marked revoked record; it is excluded from the student’s total and
+              the public impact page.
+            </p>
           </section>
           <section>
             <h2 className="font-semibold text-gray-900 dark:text-white">What it does not mean</h2>

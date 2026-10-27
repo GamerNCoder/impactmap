@@ -42,7 +42,7 @@ export default async function DashboardPage() {
 
   const { data: hours } = await supabase
     .from('volunteer_hours')
-    .select('hours, verified')
+    .select('hours, verified, revoked_at')
     .eq('user_id', user.id)
 
   const { data: hostedEvents } = await supabase
@@ -53,7 +53,9 @@ export default async function DashboardPage() {
     .limit(5)
 
   const joined = (applications ?? []).filter((a) => a.opportunities)
-  const verifiedHours = (hours ?? []).filter((h) => h.verified).reduce((s, e) => s + Number(e.hours), 0)
+  const verifiedHours = (hours ?? [])
+    .filter((h) => h.verified && !h.revoked_at)
+    .reduce((s, e) => s + Number(e.hours), 0)
   const pendingCount = (hours ?? []).filter((h) => !h.verified).length
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
   const greetingName = profile?.full_name?.startsWith('Demo ') ? profile.full_name : firstName

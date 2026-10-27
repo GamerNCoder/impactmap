@@ -40,6 +40,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
     description: string | null
     verified_at: string | null
     verification_expires_at: string | null
+    revoked_at: string | null
     status: string | null
   } | null
 
@@ -48,6 +49,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
   }
 
   const isHours = record.type === 'hours'
+  const isRevoked = record.status === 'revoked'
   const org = record.organization
     ? { name: record.organization, verified: Boolean(record.organizer_verified) }
     : null
@@ -58,7 +60,11 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
   const supervisorNotes = record.supervisor_notes
   const verifiedAt = record.verified_at
 
-  const credentialType = isHours ? 'Organizer-approved service hours' : 'Organizer-approved task completion'
+  const credentialType = isRevoked
+    ? 'Revoked by the organizer'
+    : isHours
+      ? 'Organizer-approved service hours'
+      : 'Organizer-approved task completion'
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4">
@@ -80,6 +86,17 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
           </div>
         )}
 
+        {isRevoked && (
+          <div
+            role="alert"
+            className="mb-4 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-900 dark:text-red-200"
+          >
+            <strong>Revoked record.</strong> The organizer withdrew this approval
+            {record.revoked_at ? ` on ${formatDate(record.revoked_at.split('T')[0])}` : ''}. It is no
+            longer a valid record of service hours.
+          </div>
+        )}
+
         {org && !org.verified && (
           <div
             role="alert"
@@ -91,13 +108,13 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-900 overflow-hidden">
-          <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+        <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-lg border overflow-hidden ${isRevoked ? 'border-red-200 dark:border-red-900' : 'border-emerald-200 dark:border-emerald-900'}`}>
+          <div className={`text-white px-6 py-4 flex items-center justify-between ${isRevoked ? 'bg-gray-700' : 'bg-emerald-700'}`}>
             <div>
-              <p className="text-emerald-50 text-sm">{credentialType}</p>
+              <p className={`text-sm ${isRevoked ? 'text-red-100' : 'text-emerald-50'}`}>{credentialType}</p>
               <p className="font-mono font-bold text-lg">{code}</p>
             </div>
-            <svg className="w-10 h-10 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <svg className={`w-10 h-10 ${isRevoked ? 'text-red-200' : 'text-emerald-200'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -132,7 +149,7 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                     <dd className="font-medium text-gray-900 dark:text-white">{formatDate(record.date!)}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Hours verified</dt>
+                    <dt className="text-gray-500">{isRevoked ? 'Hours entered' : 'Hours verified'}</dt>
                     <dd className="font-medium text-gray-900 dark:text-white text-lg">{record.hours}</dd>
                   </div>
                 </>
@@ -146,9 +163,15 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
                 </div>
               )}
               <div>
-                <dt className="text-gray-500">Valid until</dt>
+                <dt className="text-gray-500">{isRevoked ? 'Revoked on' : 'Valid until'}</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">
-                  {record.verification_expires_at ? formatDate(record.verification_expires_at.split('T')[0]) : 'No expiry'}
+                  {isRevoked
+                    ? record.revoked_at
+                      ? formatDate(record.revoked_at.split('T')[0])
+                      : '—'
+                    : record.verification_expires_at
+                      ? formatDate(record.verification_expires_at.split('T')[0])
+                      : 'No expiry'}
                 </dd>
               </div>
               <div>
@@ -183,7 +206,9 @@ export default async function VerifyCredentialPage({ params }: PageProps) {
             )}
 
             <p className="text-xs text-gray-600 border-t border-gray-200 dark:border-gray-800 pt-4">
-              The event organizer approved this record in ImpactMap. ImpactMap did not independently verify identity or attendance.
+              {isRevoked
+                ? 'The event organizer revoked this record in ImpactMap. It is not a valid credential and is excluded from the student\u2019s totals and the public impact page.'
+                : 'The event organizer approved this record in ImpactMap. ImpactMap did not independently verify identity or attendance.'}
               {' '}Reference code {code}.
             </p>
           </div>

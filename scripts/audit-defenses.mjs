@@ -66,6 +66,16 @@ record('anon can read the k-anonymous impact summary',
   impact.status === 200,
   `${impact.status} ${impactText.slice(0, 100)}`)
 
+for (const fn of ['revoke_hours', 'restore_hours']) {
+  const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { apikey: anon, Authorization: `Bearer ${anon}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_hours_id: '00000000-0000-0000-0000-000000000000' }),
+  })
+  const text = await res.text()
+  record(`anon cannot call ${fn}`, [401, 403, 404].includes(res.status), `${res.status} ${text.slice(0, 100)}`)
+}
+
 const orgs = await get('organizations?select=id,name&limit=1')
 record('anon can read public organization name (backup grant present)',
   orgs.status === 200,

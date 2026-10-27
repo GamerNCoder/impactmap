@@ -236,6 +236,81 @@ check('anonymous counselor verifies hours code', Number(publicHour?.hours) === 3
 const { data: publicCompletion } = await anon.rpc('verify_code', { p_code: completionCode })
 check('anonymous counselor verifies completion code', publicCompletion?.status === 'completed')
 
+// A misclicked approval is an audited soft revoke: the code stays, the row stops counting, and
+// a manager can undo it. The RPC is not public; RLS alone is not the only gate.
+const { data: impactBeforeRevoke } = await anon.rpc('impact_summary')
+const { error: anonRevokeErr } = await anon.rpc('revoke_hours', { p_hours_id: hour.id })
+check('anonymous cannot call the revoke RPC', Boolean(anonRevokeErr), anonRevokeErr?.message)
+
+const { data: studentRevoke } = await student.client.rpc('revoke_hours', { p_hours_id: hour.id })
+check('student cannot revoke their own approval', studentRevoke?.ok === false && studentRevoke?.error === 'not_manager', JSON.stringify(studentRevoke))
+
+const { data: intruderRevoke } = await intruder.client.rpc('revoke_hours', { p_hours_id: hour.id })
+check('non-organizer cannot revoke an approval', intruderRevoke?.ok === false && intruderRevoke?.error === 'not_manager', JSON.stringify(intruderRevoke))
+
+const { data: pendingRevoke } = await intruder.client.rpc('revoke_hours', { p_hours_id: selfHour.id })
+check('a pending log cannot be revoked', pendingRevoke?.ok === false && pendingRevoke?.error === 'not_approved', JSON.stringify(pendingRevoke))
+
+const { data: revoked } = await coord.client.rpc('revoke_hours', { p_hours_id: hour.id })
+check('coordinator revokes an approval', revoked?.ok === true, JSON.stringify(revoked))
+const { data: revokedRow } = await coord.client
+  .from('volunteer_hours')
+  .select('verified, verification_code, revoked_at, revoked_by')
+  .eq('id', hour.id)
+  .single()
+// A direct table write must not be able to rewrite an existing revocation, and it must not add
+// a second revoke audit row.
+const firstRevokedAt = revokedRow?.revoked_at
+const { error: rewriteErr } = await coord.client
+  .from('volunteer_hours')
+  .update({ revoked_at: '2000-01-01T00:00:00Z', revoked_by: intruder.user.id })
+  .eq('id', hour.id)
+const { data: stillRevoked } = await coord.client
+  .from('volunteer_hours')
+  .select('verified, verification_code, revoked_at, revoked_by')
+  .eq('id', hour.id)
+  .single()
+check('revoke keeps the code and an existing revocation is immutable', !rewriteErr && stillRevoked?.verified === true && stillRevoked?.verification_code === hourCode && stillRevoked?.revoked_at === firstRevokedAt && stillRevoked?.revoked_by === coord.user.id, JSON.stringify(stillRevoked))
+
+const { data: studentView } = await student.client
+  .from('volunteer_hours')
+  .select('verification_code, revoked_at')
+  .eq('id', hour.id)
+  .single()
+check('the student still sees the revoked record and its code', Boolean(studentView?.revoked_at) && studentView?.verification_code === hourCode, JSON.stringify(studentView))
+
+const { data: revokedPublic } = await anon.rpc('verify_code', { p_code: hourCode })
+check('a revoked code answers as revoked, not a 404', revokedPublic?.status === 'revoked' && Number(revokedPublic?.hours) === 3, JSON.stringify(revokedPublic))
+const { data: impactAfterRevoke } = await anon.rpc('impact_summary')
+check('revoked hours leave the public impact total', Number(impactAfterRevoke?.totals?.hours) === Number(impactBeforeRevoke?.totals?.hours) - 3, `${impactBeforeRevoke?.totals?.hours} -> ${impactAfterRevoke?.totals?.hours}`)
+
+const { data: revokeAudit } = await coord.client
+  .from('security_audit_log')
+  .select('action')
+  .eq('resource_id', hour.id)
+  .eq('action', 'hours.revoke')
+check('revocation writes an audit row', (revokeAudit ?? []).length === 1, JSON.stringify(revokeAudit))
+
+const { data: intruderUpdate } = await intruder.client
+  .from('volunteer_hours')
+  .update({ revoked_at: new Date().toISOString() })
+  .eq('id', hour.id)
+  .select('id')
+check('non-manager cannot revoke by writing the table directly', (intruderUpdate ?? []).length === 0)
+
+const { data: restored } = await coord.client.rpc('restore_hours', { p_hours_id: hour.id })
+check('coordinator restores a revoked approval', restored?.ok === true, JSON.stringify(restored))
+const { data: restoredPublic } = await anon.rpc('verify_code', { p_code: hourCode })
+check('a restored code verifies again', restoredPublic?.status == null && Number(restoredPublic?.hours) === 3, JSON.stringify(restoredPublic))
+const { data: impactAfterRestore } = await anon.rpc('impact_summary')
+check('restored hours return to the public impact total', Number(impactAfterRestore?.totals?.hours) === Number(impactBeforeRevoke?.totals?.hours), `${impactAfterRestore?.totals?.hours}`)
+const { data: restoreAudit } = await coord.client
+  .from('security_audit_log')
+  .select('action')
+  .eq('resource_id', hour.id)
+  .eq('action', 'hours.restore')
+check('restore writes an audit row', (restoreAudit ?? []).length === 1, JSON.stringify(restoreAudit))
+
 // Small-cell suppression: a cause with 3 distinct volunteers is published; a cause with one
 // volunteer is not. Seed two more students on a second event for the visible group.
 const student2 = await signUp('student2')

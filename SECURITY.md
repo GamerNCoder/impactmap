@@ -21,9 +21,12 @@ This is a student-maintained project, so reports are handled on a best-effort ba
 - A verification code is a bearer credential: whoever holds it can look up the record. The
   verification page deliberately shows a partial name and no free-text service notes; a
   volunteer's own shared page shows the name they chose to share.
+- A revoked approval keeps its code and stays visible as revoked; it is not a deletion. Only the
+  event's managers can revoke or restore it, and the database trigger writes `hours.revoke` and
+  `hours.restore` audit rows either way.
 
 ## What is tested
 
-`npm run test:db` (86 checks), `npm run audit:defenses`, and the accessibility, UI and theme
+`npm run test:db` (101 checks), `npm run audit:defenses`, and the accessibility, UI and theme
 suites run in CI. A security control is expected to ship with a detection test and a migration
 that can restore it.

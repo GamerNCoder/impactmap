@@ -28,7 +28,7 @@ export async function GET() {
     supabase
       .from('volunteer_hours')
       .select(
-        'id, opportunity_id, date, hours, description, verified, verified_at, verification_code, supervisor_name, supervisor_title, supervisor_email, supervisor_notes, created_at, opportunities(title, category, location, remote, organizations(name))'
+        'id, opportunity_id, date, hours, description, verified, verified_at, verification_code, revoked_at, revoked_by, supervisor_name, supervisor_title, supervisor_email, supervisor_notes, created_at, opportunities(title, category, location, remote, organizations(name))'
       )
       .eq('user_id', user.id)
       .order('date', { ascending: false }),

@@ -103,6 +103,9 @@ export default async function ServiceReportPage() {
           {record.pending.length > 0 && (
             <p className="mt-2">Not included: {record.pending.length} entr{record.pending.length === 1 ? 'y' : 'ies'} still waiting for organizer approval.</p>
           )}
+          {record.revoked.length > 0 && (
+            <p className="mt-2">Not included: {record.revoked.length} approval{record.revoked.length === 1 ? '' : 's'} the organizer revoked.</p>
+          )}
         </footer>
       </article>
     </div>

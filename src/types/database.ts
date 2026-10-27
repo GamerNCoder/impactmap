@@ -371,14 +371,14 @@ isOneToOne: false
                   ]
                 },"volunteer_hours": {
                   Row: {
-                    "created_at": string | null,"date": string,"description": string | null,"hours": number,"id": string,"opportunity_id": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"user_id": string | null,"verification_code": string | null,"verification_expires_at": string | null,"verified": boolean | null,"verified_at": string | null,"verified_by": string | null
+                    "created_at": string | null,"date": string,"description": string | null,"hours": number,"id": string,"opportunity_id": string | null,"revoked_at": string | null,"revoked_by": string | null,"supervisor_email": string | null,"supervisor_name": string | null,"supervisor_notes": string | null,"supervisor_title": string | null,"user_id": string | null,"verification_code": string | null,"verification_expires_at": string | null,"verified": boolean | null,"verified_at": string | null,"verified_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string | null,"date": string,"description"?: string | null,"hours": number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "created_at"?: string | null,"date": string,"description"?: string | null,"hours": number,"id"?: string,"opportunity_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string | null,"date"?: string,"description"?: string | null,"hours"?: number,"id"?: string,"opportunity_id"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
+                    "created_at"?: string | null,"date"?: string,"description"?: string | null,"hours"?: number,"id"?: string,"opportunity_id"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"supervisor_email"?: string | null,"supervisor_name"?: string | null,"supervisor_notes"?: string | null,"supervisor_title"?: string | null,"user_id"?: string | null,"verification_code"?: string | null,"verification_expires_at"?: string | null,"verified"?: boolean | null,"verified_at"?: string | null,"verified_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -533,6 +533,12 @@ isOneToOne: false
       } },
 "record_checkin_location":
 { Args: { "p_lat": number,"p_lon": number,"p_opportunity_id": string }; Returns: Json
+                           },
+"restore_hours":
+{ Args: { "p_hours_id": string }; Returns: Json
+                           },
+"revoke_hours":
+{ Args: { "p_hours_id": string }; Returns: Json
                            },
 "verify_code":
 { Args: { "p_code": string }; Returns: Json

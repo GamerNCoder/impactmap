@@ -87,6 +87,35 @@ export default async function PassportPage() {
           )}
         </section>
 
+        {record.revoked.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Revoked by the organizer</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              These approvals were withdrawn. They do not count toward your verified hours, and the
+              code now shows the record as revoked.
+            </p>
+            <ul className="space-y-3">
+              {record.revoked.map((r) => (
+                <li key={r.code} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 border-l-4 border-l-gray-400 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{localizeEventTitle(r.event, t)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{r.organization}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {r.hours != null ? `${r.hours}h · ` : ''}{r.date ? formatDate(r.date) : ''}
+                        {r.revokedAt && ` · revoked ${formatDate(r.revokedAt.split('T')[0])}`}
+                      </p>
+                    </div>
+                    <Link href={`/verify/${r.code}`} target="_blank" className="font-mono text-sm font-bold text-gray-600 dark:text-gray-400 hover:underline">
+                      {r.code}
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {record.pending.length > 0 && (
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Waiting for the organizer</h2>

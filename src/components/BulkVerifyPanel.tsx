@@ -6,7 +6,7 @@ import PrintButton from '@/components/PrintButton'
 
 type Row = {
   code: string
-  status: 'verified' | 'unknown' | 'invalid'
+  status: 'verified' | 'revoked' | 'unknown' | 'invalid'
   name: string | null
   event: string | null
   organization: string | null
@@ -29,7 +29,7 @@ type Props = {
  */
 export default function BulkVerifyPanel({ codes }: Props) {
   const [rows, setRows] = useState<Row[] | null>(null)
-  const [summary, setSummary] = useState<{ checked: number; verified: number } | null>(null)
+  const [summary, setSummary] = useState<{ checked: number; verified: number; revoked?: number } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,7 +53,7 @@ export default function BulkVerifyPanel({ codes }: Props) {
         })
         const data = (await res.json()) as {
           results?: Row[]
-          summary?: { checked: number; verified: number }
+          summary?: { checked: number; verified: number; revoked?: number }
           error?: string
         }
         if (cancelled) return
@@ -78,7 +78,8 @@ export default function BulkVerifyPanel({ codes }: Props) {
     }
   }, [codesKey])
 
-  const unknown = (rows ?? []).filter((r) => r.status !== 'verified')
+  const revoked = (rows ?? []).filter((r) => r.status === 'revoked')
+  const unknown = (rows ?? []).filter((r) => r.status !== 'verified' && r.status !== 'revoked')
   const unverifiedOrganizers = (rows ?? []).filter((r) => r.status === 'verified' && r.organizer_verified === false)
 
   return (
@@ -122,6 +123,21 @@ export default function BulkVerifyPanel({ codes }: Props) {
             </div>
           )}
 
+          {revoked.length > 0 && (
+            <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 p-4">
+              <p className="text-sm font-medium text-red-900 dark:text-red-200">
+                Revoked by the organizer ({revoked.length})
+              </p>
+              <p className="font-mono text-xs text-red-900 dark:text-red-200 mt-1 break-all">
+                {revoked.map((u) => u.code).join(', ')}
+              </p>
+              <p className="text-xs text-red-800 dark:text-red-300 mt-2">
+                The organizer withdrew these approvals. They are not valid credentials and are
+                excluded from the student&rsquo;s totals and the public impact page.
+              </p>
+            </div>
+          )}
+
           {unknown.length > 0 && (
             <div className="rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 p-4">
               <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
@@ -131,7 +147,7 @@ export default function BulkVerifyPanel({ codes }: Props) {
                 {unknown.map((u) => u.code).join(', ')}
               </p>
               <p className="text-xs text-amber-800 dark:text-amber-300 mt-2">
-                These are either mistyped, or the organizer has not approved those hours yet.
+                These are either mistyped, expired, or the organizer has not approved those hours yet.
               </p>
             </div>
           )}
@@ -156,6 +172,8 @@ export default function BulkVerifyPanel({ codes }: Props) {
                     <td className="py-2 pr-3">
                       {r.status === 'verified' ? (
                         <span className="text-emerald-700 dark:text-emerald-400 font-semibold">✓</span>
+                      ) : r.status === 'revoked' ? (
+                        <span className="text-red-700 dark:text-red-300 font-semibold">Revoked</span>
                       ) : (
                         <span className="text-amber-600 dark:text-amber-400">—</span>
                       )}
@@ -180,8 +198,11 @@ export default function BulkVerifyPanel({ codes }: Props) {
                       {r.approver ?? '—'}
                     </td>
                     <td className="py-2 font-mono text-xs text-gray-600 dark:text-gray-400">
-                      {r.status === 'verified' ? (
-                        <Link href={`/verify/${r.code}`} className="text-emerald-700 dark:text-emerald-400 hover:underline">
+                      {r.status === 'verified' || r.status === 'revoked' ? (
+                        <Link
+                          href={`/verify/${r.code}`}
+                          className={`hover:underline ${r.status === 'revoked' ? 'text-red-700 dark:text-red-300' : 'text-emerald-700 dark:text-emerald-400'}`}
+                        >
                           {r.code}
                         </Link>
                       ) : (

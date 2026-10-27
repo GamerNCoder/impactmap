@@ -29,7 +29,7 @@ function normalizeCode(raw: string): string {
 
 type Row = {
   code: string
-  status: 'verified' | 'unknown' | 'invalid'
+  status: 'verified' | 'revoked' | 'unknown' | 'invalid'
   name: string | null
   event: string | null
   organization: string | null
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     if (!code) continue
     rowsByCode.set(code, {
       code,
-      status: 'verified',
+      status: raw.status === 'revoked' ? 'revoked' : 'verified',
       name: (raw.name as string | null) ?? null,
       event: (raw.event as string | null) ?? null,
       organization: (raw.organization as string | null) ?? null,
@@ -161,6 +161,7 @@ export async function POST(request: Request) {
     summary: {
       checked: results.length,
       verified: results.filter((r) => r.status === 'verified').length,
+      revoked: results.filter((r) => r.status === 'revoked').length,
     },
   })
 }

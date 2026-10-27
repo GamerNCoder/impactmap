@@ -126,6 +126,7 @@ await step(student, 'student: log hours', async () => {
 await student.screenshot({ path: `${shots}/02-student-logged.png`, fullPage: true })
 
 let code
+let manageUrl
 await step(coord, 'coordinator: approve hours', async () => {
   const orgLink = await coord.locator('a[href*="/organizations/"][href$="/manage"]').first().getAttribute('href')
     .catch(() => null)
@@ -134,6 +135,7 @@ await step(coord, 'coordinator: approve hours', async () => {
     const org = await coord.locator('a[href^="/organizations/"]').first().getAttribute('href')
     await coord.goto(`${BASE}${org}/manage`)
   }
+  manageUrl = coord.url()
   await coord.screenshot({ path: `${shots}/03-manage.png`, fullPage: true })
   await coord.getByRole('button', { name: /^Approve 3h$/ }).first().click()
   const el = coord.getByText(/IMP-[A-F0-9]{8,}/).first()
@@ -181,6 +183,29 @@ await step(counselor, 'counselor (signed out): bulk verify endpoint', async () =
   const verified = json.results?.find((r) => r.code === code)
   if (verified?.status !== 'verified' || verified?.name !== 'Test s.') throw new Error(JSON.stringify(verified))
   if (!json.results?.some((r) => r.status === 'invalid')) throw new Error('expected an invalid row')
+})
+await step(coord, 'coordinator: revoke a misclicked approval', async () => {
+  await coord.goto(manageUrl)
+  const row = coord.locator('li').filter({ hasText: code }).first()
+  await row.getByRole('button', { name: /Revoke 3h/ }).click()
+  await coord.getByText(/Revoked 3h for/).waitFor({ timeout: 10000 })
+  await coord.getByText('Revoked', { exact: true }).first().waitFor({ timeout: 10000 })
+})
+
+await step(counselor, 'counselor (signed out): a revoked code shows revoked', async () => {
+  await counselor.goto(`${BASE}/verify/${code}`)
+  await counselor.getByText('Revoked record.').waitFor({ timeout: 10000 })
+  await counselor.getByText(/no longer a valid record of service hours/).waitFor({ timeout: 10000 })
+})
+
+await step(coord, 'coordinator: undo the revoke', async () => {
+  await coord.getByRole('button', { name: 'Undo' }).click()
+  await coord.getByText(/Restored 3h for/).waitFor({ timeout: 10000 })
+})
+
+await step(counselor, 'counselor (signed out): the restored code verifies again', async () => {
+  await counselor.goto(`${BASE}/verify/${code}`)
+  await counselor.getByText('Hours verified').waitFor({ timeout: 10000 })
 })
 await counselor.screenshot({ path: `${shots}/05-verify.png`, fullPage: true })
 

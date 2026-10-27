@@ -62,6 +62,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     `)
     .in('opportunity_id', oppIds)
     .eq('verified', true)
+    .is('revoked_at', null)
     .order('date', { ascending: false })
 
   const { data: verifiedCompletions } = await supabase

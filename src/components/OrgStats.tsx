@@ -26,6 +26,7 @@ type OrgStatsProps = {
   verifiedHoursList: VerifiedHour[]
   checkins: Checkin[]
   totalVerified: number
+  revokedCount?: number
   profileMap: Map<string, string | null>
   oppMap: Map<string, string | null>
 }
@@ -38,6 +39,7 @@ export default function OrgStats({
   verifiedHoursList,
   checkins,
   totalVerified,
+  revokedCount = 0,
   profileMap,
   oppMap,
 }: OrgStatsProps) {
@@ -82,8 +84,10 @@ export default function OrgStats({
           <p className="mt-2 text-3xl font-bold text-emerald-700 dark:text-emerald-400">{totalVerified.toFixed(1)}</p>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             {approvedEntries === 0
-              ? 'Approved hours will show here.'
-              : `${plural(approvedEntries, 'entry', 'entries')} from ${plural(approvedStudents, 'student')}`}
+              ? revokedCount > 0
+                ? `${plural(revokedCount, 'revoked record')} excluded from totals.`
+                : 'Approved hours will show here.'
+              : `${plural(approvedEntries, 'entry', 'entries')} from ${plural(approvedStudents, 'student')}${revokedCount > 0 ? ` · ${plural(revokedCount, 'revoked record')} excluded` : ''}`}
           </p>
         </div>
 

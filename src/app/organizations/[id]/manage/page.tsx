@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import VerifyHoursForm from '@/components/VerifyHoursForm'
+import HoursRevokeAction from '@/components/HoursRevokeAction'
 import ManageVolunteerFocus from '@/components/ManageVolunteerFocus'
 import RequestCoordinatorAccess from '@/components/RequestCoordinatorAccess'
 import CoordinatorRequestActions from '@/components/CoordinatorRequestActions'
@@ -96,6 +97,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     opportunity_id: string
     verification_code: string | null
     verified_at: string | null
+    revoked_at: string | null
   }> = []
 
   let checkins: Array<{
@@ -118,7 +120,7 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
     const { data: verified } = await supabase
       .from('volunteer_hours')
-      .select('id, hours, date, user_id, opportunity_id, verification_code, verified_at')
+      .select('id, hours, date, user_id, opportunity_id, verification_code, verified_at, revoked_at')
       .in('opportunity_id', oppIds)
       .eq('verified', true)
       .order('verified_at', { ascending: false })
@@ -167,7 +169,12 @@ export default async function OrganizationManagePage({ params }: PageProps) {
     }, new Map<string, typeof checkins>()),
   ]
 
-  const totalVerified = verifiedHoursList.reduce((s, h) => s + Number(h.hours), 0)
+  const activeVerifiedHours = verifiedHoursList.filter((h) => !h.revoked_at)
+  const revokedCount = verifiedHoursList.length - activeVerifiedHours.length
+  const approvedForDisplay = [...verifiedHoursList].sort(
+    (a, b) => Number(Boolean(b.revoked_at)) - Number(Boolean(a.revoked_at))
+  )
+  const totalVerified = activeVerifiedHours.reduce((s, h) => s + Number(h.hours), 0)
   const isCoordinator = await canManageOrg(id, user.id)
   const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
   const approverName = me?.full_name || user.email || 'Organizer'
@@ -265,14 +272,15 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
             <OrgStats
               pendingHours={pendingHours}
-              verifiedHoursList={verifiedHoursList}
+              verifiedHoursList={activeVerifiedHours}
               checkins={checkins}
               totalVerified={totalVerified}
+              revokedCount={revokedCount}
               profileMap={profileMap}
               oppMap={oppMap}
             />
 
-            <HoursTrend verifiedHoursList={verifiedHoursList} />
+            <HoursTrend verifiedHoursList={activeVerifiedHours} />
 
             <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Attendance</h2>
@@ -323,29 +331,44 @@ export default async function OrganizationManagePage({ params }: PageProps) {
 
             {verifiedHoursList.length > 0 && (
               <section>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Approved</h2>
-                  <a href={`/api/org/${id}/export`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
-                    Download CSV
-                  </a>
-                  <a href={`/api/org/${id}/export?format=json`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
-                    JSON
-                  </a>
+                  <div className="flex items-center gap-4">
+                    <a href={`/api/org/${id}/export`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+                      Download CSV
+                    </a>
+                    <a href={`/api/org/${id}/export?format=json`} className="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+                      JSON
+                    </a>
+                  </div>
                 </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  Misclicked an approval? Revoke it: the code stays on record and is marked revoked,
+                  and the hours leave the student&rsquo;s total, the export and the impact page.
+                  {revokedCount > 0 && ` ${revokedCount} revoked ${revokedCount === 1 ? 'record is' : 'records are'} excluded.`}
+                </p>
                 <ul className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
-                  {verifiedHoursList.slice(0, 20).map((h) => (
+                  {approvedForDisplay.slice(0, 20).map((h) => (
                     <li key={h.id} className="p-4 flex flex-wrap justify-between gap-3 items-center">
-                      <div>
+                      <div className={h.revoked_at ? 'opacity-60' : undefined}>
                         <p className="font-medium">{profileMap.get(h.user_id) || 'Student'}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {oppMap.get(h.opportunity_id)} · {Number(h.hours)}h · {formatDate(h.date)}
                         </p>
                       </div>
-                      {h.verification_code && (
-                        <a href={`/verify/${h.verification_code}`} className="font-mono text-sm text-emerald-700 dark:text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">
-                          {h.verification_code}
-                        </a>
-                      )}
+                      <div className="flex flex-wrap items-center justify-end gap-4">
+                        {h.verification_code && (
+                          <a href={`/verify/${h.verification_code}`} className="font-mono text-sm text-emerald-700 dark:text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">
+                            {h.verification_code}
+                          </a>
+                        )}
+                        <HoursRevokeAction
+                          hourId={h.id}
+                          volunteerName={profileMap.get(h.user_id) || 'Student'}
+                          hours={Number(h.hours)}
+                          revoked={Boolean(h.revoked_at)}
+                        />
+                      </div>
                     </li>
                   ))}
                 </ul>
