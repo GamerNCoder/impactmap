@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Accessibility
+- A text-size control (A−/A+) in the header enlarges text to 125/150/200%, applies before paint,
+  and remembers the choice on the device.
+- The shared header wraps instead of widening, so it no longer overflows at a 320 px viewport or
+  with text at 200%; the language, theme and QR controls move into the mobile menu on small
+  screens.
+- `test:a11y` now covers 20 public pages and fails if any of them scrolls sideways at 320 px or at
+  200% text; it also checks that the control enlarges, persists and restores the root font.
+- Long repository URLs wrap on `/accessibility` and `/security` instead of forcing a sideways
+  scroll at 320 px.
+
+### Fixed
+- The shared header overflowed by 28 px at 320 px and about 290 px at 200% text on every page
+  that used it.
+
 ## 0.4.0 — 2026-10-24
 
 Security hardening, CI coverage and the open-source release.

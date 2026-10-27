@@ -19,7 +19,7 @@ export default function AccessibilityPage() {
 
       <article className="max-w-3xl mx-auto px-4 py-10 prose prose-gray dark:prose-invert">
         <h1>Accessibility Statement</h1>
-        <p className="text-sm text-gray-500 not-prose">Last updated: October 15, 2026</p>
+        <p className="text-sm text-gray-500 not-prose">Last updated: October 27, 2026</p>
 
         <h2>1. Our commitment</h2>
         <p>
@@ -62,6 +62,11 @@ export default function AccessibilityPage() {
             them.
           </li>
           <li>
+            <strong>Text size:</strong> a text-size control (A− / A+) in the header enlarges text up
+            to 200% without losing content, every page reflows to a 320&nbsp;px viewport without
+            sideways scrolling, and the choice is remembered on your device.
+          </li>
+          <li>
             <strong>Live regions:</strong> status updates such as scan progress and result announcements are
             exposed to assistive technology so they are not silent.
           </li>
@@ -96,7 +101,7 @@ export default function AccessibilityPage() {
         <p>
           If you hit an accessibility problem, please tell us. The fastest route is to open an issue on the
           project repository at{' '}
-          <a href="https://github.com/GamerNCoder/impactmap/issues">
+          <a href="https://github.com/GamerNCoder/impactmap/issues" className="[overflow-wrap:anywhere]">
             github.com/GamerNCoder/impactmap/issues
           </a>
           . Describe the page, what you were trying to do, the assistive technology or browser you use, and

@@ -16,7 +16,7 @@ export default function Logo({ size = 'md', showText = true, onDark = false }: L
   const s = sizes[size]
 
   return (
-    <Link href="/" className="flex items-center gap-2.5 group">
+    <Link href="/" className="flex min-w-0 items-center gap-2.5 group">
       <span
         className="relative flex items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow"
         style={{ width: s.icon, height: s.icon }}
@@ -26,7 +26,7 @@ export default function Logo({ size = 'md', showText = true, onDark = false }: L
         </svg>
       </span>
       {showText && (
-        <span className={`font-bold tracking-tight ${s.text}`}>
+        <span className={`min-w-0 truncate font-bold tracking-tight ${s.text}`}>
           <span className={onDark ? 'text-white' : 'text-gray-900 dark:text-white'}>Impact</span>
           <span className={onDark ? 'text-emerald-400' : 'text-emerald-700 dark:text-emerald-400'}>Map</span>
         </span>

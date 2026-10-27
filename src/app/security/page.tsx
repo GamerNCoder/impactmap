@@ -37,7 +37,7 @@ export default function SecurityPage() {
         </p>
         <p>
           If you cannot use it, open a minimal public issue at{' '}
-          <a href="https://github.com/GamerNCoder/impactmap/issues">
+          <a href="https://github.com/GamerNCoder/impactmap/issues" className="[overflow-wrap:anywhere]">
             github.com/GamerNCoder/impactmap/issues
           </a>{' '}
           asking for a private channel, and do not include the details of the flaw, any data, or a

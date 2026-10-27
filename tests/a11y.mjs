@@ -39,16 +39,87 @@ async function runAxe(page, label) {
   }
 }
 
-const publicPaths = ['/', '/impact', '/demo', '/verify', '/verify/IMP-DEMO2026ABCD', '/opportunities', '/about', '/privacy', '/accessibility',
-  '/trust',
+const publicPaths = ['/', '/impact', '/demo', '/verify', '/verify/IMP-DEMO2026ABCD', '/opportunities', '/organizations', '/about', '/privacy', '/accessibility',
+  '/trust', '/auth/login', '/auth/signup',
   '/offline', '/terms', '/attributions', '/security', '/safety', '/pilot', '/pilot/guide']
+
+async function measureOverflow(page) {
+  return page.evaluate(() => {
+    const doc = document.documentElement
+    const width = doc.clientWidth
+    const over = Math.max(doc.scrollWidth, document.body.scrollWidth) - width
+    let worst = null
+    if (over > 1) {
+      for (const el of document.querySelectorAll('body *')) {
+        const rect = el.getBoundingClientRect()
+        if (rect.width > 0 && rect.right > width + 1 && (!worst || rect.right > worst.right)) {
+          worst = {
+            tag: el.tagName.toLowerCase(),
+            cls: String(el.className).slice(0, 60),
+            right: Math.round(rect.right),
+            text: (el.textContent ?? '').trim().slice(0, 40),
+          }
+        }
+      }
+    }
+    return { width, over, worst }
+  })
+}
+
+// WCAG 1.4.10 reflow: no horizontal page scrolling at 320 px, and no horizontal scrolling when
+// text is doubled at a desktop width (the same condition the A+ control creates).
+async function reflowPass(label, viewport, rootFontPx) {
+  const context = await browser.newContext({ viewport })
+  const page = await context.newPage()
+  let bad = 0
+  for (const path of publicPaths) {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'load' })
+    if (rootFontPx) await page.addStyleTag({ content: `html{font-size:${rootFontPx}px !important}` })
+    await page.waitForTimeout(300)
+    const { width, over, worst } = await measureOverflow(page)
+    if (over > 1) {
+      bad += 1
+      const detail = worst ? ` — ${worst.tag}.${worst.cls} right=${worst.right} "${worst.text}"` : ''
+      console.log(`FAIL  reflow ${label} ${path}: ${over}px wider than ${width}px${detail}`)
+    }
+  }
+  if (bad === 0) console.log(`PASS  reflow ${label} (${publicPaths.length} pages)`)
+  else failures += 1
+  await context.close()
+}
+
 const publicContext = await browser.newContext({ viewport: { width: 1280, height: 900 } })
 const publicPage = await publicContext.newPage()
 for (const path of publicPaths) {
   await publicPage.goto(`${BASE}${path}`, { waitUntil: 'load' })
   await runAxe(publicPage, path)
 }
+
+// The text-size control must be reachable, enlarge the root font, persist across a reload, and
+// return to the default.
+await publicPage.goto(`${BASE}/`, { waitUntil: 'load' })
+const sizeOf = () => publicPage.evaluate(() => getComputedStyle(document.documentElement).fontSize)
+const baseSize = await sizeOf()
+await publicPage.getByRole('button', { name: 'Increase text size' }).first().click()
+const grownSize = await sizeOf()
+await publicPage.reload({ waitUntil: 'load' })
+const persistedSize = await sizeOf()
+await publicPage.getByRole('button', { name: 'Decrease text size' }).first().click()
+const restoredSize = await sizeOf()
+if (
+  parseFloat(grownSize) > parseFloat(baseSize) &&
+  persistedSize === grownSize &&
+  restoredSize === baseSize
+) {
+  console.log(`PASS  text size control (${baseSize} -> ${grownSize}, remembered)`)
+} else {
+  failures += 1
+  console.log(`FAIL  text size control (base ${baseSize}, grown ${grownSize}, persisted ${persistedSize}, restored ${restoredSize})`)
+}
 await publicContext.close()
+
+await reflowPass('320px', { width: 320, height: 800 })
+await reflowPass('200% text', { width: 1280, height: 900 }, 32)
 
 // The demo roles only exist where the demo accounts are seeded. On a bare CI database the
 // /demo page says so, and we skip those two pages instead of failing on a missing login.

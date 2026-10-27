@@ -90,8 +90,9 @@ row-level security), Leaflet + OpenStreetMap, and Vercel.
 - **The public impact path** is `src/app/impact/` plus `impact_summary()`; it reads as its owner so
   anonymous visitors need no access to the hours table.
 - **Tests:** 86 database and security checks (`tests/e2e-core-loop.mjs`), a Playwright walkthrough
-  of the full loop (`tests/ui-core-loop.mjs`), an axe-core **WCAG 2.2 AA** gate across 17 public
-  pages and both demo roles (`tests/a11y.mjs`), and both theme directions (`tests/theme.mjs`).
+  of the full loop (`tests/ui-core-loop.mjs`), an axe-core **WCAG 2.2 AA** gate across 20 public
+  pages and both demo roles (`tests/a11y.mjs`), including a 320 px and 200% text reflow pass, and
+  both theme directions (`tests/theme.mjs`).
 - **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, build, the database suite, a
   defense audit, the accessibility gate, the UI walkthrough and the theme test. It is green on
   `main`.

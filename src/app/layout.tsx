@@ -67,7 +67,7 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('impactmap-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('impactmap-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);var s=Number(localStorage.getItem('impactmap-text-size'));if(s===125||s===150||s===200)document.documentElement.style.fontSize=s+'%'}catch(e){}})();`,
           }}
         />
       </head>

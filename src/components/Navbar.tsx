@@ -8,6 +8,7 @@ import Logo from '@/components/Logo'
 import ThemeToggle from '@/components/ThemeToggle'
 import QrScanLauncher from '@/components/QrScanLauncher'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import TextSizeControl from '@/components/TextSizeControl'
 import type { Locale } from '@/lib/i18n'
 
 const PRIMARY_NAV = [
@@ -104,10 +105,12 @@ function MobileMenu({
   user,
   onSignOut,
   linkClass,
+  locale,
 }: {
   user: { id: string } | null
   onSignOut: () => void
   linkClass: (href: string) => string
+  locale: Locale
 }) {
   const [open, setOpen] = useState(false)
 
@@ -146,8 +149,8 @@ function MobileMenu({
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 top-14 bg-black/20 z-40" onClick={() => setOpen(false)} />
-          <div id="mobile-menu" className="absolute left-0 right-0 top-14 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50 px-4 py-3 space-y-1">
+          <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setOpen(false)} />
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50 px-4 py-3 space-y-1">
             {links.map((item) => (
               <Link
                 key={item.href}
@@ -158,6 +161,16 @@ function MobileMenu({
                 {item.label}
               </Link>
             ))}
+            <div className="pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
+              <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Display
+              </p>
+              <div className="flex flex-wrap items-center gap-2 px-2">
+                <LanguageSwitcher locale={locale} />
+                <ThemeToggle />
+                <QrScanLauncher variant="icon" />
+              </div>
+            </div>
             {user ? (
               <>
                 <Link href="/profile" onClick={() => setOpen(false)} className={`block px-3 py-2.5 rounded-lg text-sm ${linkClass('/profile')}`}>
@@ -225,12 +238,12 @@ export default function Navbar({ locale }: { locale: Locale }) {
   return (
     <nav className="sticky top-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="flex justify-between h-14">
-          <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 min-h-14 py-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-1 sm:gap-2">
             <Logo size="sm" />
 
             {user ? (
-              <div className="hidden md:flex items-center">
+              <div className="hidden md:flex flex-wrap items-center">
                 {PRIMARY_NAV.map((item) => (
                   <Link
                     key={item.href}
@@ -242,7 +255,7 @@ export default function Navbar({ locale }: { locale: Locale }) {
                 ))}
               </div>
             ) : (
-              <div className="hidden md:flex items-center">
+              <div className="hidden md:flex flex-wrap items-center">
                 {GUEST_NAV.map((item) => (
                   <Link key={item.href} href={item.href} className={`px-3 py-2 rounded-lg text-sm ${linkClass(item.href)}`}>
                     {item.label}
@@ -251,13 +264,16 @@ export default function Navbar({ locale }: { locale: Locale }) {
               </div>
             )}
 
-            <MobileMenu user={user} onSignOut={handleLogout} linkClass={linkClass} />
+            <MobileMenu user={user} onSignOut={handleLogout} linkClass={linkClass} locale={locale} />
           </div>
 
-          <div className="flex items-center gap-1">
-            <LanguageSwitcher locale={locale} />
-            <QrScanLauncher variant="icon" />
-            <ThemeToggle />
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-1">
+            <TextSizeControl />
+            <div className="hidden sm:flex items-center gap-1">
+              <LanguageSwitcher locale={locale} />
+              <QrScanLauncher variant="icon" />
+              <ThemeToggle />
+            </div>
             {loading ? (
               <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
             ) : user ? (
